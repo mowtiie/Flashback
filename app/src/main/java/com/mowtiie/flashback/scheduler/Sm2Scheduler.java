@@ -13,6 +13,8 @@ public class Sm2Scheduler {
     private final Random random;
     private final TimeZone timeZone;
 
+    private boolean suppressFuzz;
+
     public Sm2Scheduler() {
         this(new SchedulerConfig());
     }
@@ -29,6 +31,15 @@ public class Sm2Scheduler {
 
     public SchedulerConfig getConfig() {
         return config;
+    }
+
+    public SchedulingState preview(SchedulingState current, Rating rating, long now) {
+        suppressFuzz = true;
+        try {
+            return answer(current, rating, now);
+        } finally {
+            suppressFuzz = false;
+        }
     }
 
     public SchedulingState answer(SchedulingState current, Rating rating, long now) {
@@ -136,7 +147,7 @@ public class Sm2Scheduler {
     }
 
     private int applyFuzz(int intervalDays) {
-        if (!config.fuzzEnabled || intervalDays < 3) {
+        if (!config.fuzzEnabled || suppressFuzz || intervalDays < 3) {
             return intervalDays;
         }
         int spread = Math.max(1, (int) Math.round(intervalDays * 0.05d));

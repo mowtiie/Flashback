@@ -75,13 +75,12 @@ public class FlashbackRepository {
     public static class AnswerResult {
 
         public final long reviewLogId;
-        public final int newIntervalDays;
-        public final long newDueAt;
 
-        AnswerResult(long reviewLogId, int newIntervalDays, long newDueAt) {
+        public final SchedulingState after;
+
+        AnswerResult(long reviewLogId, SchedulingState after) {
             this.reviewLogId = reviewLogId;
-            this.newIntervalDays = newIntervalDays;
-            this.newDueAt = newDueAt;
+            this.after = after;
         }
     }
 
@@ -95,6 +94,10 @@ public class FlashbackRepository {
 
     public LiveData<Deck> observeDeck(long deckId) {
         return deckDao.observeById(deckId);
+    }
+
+    public LiveData<DeckSummary> observeDeckSummary(long deckId, long now) {
+        return deckDao.observeSummary(deckId, now);
     }
 
     public void insertDeck(Deck deck, Callback<Long> callback) {
@@ -111,7 +114,6 @@ public class FlashbackRepository {
     public void deleteDeck(Deck deck) {
         executors.diskIO().execute(() -> deckDao.delete(deck));
     }
-
 
     public LiveData<List<Note>> observeNotes(long deckId) {
         return noteDao.observeByDeck(deckId);
@@ -204,7 +206,7 @@ public class FlashbackRepository {
                 ReviewLog log = ReviewLog.of(cardId, rating.value, elapsedMs, before, after, now);
                 long logId = reviewLogDao.insert(log);
 
-                return new AnswerResult(logId, after.intervalDays, after.dueAt);
+                return new AnswerResult(logId, after);
             });
             postBack(callback, result);
         });
@@ -257,7 +259,6 @@ public class FlashbackRepository {
             }
         }));
     }
-
 
     public LiveData<Integer> observeReviewsSince(long since) {
         return reviewLogDao.observeCountSince(since);

@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fitsSystemWindows="true"
+        app:liftOnScroll="false">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:menu="@menu/menu_study" />
+
+        <!--
+          Remaining work, in the same three colours the deck card uses. Shown as
+          live counts rather than a progress bar: learning cards re-enter the
+          session, so any bar would have to run backwards to stay honest.
+        -->
+        <LinearLayout
+            android:id="@+id/countsRow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:paddingBottom="@dimen/spacing_sm">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/newRemaining"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingStart="@dimen/spacing_sm"
+                android:paddingEnd="@dimen/spacing_sm"
+                android:textAppearance="?attr/textAppearanceLabelLarge"
+                android:textColor="@color/count_new"
+                tools:text="12" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/learningRemaining"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingStart="@dimen/spacing_sm"
+                android:paddingEnd="@dimen/spacing_sm"
+                android:textAppearance="?attr/textAppearanceLabelLarge"
+                android:textColor="@color/count_learning"
+                tools:text="3" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/dueRemaining"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingStart="@dimen/spacing_sm"
+                android:paddingEnd="@dimen/spacing_sm"
+                android:textAppearance="?attr/textAppearanceLabelLarge"
+                android:textColor="@color/count_due"
+                tools:text="47" />
+        </LinearLayout>
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <LinearLayout
+        android:id="@+id/studyContent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="@dimen/spacing_md"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardFace"
+            style="?attr/materialCardViewFilledStyle"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <androidx.core.widget.NestedScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:fillViewport="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:minHeight="200dp"
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_lg">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/questionText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:textAppearance="?attr/textAppearanceHeadlineSmall"
+                        tools:text="el bosque" />
+
+                    <View
+                        android:id="@+id/answerDivider"
+                        android:layout_width="64dp"
+                        android:layout_height="1dp"
+                        android:layout_marginTop="@dimen/spacing_lg"
+                        android:layout_marginBottom="@dimen/spacing_lg"
+                        android:background="?attr/colorOutlineVariant"
+                        android:visibility="gone" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/answerText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:textAppearance="?attr/textAppearanceHeadlineSmall"
+                        android:textColor="?attr/colorPrimary"
+                        android:visibility="gone"
+                        tools:text="the forest" />
+
+                </LinearLayout>
+
+            </androidx.core.widget.NestedScrollView>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/showAnswer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_md"
+            android:text="@string/study_show_answer" />
+
+        <LinearLayout
+            android:id="@+id/ratingRow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_md"
+            android:baselineAligned="false"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <LinearLayout style="@style/Widget.Flashback.RatingColumn">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/ratingAgain"
+                    style="@style/Widget.Flashback.RatingButton.Again"
+                    android:text="@string/rating_again" />
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/intervalAgain"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_xs"
+                    android:textAppearance="@style/TextAppearance.Flashback.IntervalHint"
+                    tools:text="1m" />
+            </LinearLayout>
+
+            <Space
+                android:layout_width="@dimen/spacing_sm"
+                android:layout_height="1dp" />
+
+            <LinearLayout style="@style/Widget.Flashback.RatingColumn">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/ratingHard"
+                    style="@style/Widget.Flashback.RatingButton"
+                    android:text="@string/rating_hard" />
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/intervalHard"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_xs"
+                    android:textAppearance="@style/TextAppearance.Flashback.IntervalHint"
+                    tools:text="10m" />
+            </LinearLayout>
+
+            <Space
+                android:layout_width="@dimen/spacing_sm"
+                android:layout_height="1dp" />
+
+            <LinearLayout style="@style/Widget.Flashback.RatingColumn">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/ratingGood"
+                    style="@style/Widget.Flashback.RatingButton.Good"
+                    android:text="@string/rating_good" />
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/intervalGood"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_xs"
+                    android:textAppearance="@style/TextAppearance.Flashback.IntervalHint"
+                    tools:text="1d" />
+            </LinearLayout>
+
+            <Space
+                android:layout_width="@dimen/spacing_sm"
+                android:layout_height="1dp" />
+
+            <LinearLayout style="@style/Widget.Flashback.RatingColumn">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/ratingEasy"
+                    style="@style/Widget.Flashback.RatingButton"
+                    android:text="@string/rating_easy" />
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/intervalEasy"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_xs"
+                    android:textAppearance="@style/TextAppearance.Flashback.IntervalHint"
+                    tools:text="4d" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <include
+        android:id="@+id/emptyState"
+        layout="@layout/view_empty_state"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

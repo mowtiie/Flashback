@@ -39,6 +39,10 @@ public interface DeckDao {
     @Query("SELECT * FROM decks ORDER BY name COLLATE NOCASE")
     LiveData<List<DeckWithTags>> observeAllWithTags();
 
+    /**
+     * Deck list payload. The counts are computed as correlated subqueries so the
+     * list screen issues one query rather than one per deck.
+     */
     @Query("SELECT d.*, "
             + "(SELECT COUNT(*) FROM cards c JOIN notes n ON c.noteId = n.id "
             + " WHERE n.deckId = d.id AND c.suspended = 0 AND c.state = 0) AS newCount, "
@@ -52,6 +56,21 @@ public interface DeckDao {
             + " WHERE n.deckId = d.id) AS totalCount "
             + "FROM decks d ORDER BY d.name COLLATE NOCASE")
     LiveData<List<DeckSummary>> observeSummaries(long now);
+
+    /** Same shape as observeSummaries, for the one deck the detail screen shows. */
+    @Query("SELECT d.*, "
+            + "(SELECT COUNT(*) FROM cards c JOIN notes n ON c.noteId = n.id "
+            + " WHERE n.deckId = d.id AND c.suspended = 0 AND c.state = 0) AS newCount, "
+            + "(SELECT COUNT(*) FROM cards c JOIN notes n ON c.noteId = n.id "
+            + " WHERE n.deckId = d.id AND c.suspended = 0 AND c.state IN (1, 3) "
+            + " AND c.dueAt <= :now) AS learnCount, "
+            + "(SELECT COUNT(*) FROM cards c JOIN notes n ON c.noteId = n.id "
+            + " WHERE n.deckId = d.id AND c.suspended = 0 AND c.state = 2 "
+            + " AND c.dueAt <= :now) AS dueCount, "
+            + "(SELECT COUNT(*) FROM cards c JOIN notes n ON c.noteId = n.id "
+            + " WHERE n.deckId = d.id) AS totalCount "
+            + "FROM decks d WHERE d.id = :deckId")
+    LiveData<DeckSummary> observeSummary(long deckId, long now);
 
     @Query("SELECT COUNT(*) FROM decks")
     int count();

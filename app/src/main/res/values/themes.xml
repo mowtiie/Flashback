@@ -7,30 +7,68 @@
 
     <style name="Theme.Flashback" parent="Base.Theme.Flashback" />
 
-    <!--
-      The count triplet on a deck card. Deliberately the loudest thing in the
-      list: it is the only information you need before deciding to tap.
-    -->
     <style name="TextAppearance.Flashback.CountValue" parent="TextAppearance.Material3.HeadlineSmall">
         <item name="android:textStyle">bold</item>
         <item name="android:includeFontPadding">false</item>
     </style>
-
     <style name="TextAppearance.Flashback.CountLabel" parent="TextAppearance.Material3.LabelSmall">
         <item name="android:textAllCaps">true</item>
         <item name="android:letterSpacing">0.08</item>
         <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
     </style>
-
     <!--
-      parent="" is required, not stylistic. Android derives a parent from dot
-      notation when none is given, so this would otherwise look for a style
-      named Widget.Flashback and fail to link.
-    -->
+          parent="" is required, not stylistic. Android derives a parent from dot
+          notation when none is given, so this would otherwise look for a style
+          named Widget.Flashback and fail to link.
+         -->
     <style name="Widget.Flashback.CountBlock" parent="">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_weight">1</item>
         <item name="android:orientation">vertical</item>
+    </style>
+    <!--
+          Rating buttons. Four across on a phone, so the default button insets and
+          minimum width have to go or the labels wrap. Every one of these declares
+          an explicit parent: a dotted name with no parent makes Android look for a
+          style that does not exist.
+         -->
+    <style name="Widget.Flashback.RatingColumn" parent="">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:gravity">center_horizontal</item>
+    </style>
+    <style name="Widget.Flashback.RatingButton" parent="Widget.Material3.Button.TonalButton">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:paddingStart">@dimen/spacing_xs</item>
+        <item name="android:paddingEnd">@dimen/spacing_xs</item>
+        <item name="android:textAppearance">?attr/textAppearanceLabelLarge</item>
+        <item name="cornerRadius">12dp</item>
+    </style>
+    <!--  Again reads as the corrective action, not a destructive one.  -->
+    <style name="Widget.Flashback.RatingButton.Again" parent="Widget.Flashback.RatingButton">
+        <item name="backgroundTint">?attr/colorErrorContainer</item>
+        <item name="android:textColor">?attr/colorOnErrorContainer</item>
+    </style>
+    <!--  Good is the filled button because it is the answer most sessions use.  -->
+    <style name="Widget.Flashback.RatingButton.Good" parent="Widget.Material3.Button">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:paddingStart">@dimen/spacing_xs</item>
+        <item name="android:paddingEnd">@dimen/spacing_xs</item>
+        <item name="android:textAppearance">?attr/textAppearanceLabelLarge</item>
+        <item name="cornerRadius">12dp</item>
+    </style>
+    <style name="TextAppearance.Flashback.IntervalHint" parent="TextAppearance.Material3.LabelSmall">
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
     </style>
 </resources>
