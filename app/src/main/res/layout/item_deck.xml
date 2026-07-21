@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/deckCard"
+    style="?attr/materialCardViewOutlinedStyle"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/spacing_sm"
+    android:checkable="false"
+    android:clickable="true"
+    android:focusable="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/spacing_md">
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/deckName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textAppearance="?attr/textAppearanceTitleMedium"
+            tools:text="Spanish vocabulary" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/deckDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_xs"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:textAppearance="?attr/textAppearanceBodySmall"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            tools:text="Core 2000 word list, chapters 1 to 4" />
+
+        <!--
+          The signature element. Three numerals carry the whole decision of
+          whether to open this deck, so they get headline weight and a fixed
+          colour per queue. Zero counts are dimmed by the adapter rather than
+          hidden, so the row never reflows between binds.
+        -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_md"
+            android:baselineAligned="false"
+            android:orientation="horizontal">
+
+            <LinearLayout style="@style/Widget.Flashback.CountBlock">
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/newCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/TextAppearance.Flashback.CountValue"
+                    android:textColor="@color/count_new"
+                    tools:text="12" />
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/count_new"
+                    android:textAppearance="@style/TextAppearance.Flashback.CountLabel" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/Widget.Flashback.CountBlock">
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/learningCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/TextAppearance.Flashback.CountValue"
+                    android:textColor="@color/count_learning"
+                    tools:text="3" />
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/count_learning"
+                    android:textAppearance="@style/TextAppearance.Flashback.CountLabel" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/Widget.Flashback.CountBlock">
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/dueCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/TextAppearance.Flashback.CountValue"
+                    android:textColor="@color/count_due"
+                    tools:text="47" />
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/count_due"
+                    android:textAppearance="@style/TextAppearance.Flashback.CountLabel" />
+            </LinearLayout>
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/deckTotal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:textAppearance="?attr/textAppearanceLabelSmall"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                tools:text="212 cards" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>
