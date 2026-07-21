@@ -67,7 +67,8 @@ public class FlashbackRepository {
         return instance;
     }
 
-    public static FlashbackRepository create(FlashbackDatabase db, AppExecutors executors, Sm2Scheduler scheduler) {
+    public static FlashbackRepository create(FlashbackDatabase db, AppExecutors executors,
+                                             Sm2Scheduler scheduler) {
         return new FlashbackRepository(db, executors, scheduler);
     }
 
@@ -110,6 +111,7 @@ public class FlashbackRepository {
     public void deleteDeck(Deck deck) {
         executors.diskIO().execute(() -> deckDao.delete(deck));
     }
+
 
     public LiveData<List<Note>> observeNotes(long deckId) {
         return noteDao.observeByDeck(deckId);
@@ -155,6 +157,14 @@ public class FlashbackRepository {
 
     public void deleteNote(Note note) {
         executors.diskIO().execute(() -> noteDao.delete(note));
+    }
+
+    public void getNote(long noteId, Callback<Note> callback) {
+        executors.diskIO().execute(() -> postBack(callback, noteDao.getById(noteId)));
+    }
+
+    public void getDeck(long deckId, Callback<Deck> callback) {
+        executors.diskIO().execute(() -> postBack(callback, deckDao.getById(deckId)));
     }
 
     public void buildStudyQueue(long deckId, long now, Callback<List<StudyCard>> callback) {
@@ -261,7 +271,6 @@ public class FlashbackRepository {
         executors.diskIO().execute(
                 () -> postBack(callback, cardDao.countDueEverywhere(now)));
     }
-
 
     private <T> void postBack(@NonNull Callback<T> callback, T value) {
         executors.mainThread().execute(() -> callback.onResult(value));

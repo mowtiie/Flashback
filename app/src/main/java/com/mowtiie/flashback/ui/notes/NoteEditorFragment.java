@@ -1,0 +1,143 @@
+package com.mowtiie.flashback.ui.notes;
+
+import android.os.Bundle;
+import android.text.TextUtils;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
+
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.textfield.TextInputEditText;
+import com.mowtiie.flashback.R;
+import com.mowtiie.flashback.databinding.FragmentNoteEditorBinding;
+import com.mowtiie.flashback.util.Toolbars;
+import com.mowtiie.flashback.util.ViewModelFactory;
+
+public class NoteEditorFragment extends Fragment {
+
+    public static final long NEW_ID = -1L;
+
+    private FragmentNoteEditorBinding binding;
+    private NoteEditorViewModel viewModel;
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        binding = FragmentNoteEditorBinding.inflate(inflater, container, false);
+        return binding.getRoot();
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        long deckId = requireArguments().getLong("deckId");
+        long noteId = requireArguments().getLong("noteId", NEW_ID);
+
+        viewModel = new ViewModelProvider(this, new ViewModelFactory(
+                () -> new NoteEditorViewModel(
+                        requireActivity().getApplication(), deckId, noteId)))
+                .get(NoteEditorViewModel.class);
+
+        NavController navController = NavHostFragment.findNavController(this);
+        Toolbars.setup(binding.toolbar, navController);
+
+        boolean editing = viewModel.isEditing();
+        binding.toolbar.setTitle(editing
+                ? R.string.note_editor_edit_title : R.string.note_editor_new_title);
+        binding.toolbar.getMenu().findItem(R.id.action_delete_note).setVisible(editing);
+
+        binding.saveAndAddNote.setVisibility(editing ? View.GONE : View.VISIBLE);
+
+        binding.toolbar.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.action_delete_note) {
+                confirmDelete(navController);
+                return true;
+            }
+            return false;
+        });
+
+        viewModel.getNote().observe(getViewLifecycleOwner(), note -> {
+            if (note == null) {
+                binding.noteReverse.setChecked(viewModel.getReverseDefault());
+                return;
+            }
+            binding.noteFront.setText(note.front);
+            binding.noteBack.setText(note.back);
+            binding.noteReverse.setChecked(note.reverseEnabled);
+        });
+
+        viewModel.getSaveOutcome().observe(getViewLifecycleOwner(), outcome -> {
+            if (outcome == null) {
+                return;
+            }
+            if (outcome == NoteEditorViewModel.SaveOutcome.CLOSE) {
+                navController.navigateUp();
+            } else {
+                clearForNextCard();
+            }
+        });
+
+        binding.saveNote.setOnClickListener(v -> attemptSave(false));
+        binding.saveAndAddNote.setOnClickListener(v -> attemptSave(true));
+    }
+
+    private void attemptSave(boolean addAnother) {
+        String front = text(binding.noteFront);
+        String back = text(binding.noteBack);
+
+        binding.noteFrontLayout.setError(null);
+        binding.noteBackLayout.setError(null);
+
+        if (TextUtils.isEmpty(front)) {
+            binding.noteFrontLayout.setError(getString(R.string.note_front_required));
+            binding.noteFront.requestFocus();
+            return;
+        }
+        if (TextUtils.isEmpty(back)) {
+            binding.noteBackLayout.setError(getString(R.string.note_back_required));
+            binding.noteBack.requestFocus();
+            return;
+        }
+
+        viewModel.save(front, back, binding.noteReverse.isChecked(), addAnother);
+    }
+
+    private void clearForNextCard() {
+        binding.noteFront.setText("");
+        binding.noteBack.setText("");
+        binding.noteFront.requestFocus();
+        Snackbar.make(binding.getRoot(), R.string.note_saved, Snackbar.LENGTH_SHORT).show();
+    }
+
+    private void confirmDelete(NavController navController) {
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.note_delete_title)
+                .setMessage(R.string.note_delete_body)
+                .setNegativeButton(R.string.action_cancel, null)
+                .setPositiveButton(R.string.action_delete, (dialog, which) -> {
+                    viewModel.delete();
+                    navController.navigateUp();
+                })
+                .show();
+    }
+
+    private String text(TextInputEditText field) {
+        return field.getText() == null ? "" : field.getText().toString().trim();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
+    }
+}

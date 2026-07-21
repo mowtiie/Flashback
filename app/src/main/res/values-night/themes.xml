@@ -4,4 +4,31 @@
         <!-- Customize your dark theme here. -->
         <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
     </style>
+
+    <!--
+      The count triplet on a deck card. Deliberately the loudest thing in the
+      list: it is the only information you need before deciding to tap.
+    -->
+    <style name="TextAppearance.Flashback.CountValue" parent="TextAppearance.Material3.HeadlineSmall">
+        <item name="android:textStyle">bold</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+
+    <style name="TextAppearance.Flashback.CountLabel" parent="TextAppearance.Material3.LabelSmall">
+        <item name="android:textAllCaps">true</item>
+        <item name="android:letterSpacing">0.08</item>
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+    </style>
+
+    <!--
+      parent="" is required, not stylistic. Android derives a parent from dot
+      notation when none is given, so this would otherwise look for a style
+      named Widget.Flashback and fail to link.
+    -->
+    <style name="Widget.Flashback.CountBlock" parent="">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:orientation">vertical</item>
+    </style>
 </resources>

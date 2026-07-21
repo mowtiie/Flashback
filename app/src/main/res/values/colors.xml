@@ -2,4 +2,8 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <color name="count_new">#1B5FC4</color>
+    <color name="count_learning">#A2521A</color>
+    <color name="count_due">#1E7B4F</color>
 </resources>

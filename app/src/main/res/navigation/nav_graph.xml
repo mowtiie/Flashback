@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/deckListFragment">
+
+    <fragment
+        android:id="@+id/deckListFragment"
+        android:name="com.mowtiie.flashback.ui.decks.DeckListFragment"
+        android:label="@string/decks_title"
+        tools:layout="@layout/fragment_deck_list">
+
+        <action
+            android:id="@+id/action_deckList_to_deckDetail"
+            app:destination="@id/deckDetailFragment" />
+        <action
+            android:id="@+id/action_deckList_to_deckEditor"
+            app:destination="@id/deckEditorFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/deckDetailFragment"
+        android:name="com.mowtiie.flashback.ui.decks.DeckDetailFragment"
+        android:label="@string/decks_title"
+        tools:layout="@layout/fragment_deck_detail">
+
+        <argument
+            android:name="deckId"
+            app:argType="long" />
+
+        <action
+            android:id="@+id/action_deckDetail_to_noteEditor"
+            app:destination="@id/noteEditorFragment" />
+        <action
+            android:id="@+id/action_deckDetail_to_deckEditor"
+            app:destination="@id/deckEditorFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/deckEditorFragment"
+        android:name="com.mowtiie.flashback.ui.decks.DeckEditorFragment"
+        android:label="@string/deck_editor_new_title"
+        tools:layout="@layout/fragment_deck_editor">
+
+        <!-- DeckEditorFragment.NEW_ID (-1) means create rather than edit. -->
+        <argument
+            android:name="deckId"
+            app:argType="long"
+            android:defaultValue="-1L" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/noteEditorFragment"
+        android:name="com.mowtiie.flashback.ui.notes.NoteEditorFragment"
+        android:label="@string/note_editor_new_title"
+        tools:layout="@layout/fragment_note_editor">
+
+        <argument
+            android:name="deckId"
+            app:argType="long" />
+        <argument
+            android:name="noteId"
+            app:argType="long"
+            android:defaultValue="-1L" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/tagsFragment"
+        android:name="com.mowtiie.flashback.ui.tags.TagsFragment"
+        android:label="@string/tags_title"
+        tools:layout="@layout/fragment_placeholder" />
+
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.mowtiie.flashback.ui.settings.SettingsFragment"
+        android:label="@string/settings_title"
+        tools:layout="@layout/fragment_placeholder" />
+
+</navigation>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="count_new">#8AB4F8</color>
+    <color name="count_learning">#FFB77C</color>
+    <color name="count_due">#7DD99F</color>
+</resources>
