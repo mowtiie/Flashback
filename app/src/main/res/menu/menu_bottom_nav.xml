@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Item ids must match the nav graph destination ids for NavigationUI. -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/deckListFragment"
+        android:icon="@drawable/ic_decks"
+        android:title="@string/nav_decks" />
+    <item
+        android:id="@+id/tagsFragment"
+        android:icon="@drawable/ic_tags"
+        android:title="@string/nav_tags" />
+    <item
+        android:id="@+id/settingsFragment"
+        android:icon="@drawable/ic_settings"
+        android:title="@string/nav_settings" />
+</menu>
