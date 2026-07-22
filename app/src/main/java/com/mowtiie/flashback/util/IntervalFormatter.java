@@ -8,6 +8,10 @@ import com.mowtiie.flashback.scheduler.SchedulingState;
 
 import java.util.Locale;
 
+/**
+ * Renders "when will I see this again" for the rating buttons. Learning cards
+ * are measured in minutes from now; graduated cards in their stored interval.
+ */
 public final class IntervalFormatter {
 
     private static final long MINUTE_MS = 60_000L;
@@ -35,6 +39,7 @@ public final class IntervalFormatter {
         return context.getString(R.string.interval_years, round1(days / 365d));
     }
 
+    /** One decimal, so "1.5mo" rather than "1.4666mo". */
     private static String round1(double value) {
         return String.format(Locale.getDefault(), "%.1f", value);
     }

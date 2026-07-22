@@ -12,6 +12,7 @@ import com.mowtiie.flashback.repository.FlashbackRepository;
 
 public class NoteEditorViewModel extends AndroidViewModel {
 
+    /** What the fragment should do once a save completes. */
     public enum SaveOutcome {
         CLOSE,
         CLEAR_FOR_NEXT
@@ -24,6 +25,7 @@ public class NoteEditorViewModel extends AndroidViewModel {
     private final MutableLiveData<Note> note = new MutableLiveData<>();
     private final MutableLiveData<SaveOutcome> saveOutcome = new MutableLiveData<>();
 
+    /** Seeds the reverse switch for new cards from the deck's own default. */
     private boolean reverseDefault;
 
     public NoteEditorViewModel(@NonNull Application application, long deckId, long noteId) {
@@ -60,6 +62,11 @@ public class NoteEditorViewModel extends AndroidViewModel {
         return saveOutcome;
     }
 
+    /**
+     * Persists the card. Adding a reverse card to an existing note creates it;
+     * removing one deletes that card along with its scheduling history, which
+     * is why the editor warns about it in the helper text.
+     */
     public void save(String front, String back, boolean reverseEnabled, boolean addAnother) {
         SaveOutcome outcome = addAnother ? SaveOutcome.CLEAR_FOR_NEXT : SaveOutcome.CLOSE;
 

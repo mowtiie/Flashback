@@ -1,4 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  A fixed palette rather than a free colour wheel, for three reasons:
+
+  1. Tags are read at chip size. A wheel lets users pick two blues they cannot
+     tell apart in a 24dp chip, which defeats the point of colouring them.
+  2. These must work on both a near-white and a near-black surface. Mid-tone
+     hues do; the pastels and near-blacks a wheel offers do not.
+  3. Picking from twelve swatches takes one tap. A wheel takes a drag, a
+     confirm, and a decision nobody wanted to make.
+
+  Hues are spaced around the circle so adjacent choices stay distinguishable.
+-->
 <resources>
     <color name="tag_red">#E5484D</color>
     <color name="tag_orange">#F76B15</color>
@@ -12,6 +24,7 @@
     <color name="tag_purple">#8E4EC6</color>
     <color name="tag_pink">#D6409F</color>
     <color name="tag_slate">#8B8D98</color>
+
     <array name="tag_palette">
         <item>@color/tag_red</item>
         <item>@color/tag_orange</item>

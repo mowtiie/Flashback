@@ -16,6 +16,7 @@ import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
 
+    /** Destinations that are tabs rather than pushed screens. */
     private static final Set<Integer> TOP_LEVEL = new HashSet<>(Arrays.asList(
             R.id.deckListFragment,
             R.id.tagsFragment,
@@ -38,6 +39,8 @@ public class MainActivity extends AppCompatActivity {
 
         NavigationUI.setupWithNavController(binding.bottomNav, navController);
 
+        // Pushed screens such as the editors get the full height; keeping the
+        // bar there would offer navigation away from unsaved work.
         navController.addOnDestinationChangedListener(
                 (controller, destination, arguments) -> {
                     boolean topLevel = TOP_LEVEL.contains(destination.getId());

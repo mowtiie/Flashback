@@ -53,6 +53,7 @@ public abstract class FlashbackDatabase extends RoomDatabase {
                                     context.getApplicationContext(),
                                     FlashbackDatabase.class,
                                     DB_NAME)
+                            // Lets the study screen read while a write is in flight.
                             .setJournalMode(JournalMode.WRITE_AHEAD_LOGGING)
                             .build();
                 }

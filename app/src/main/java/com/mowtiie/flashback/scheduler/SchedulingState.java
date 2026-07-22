@@ -1,5 +1,9 @@
 package com.mowtiie.flashback.scheduler;
 
+/**
+ * Plain carrier for the scheduling fields of a card. Deliberately free of Room
+ * and Android types so {@link Sm2Scheduler} can be exercised by fast JVM tests.
+ */
 public class SchedulingState {
 
     public int state = CardState.NEW;

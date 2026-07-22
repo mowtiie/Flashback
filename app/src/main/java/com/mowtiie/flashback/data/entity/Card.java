@@ -9,6 +9,10 @@ import androidx.room.PrimaryKey;
 import com.mowtiie.flashback.scheduler.CardState;
 import com.mowtiie.flashback.scheduler.SchedulingState;
 
+/**
+ * A single scheduled item. Ordinal 0 asks front then reveals back;
+ * ordinal 1 asks back then reveals front. Each is scheduled independently.
+ */
 @Entity(
         tableName = "cards",
         foreignKeys = @ForeignKey(
@@ -32,8 +36,10 @@ public class Card {
 
     public int ordinal;
 
+    /** One of the {@link CardState} constants. */
     public int state = CardState.NEW;
 
+    /** Index into the learning / relearning step array. Meaningless in REVIEW. */
     public int learningStep;
 
     public int intervalDays;
@@ -44,6 +50,7 @@ public class Card {
 
     public int lapses;
 
+    /** Epoch millis at which this card becomes due. New cards use 0. */
     public long dueAt;
 
     public long lastReviewedAt;
@@ -59,6 +66,7 @@ public class Card {
         this.ordinal = ordinal;
     }
 
+    /** Extracts the mutable scheduling fields for the scheduler to operate on. */
     public SchedulingState toSchedulingState() {
         SchedulingState s = new SchedulingState();
         s.state = state;

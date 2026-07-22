@@ -81,6 +81,8 @@ public class TagEditorFragment extends Fragment {
             binding.tagDescription.setText(tag.description);
         });
 
+        // The preview is the point of the colour grid: it shows the chip
+        // exactly as it will appear on a deck card, in the current theme.
         viewModel.getColour().observe(getViewLifecycleOwner(), colour -> {
             if (colour == null) {
                 return;
@@ -145,6 +147,7 @@ public class TagEditorFragment extends Fragment {
         binding = null;
     }
 
+    /** Trims TextWatcher down to the one callback that is ever needed. */
     private static class SimpleWatcher implements android.text.TextWatcher {
 
         private final Runnable onChanged;

@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.mowtiie.flashback.databinding.ItemColorSwatchBinding;
 
+/** The colour grid in the tag editor. */
 public class ColorSwatchAdapter
         extends RecyclerView.Adapter<ColorSwatchAdapter.SwatchViewHolder> {
 
@@ -79,7 +80,9 @@ public class ColorSwatchAdapter
         void bind(int color, boolean isSelected, OnColorSelected listener) {
             binding.swatch.setBackgroundTintList(ColorStateList.valueOf(color));
             binding.swatchCheck.setVisibility(isSelected ? View.VISIBLE : View.GONE);
-            binding.swatchCheck.setImageTintList(ColorStateList.valueOf(ColorUtils.calculateLuminance(color) > 0.5d ? Color.BLACK : Color.WHITE));
+            // Tick contrasts against the swatch it sits on, not the theme.
+            binding.swatchCheck.setImageTintList(ColorStateList.valueOf(
+                    ColorUtils.calculateLuminance(color) > 0.5d ? Color.BLACK : Color.WHITE));
             binding.getRoot().setOnClickListener(v -> listener.onColorSelected(color));
         }
     }

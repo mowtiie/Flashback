@@ -6,6 +6,10 @@ import androidx.room.ForeignKey;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
+/**
+ * The authored content. A note owns one or two {@link Card}s depending on
+ * {@link #reverseEnabled}; the cards carry the scheduling state.
+ */
 @Entity(
         tableName = "notes",
         foreignKeys = @ForeignKey(
@@ -27,6 +31,7 @@ public class Note {
     @NonNull
     public String back = "";
 
+    /** When true this note also owns a reverse card (ordinal 1). */
     public boolean reverseEnabled;
 
     public long createdAt;

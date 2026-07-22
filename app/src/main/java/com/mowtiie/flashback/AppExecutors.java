@@ -7,6 +7,11 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * Java has no coroutines, so database writes go through one background thread.
+ * A single thread rather than a pool keeps write ordering predictable, which
+ * matters for undo.
+ */
 public final class AppExecutors {
 
     private static volatile AppExecutors instance;

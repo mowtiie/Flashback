@@ -7,6 +7,12 @@ import androidx.room.PrimaryKey;
 
 import com.mowtiie.flashback.scheduler.SchedulingState;
 
+/**
+ * One row per answered card. Carries a complete snapshot of the card's
+ * scheduling state *before* the answer, which makes undo a straight restore
+ * rather than an attempt to invert the scheduler. Also the sole data source
+ * for statistics.
+ */
 @Entity(
         tableName = "review_log",
         foreignKeys = @ForeignKey(
@@ -24,8 +30,10 @@ public class ReviewLog {
 
     public long reviewedAt;
 
+    /** {@link com.mowtiie.flashback.scheduler.Rating} ordinal value. */
     public int rating;
 
+    /** Milliseconds the card was on screen. Used for time-spent stats. */
     public long elapsedMs;
 
     public int prevState;
@@ -37,6 +45,7 @@ public class ReviewLog {
     public long prevDueAt;
     public long prevLastReviewedAt;
 
+    /** Interval assigned by this review, for the statistics screen. */
     public int newIntervalDays;
 
     public ReviewLog() {
@@ -61,6 +70,7 @@ public class ReviewLog {
         return log;
     }
 
+    /** Rebuilds the pre-review state so undo can write it straight back. */
     public SchedulingState toPreviousState() {
         SchedulingState s = new SchedulingState();
         s.state = prevState;

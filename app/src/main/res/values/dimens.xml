@@ -6,5 +6,9 @@
     <dimen name="spacing_lg">24dp</dimen>
     <dimen name="spacing_xl">32dp</dimen>
 
+    <!-- Chips shown as metadata rather than controls sit below the touch minimum. -->
+    <dimen name="chip_compact_height">26dp</dimen>
+
+    <!-- Clears the FAB so the last list item is never trapped under it. -->
     <dimen name="list_bottom_inset">96dp</dimen>
 </resources>

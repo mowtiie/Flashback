@@ -1,5 +1,6 @@
 package com.mowtiie.flashback.scheduler;
 
+/** The four grading buttons shown after a card is revealed. */
 public enum Rating {
 
     AGAIN(1),

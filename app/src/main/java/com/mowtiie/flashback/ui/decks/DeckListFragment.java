@@ -13,8 +13,12 @@ import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.google.android.material.chip.Chip;
 import com.mowtiie.flashback.R;
+import com.mowtiie.flashback.data.entity.Tag;
 import com.mowtiie.flashback.databinding.FragmentDeckListBinding;
+
+import java.util.List;
 
 public class DeckListFragment extends Fragment {
 
@@ -37,9 +41,9 @@ public class DeckListFragment extends Fragment {
         viewModel = new ViewModelProvider(this).get(DeckListViewModel.class);
         NavController navController = NavHostFragment.findNavController(this);
 
-        adapter = new DeckAdapter(summary -> {
+        adapter = new DeckAdapter(item -> {
             Bundle args = new Bundle();
-            args.putLong("deckId", summary.deck.id);
+            args.putLong("deckId", item.summary.deck.id);
             navController.navigate(R.id.action_deckList_to_deckDetail, args);
         });
 
@@ -52,20 +56,85 @@ public class DeckListFragment extends Fragment {
         binding.emptyState.emptyTitle.setText(R.string.decks_empty_title);
         binding.emptyState.emptyBody.setText(R.string.decks_empty_body);
         binding.emptyState.emptyAction.setText(R.string.decks_empty_action);
-        binding.emptyState.emptyAction.setOnClickListener(v -> navController.navigate(R.id.action_deckList_to_deckEditor));
+        binding.emptyState.emptyAction.setOnClickListener(v ->
+                navController.navigate(R.id.action_deckList_to_deckEditor));
 
-        viewModel.getSummaries().observe(getViewLifecycleOwner(), summaries -> {
-            adapter.submitList(summaries);
-            boolean empty = summaries == null || summaries.isEmpty();
+        viewModel.getAllTags().observe(getViewLifecycleOwner(), this::buildFilterChips);
+
+        viewModel.getItems().observe(getViewLifecycleOwner(), items -> {
+            adapter.submitList(items);
+            boolean empty = items == null || items.isEmpty();
             binding.emptyState.getRoot().setVisibility(empty ? View.VISIBLE : View.GONE);
             binding.deckList.setVisibility(empty ? View.GONE : View.VISIBLE);
+            // Hiding the FAB while the empty state is up avoids two competing
+            // calls to the same action.
             binding.addDeck.setVisibility(empty ? View.GONE : View.VISIBLE);
+
+            // A filter that hides everything is not the same as having no
+            // decks, so say which one the user is looking at.
+            boolean filtered = viewModel.getSelectedTagId() != null;
+            binding.emptyState.emptyTitle.setText(filtered
+                    ? R.string.decks_filtered_empty_title : R.string.decks_empty_title);
+            binding.emptyState.emptyBody.setText(filtered
+                    ? R.string.decks_filtered_empty_body : R.string.decks_empty_body);
+            binding.emptyState.emptyAction.setVisibility(filtered ? View.GONE : View.VISIBLE);
         });
+    }
+
+    /**
+     * Rebuilds the tag filter row. The whole row stays hidden until a tag
+     * exists, so the feature is invisible to anyone not using it.
+     */
+    private void buildFilterChips(List<Tag> tags) {
+        binding.filterChips.removeAllViews();
+        boolean hasTags = tags != null && !tags.isEmpty();
+        binding.filterScroll.setVisibility(hasTags ? View.VISIBLE : View.GONE);
+        if (!hasTags) {
+            return;
+        }
+
+        // A tag can be deleted while it is the active filter, which would
+        // otherwise leave the list permanently empty with no way back.
+        Long active = viewModel.getSelectedTagId();
+        if (active != null && !containsTag(tags, active)) {
+            viewModel.selectTag(null);
+        }
+
+        Chip all = newFilterChip(getString(R.string.filter_all));
+        all.setChecked(viewModel.getSelectedTagId() == null);
+        all.setOnClickListener(v -> viewModel.selectTag(null));
+        binding.filterChips.addView(all);
+
+        Long selected = viewModel.getSelectedTagId();
+        for (Tag tag : tags) {
+            Chip chip = newFilterChip(tag.name);
+            chip.setChecked(selected != null && selected == tag.id);
+            chip.setOnClickListener(v -> viewModel.selectTag(tag.id));
+            binding.filterChips.addView(chip);
+        }
+    }
+
+    private boolean containsTag(List<Tag> tags, long tagId) {
+        for (Tag tag : tags) {
+            if (tag.id == tagId) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private Chip newFilterChip(String label) {
+        Chip chip = new Chip(requireContext());
+        chip.setText(label);
+        chip.setCheckable(true);
+        chip.setCheckedIconVisible(true);
+        return chip;
     }
 
     @Override
     public void onResume() {
         super.onResume();
+        // Recompute due counts against the current time.
         viewModel.refresh();
     }
 

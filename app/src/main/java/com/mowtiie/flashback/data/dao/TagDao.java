@@ -35,6 +35,7 @@ public interface TagDao {
     @Query("SELECT * FROM tags WHERE name = :name LIMIT 1")
     Tag findByName(String name);
 
+    /** Tag list payload; the count drives the "used by N decks" line. */
     @Query("SELECT t.*, "
             + "(SELECT COUNT(*) FROM deck_tag dt WHERE dt.tagId = t.id) AS deckCount "
             + "FROM tags t ORDER BY t.name COLLATE NOCASE")
@@ -52,6 +53,10 @@ public interface TagDao {
     @Query("SELECT t.* FROM tags t JOIN deck_tag dt ON t.id = dt.tagId "
             + "WHERE dt.deckId = :deckId ORDER BY t.name COLLATE NOCASE")
     LiveData<List<Tag>> observeTagsForDeck(long deckId);
+
+    @Query("SELECT t.* FROM tags t JOIN deck_tag dt ON t.id = dt.tagId "
+            + "WHERE dt.deckId = :deckId ORDER BY t.name COLLATE NOCASE")
+    List<Tag> getTagsForDeck(long deckId);
 
     @Query("SELECT COUNT(*) FROM deck_tag WHERE tagId = :tagId")
     int deckCountForTag(long tagId);

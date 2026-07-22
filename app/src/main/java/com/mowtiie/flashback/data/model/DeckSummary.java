@@ -4,6 +4,7 @@ import androidx.room.Embedded;
 
 import com.mowtiie.flashback.data.entity.Deck;
 
+/** Deck plus the counts the deck list needs, gathered in one query. */
 public class DeckSummary {
 
     @Embedded

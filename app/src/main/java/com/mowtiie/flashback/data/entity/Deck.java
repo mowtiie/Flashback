@@ -16,6 +16,7 @@ public class Deck {
 
     public String description;
 
+    /** Default value applied to {@link Note#reverseEnabled} for notes added to this deck. */
     @ColumnInfo(defaultValue = "0")
     public boolean reverseByDefault = false;
 

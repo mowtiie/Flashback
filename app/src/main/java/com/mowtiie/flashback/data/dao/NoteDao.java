@@ -32,6 +32,9 @@ public interface NoteDao {
     @Query("SELECT * FROM notes WHERE deckId = :deckId ORDER BY createdAt DESC")
     LiveData<List<Note>> observeByDeck(long deckId);
 
+    @Query("SELECT * FROM notes WHERE deckId = :deckId ORDER BY createdAt")
+    List<Note> getByDeck(long deckId);
+
     @Query("SELECT COUNT(*) FROM notes WHERE deckId = :deckId")
     int countInDeck(long deckId);
 }

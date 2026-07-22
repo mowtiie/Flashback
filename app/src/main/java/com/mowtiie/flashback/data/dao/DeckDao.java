@@ -33,6 +33,9 @@ public interface DeckDao {
     Deck getById(long id);
 
     @Query("SELECT * FROM decks ORDER BY name COLLATE NOCASE")
+    List<Deck> getAll();
+
+    @Query("SELECT * FROM decks ORDER BY name COLLATE NOCASE")
     LiveData<List<Deck>> observeAll();
 
     @Transaction

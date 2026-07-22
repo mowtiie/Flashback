@@ -23,6 +23,7 @@ import com.mowtiie.flashback.util.ViewModelFactory;
 
 public class NoteEditorFragment extends Fragment {
 
+    /** Argument value meaning "create a card" rather than edit one. */
     public static final long NEW_ID = -1L;
 
     private FragmentNoteEditorBinding binding;
@@ -56,6 +57,7 @@ public class NoteEditorFragment extends Fragment {
                 ? R.string.note_editor_edit_title : R.string.note_editor_new_title);
         binding.toolbar.getMenu().findItem(R.id.action_delete_note).setVisible(editing);
 
+        // Bulk entry only makes sense when creating.
         binding.saveAndAddNote.setVisibility(editing ? View.GONE : View.VISIBLE);
 
         binding.toolbar.setOnMenuItemClickListener(item -> {
@@ -112,6 +114,10 @@ public class NoteEditorFragment extends Fragment {
         viewModel.save(front, back, binding.noteReverse.isChecked(), addAnother);
     }
 
+    /**
+     * Keeps the reverse switch as the user left it, since a run of cards
+     * entered together almost always wants the same direction setting.
+     */
     private void clearForNextCard() {
         binding.noteFront.setText("");
         binding.noteBack.setText("");

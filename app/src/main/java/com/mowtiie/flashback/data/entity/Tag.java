@@ -19,6 +19,7 @@ public class Tag {
 
     public String description;
 
+    /** Packed ARGB colour value. */
     @ColumnInfo(defaultValue = "0")
     public int color;
 

@@ -39,6 +39,19 @@
             tools:text="Core 2000 word list, chapters 1 to 4" />
 
         <!--
+          Tags. Hidden entirely when a deck has none, so an untagged collection
+          never pays for a feature it does not use.
+        -->
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/deckTags"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_sm"
+            android:visibility="gone"
+            app:chipSpacingVertical="@dimen/spacing_xs"
+            app:singleLine="false" />
+
+        <!--
           The signature element. Three numerals carry the whole decision of
           whether to open this deck, so they get headline weight and a fixed
           colour per queue. Zero counts are dimmed by the adapter rather than

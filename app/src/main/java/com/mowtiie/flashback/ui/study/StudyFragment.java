@@ -153,6 +153,11 @@ public class StudyFragment extends Fragment {
         }
     }
 
+    /**
+     * Half a flip: rotate to edge-on, swap the face, then rotate back from the
+     * opposite edge. Rotating a full 180 degrees would leave the answer text
+     * mirrored.
+     */
     private void revealWithFlip() {
         if (!animationsEnabled()) {
             viewModel.reveal();
@@ -180,6 +185,7 @@ public class StudyFragment extends Fragment {
                 .start();
     }
 
+    /** Honours the system "remove animations" accessibility setting. */
     private boolean animationsEnabled() {
         float scale = Settings.Global.getFloat(
                 requireContext().getContentResolver(),

@@ -1,10 +1,13 @@
 package com.mowtiie.flashback.ui.decks;
 
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -14,9 +17,16 @@ import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.snackbar.Snackbar;
+import com.mowtiie.flashback.data.io.ArchiveFiles;
+import com.mowtiie.flashback.data.io.ArchiveSerializer;
+import com.mowtiie.flashback.AppExecutors;
+
+import java.io.IOException;
 import com.mowtiie.flashback.R;
 import com.mowtiie.flashback.databinding.FragmentDeckDetailBinding;
 import com.mowtiie.flashback.util.Toolbars;
+import com.mowtiie.flashback.repository.FlashbackRepository;
 import com.mowtiie.flashback.util.ViewModelFactory;
 
 public class DeckDetailFragment extends Fragment {
@@ -24,6 +34,9 @@ public class DeckDetailFragment extends Fragment {
     private FragmentDeckDetailBinding binding;
     private DeckDetailViewModel viewModel;
     private NoteAdapter adapter;
+
+    private ActivityResultLauncher<String> createDocument;
+    private String pendingExportContent;
 
     @Nullable
     @Override
@@ -36,6 +49,14 @@ public class DeckDetailFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        createDocument = registerForActivityResult(
+                new ActivityResultContracts.CreateDocument("application/json"), uri -> {
+                    if (uri != null && pendingExportContent != null) {
+                        writeExport(uri, pendingExportContent);
+                    }
+                    pendingExportContent = null;
+                });
 
         long deckId = requireArguments().getLong("deckId");
         viewModel = new ViewModelProvider(this, new ViewModelFactory(
@@ -55,7 +76,11 @@ public class DeckDetailFragment extends Fragment {
         binding.noteList.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.noteList.setAdapter(adapter);
 
-        binding.addNote.setOnClickListener(v -> openNewNote(navController, deckId));
+        binding.studyDeck.setOnClickListener(v -> {
+            Bundle args = new Bundle();
+            args.putLong("deckId", deckId);
+            navController.navigate(R.id.action_deckDetail_to_study, args);
+        });
 
         binding.emptyState.emptyTitle.setText(R.string.deck_detail_empty_title);
         binding.emptyState.emptyBody.setText(R.string.deck_detail_empty_body);
@@ -65,10 +90,18 @@ public class DeckDetailFragment extends Fragment {
 
         binding.toolbar.setOnMenuItemClickListener(item -> {
             int id = item.getItemId();
+            if (id == R.id.action_add_note) {
+                openNewNote(navController, deckId);
+                return true;
+            }
             if (id == R.id.action_edit_deck) {
                 Bundle args = new Bundle();
                 args.putLong("deckId", deckId);
                 navController.navigate(R.id.action_deckDetail_to_deckEditor, args);
+                return true;
+            }
+            if (id == R.id.action_export_deck) {
+                exportDeck(deckId);
                 return true;
             }
             if (id == R.id.action_delete_deck) {
@@ -89,7 +122,15 @@ public class DeckDetailFragment extends Fragment {
             boolean empty = notes == null || notes.isEmpty();
             binding.emptyState.getRoot().setVisibility(empty ? View.VISIBLE : View.GONE);
             binding.noteList.setVisibility(empty ? View.GONE : View.VISIBLE);
-            binding.addNote.setVisibility(empty ? View.GONE : View.VISIBLE);
+        });
+
+        // The FAB offers studying only when there is something to study. An
+        // empty deck, or one with nothing due, leaves adding cards in the
+        // toolbar as the available action.
+        viewModel.getSummary().observe(getViewLifecycleOwner(), summary -> {
+            int studyable = summary == null ? 0 : summary.studyableCount();
+            binding.studyDeck.setVisibility(studyable > 0 ? View.VISIBLE : View.GONE);
+            binding.studyDeck.setText(getString(R.string.deck_study_button, studyable));
         });
     }
 
@@ -111,6 +152,48 @@ public class DeckDetailFragment extends Fragment {
                     navController.navigateUp();
                 })
                 .show();
+    }
+
+    /**
+     * Serializes just this deck, then opens the save picker. Reuses the same
+     * serializer and file writer as the collection-wide export in Settings.
+     */
+    private void exportDeck(long deckId) {
+        FlashbackRepository.getInstance(requireContext().getApplicationContext())
+                .exportDeck(deckId, archive -> {
+                    if (archive.decks.isEmpty()) {
+                        return;
+                    }
+                    pendingExportContent = new ArchiveSerializer().serialize(archive);
+                    String safe = archive.decks.get(0).name
+                            .replaceAll("[^a-zA-Z0-9-_]", "_");
+                    createDocument.launch(getString(
+                            R.string.export_deck_filename_prefix) + safe + ".json");
+                });
+    }
+
+    private void writeExport(Uri destination, String content) {
+        AppExecutors executors = AppExecutors.getInstance();
+        executors.diskIO().execute(() -> {
+            try {
+                ArchiveFiles.write(requireContext().getContentResolver(),
+                        destination, content);
+                executors.mainThread().execute(() -> {
+                    if (binding != null) {
+                        Snackbar.make(binding.getRoot(), R.string.deck_export,
+                                Snackbar.LENGTH_SHORT).show();
+                    }
+                });
+            } catch (IOException e) {
+                // A failed write leaves the collection untouched; nothing to undo.
+            }
+        });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        viewModel.refresh();
     }
 
     @Override

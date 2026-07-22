@@ -4,6 +4,18 @@ import java.util.Calendar;
 import java.util.Random;
 import java.util.TimeZone;
 
+/**
+ * SM-2 scheduling, in the practical four-button form popularised by Anki
+ * rather than Wozniak's original 0-5 self-grade formula.
+ *
+ * <p>Ease adjustments: AGAIN -0.20, HARD -0.15, GOOD 0, EASY +0.15, floored at
+ * {@link SchedulerConfig#minimumEase}. Interval multipliers: HARD x1.2,
+ * GOOD x ease, EASY x ease x 1.3.
+ *
+ * <p>The class is a pure function of (state, rating, now) with no Android or
+ * Room dependencies, so it can be unit tested on the JVM. Instances are not
+ * thread safe because of the fuzz {@link Random}; construct one per session.
+ */
 public class Sm2Scheduler {
 
     private static final long MINUTE_MS = 60_000L;
@@ -13,6 +25,7 @@ public class Sm2Scheduler {
     private final Random random;
     private final TimeZone timeZone;
 
+    /** Set only for the duration of a {@link #preview} call. */
     private boolean suppressFuzz;
 
     public Sm2Scheduler() {
@@ -33,6 +46,11 @@ public class Sm2Scheduler {
         return config;
     }
 
+    /**
+     * Same as {@link #answer} but with interval fuzz suppressed, for showing
+     * the user what a rating would do before they commit to it. The value that
+     * is eventually stored may differ by a few percent.
+     */
     public SchedulingState preview(SchedulingState current, Rating rating, long now) {
         suppressFuzz = true;
         try {
@@ -42,6 +60,10 @@ public class Sm2Scheduler {
         }
     }
 
+    /**
+     * Produces the state a card should hold after being answered. The input is
+     * left untouched so the caller can keep it as the undo snapshot.
+     */
     public SchedulingState answer(SchedulingState current, Rating rating, long now) {
         SchedulingState next = current.copy();
         next.reps = current.reps + 1;
@@ -64,6 +86,7 @@ public class Sm2Scheduler {
         return next;
     }
 
+    /** Handles a card that is inside the learning or relearning steps. */
     private void advanceThroughSteps(SchedulingState s, Rating rating, long now,
                                      int[] steps, boolean relearning) {
         int phase = relearning ? CardState.RELEARNING : CardState.LEARNING;
@@ -76,6 +99,7 @@ public class Sm2Scheduler {
                 break;
 
             case HARD:
+                // Repeat the current step rather than advancing.
                 s.state = phase;
                 s.learningStep = Math.min(s.learningStep, steps.length - 1);
                 s.dueAt = now + steps[s.learningStep] * MINUTE_MS;
@@ -109,6 +133,7 @@ public class Sm2Scheduler {
         s.dueAt = dueAfterDays(now, s.intervalDays);
     }
 
+    /** Handles a card that has already graduated. */
     private void answerReviewCard(SchedulingState s, Rating rating, long now) {
         if (rating == Rating.AGAIN) {
             s.lapses = s.lapses + 1;
@@ -140,12 +165,17 @@ public class Sm2Scheduler {
                 throw new IllegalStateException("Unreachable rating: " + rating);
         }
 
+        // Always move forward by at least a day, otherwise low-ease cards stall.
         grown = Math.max(grown, previous + 1);
         s.intervalDays = clampInterval(applyFuzz(grown));
         s.state = CardState.REVIEW;
         s.dueAt = dueAfterDays(now, s.intervalDays);
     }
 
+    /**
+     * Nudges an interval by up to a few percent. Short intervals are left alone
+     * because a day either way matters there.
+     */
     private int applyFuzz(int intervalDays) {
         if (!config.fuzzEnabled || suppressFuzz || intervalDays < 3) {
             return intervalDays;
@@ -163,6 +193,10 @@ public class Sm2Scheduler {
                 Math.max(config.minimumIntervalDays, days));
     }
 
+    /**
+     * Day-granularity due dates snap to the rollover hour, so a card answered
+     * late at night is due in the morning rather than at the same late hour.
+     */
     long dueAfterDays(long now, int days) {
         Calendar cal = Calendar.getInstance(timeZone);
         cal.setTimeInMillis(now + days * DAY_MS);

@@ -10,8 +10,18 @@ import com.google.android.material.chip.Chip;
 import com.google.android.material.color.MaterialColors;
 import com.mowtiie.flashback.data.entity.Tag;
 
+/**
+ * Styles a chip from a tag's colour.
+ *
+ * <p>The tag colour is used as the outline and as a low-opacity wash over the
+ * surface, while the label keeps the theme's onSurface colour. Painting the
+ * whole chip in the tag colour would mean computing a readable text colour for
+ * twelve hues against two themes, and getting it wrong somewhere. This way the
+ * tag stays recognisable and the text is always legible.
+ */
 public final class TagChips {
 
+    /** Wash strength. Dark surfaces need a touch more to read as tinted. */
     private static final float FILL_ALPHA_LIGHT = 0.14f;
     private static final float FILL_ALPHA_DARK = 0.26f;
 
@@ -41,15 +51,16 @@ public final class TagChips {
         return ColorUtils.calculateLuminance(surface) < 0.5d;
     }
 
+    /** Reads the palette a tag colour is chosen from. */
     public static int[] palette(Context context) {
-        int[] colors;
-        try (android.content.res.TypedArray array = context.getResources().obtainTypedArray(com.mowtiie.flashback.R.array.tag_palette)) {
-            colors = new int[array.length()];
-            for (int i = 0; i < array.length(); i++) {
-                colors[i] = array.getColor(i, Color.GRAY);
-            }
-            array.recycle();
+        android.content.res.TypedArray array =
+                context.getResources().obtainTypedArray(
+                        com.mowtiie.flashback.R.array.tag_palette);
+        int[] colors = new int[array.length()];
+        for (int i = 0; i < array.length(); i++) {
+            colors[i] = array.getColor(i, Color.GRAY);
         }
+        array.recycle();
         return colors;
     }
 }

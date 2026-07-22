@@ -22,6 +22,7 @@ import java.util.Map;
 
 public class StudyViewModel extends AndroidViewModel {
 
+    /** Remaining work, shown in the header. */
     public static class Counts {
 
         public final int newCards;
@@ -35,12 +36,17 @@ public class StudyViewModel extends AndroidViewModel {
         }
     }
 
+    /** Why the session has no card to show. */
     public enum Ending {
+        /** Nothing was due when the session opened. */
         NOTHING_DUE,
+        /** Every card was answered. */
         FINISHED,
+        /** Cards remain but are not due for a while. */
         WAITING
     }
 
+    /** A card plus the state it held before being answered, so undo can restore it. */
     private static class Answered {
 
         final StudyCard card;
@@ -57,6 +63,10 @@ public class StudyViewModel extends AndroidViewModel {
     private final StudyQueue queue = new StudyQueue();
     private final Deque<Answered> history = new ArrayDeque<>();
 
+    /**
+     * Preview only. Never persists, so it can run on the main thread without
+     * contending with the repository's scheduler.
+     */
     private final Sm2Scheduler previewScheduler = new Sm2Scheduler();
 
     private final MutableLiveData<StudyCard> current = new MutableLiveData<>();
@@ -70,6 +80,7 @@ public class StudyViewModel extends AndroidViewModel {
     private long cardShownAt;
     private int answeredThisSession;
 
+    /** Blocks double taps while a write is in flight. */
     private boolean busy;
 
     public StudyViewModel(@NonNull Application application, long deckId) {
@@ -133,11 +144,16 @@ public class StudyViewModel extends AndroidViewModel {
         publishPreviews(card);
     }
 
+    /**
+     * Shows what each button would do. Computed with fuzz suppressed, so the
+     * stored interval may differ from the label by a few percent.
+     */
     private void publishPreviews(StudyCard card) {
         long now = System.currentTimeMillis();
         Map<Rating, String> labels = new EnumMap<>(Rating.class);
         for (Rating rating : Rating.values()) {
-            SchedulingState projected = previewScheduler.preview(card.card.toSchedulingState(), rating, now);
+            SchedulingState projected =
+                    previewScheduler.preview(card.card.toSchedulingState(), rating, now);
             labels.put(rating, IntervalFormatter.format(getApplication(), projected, now));
         }
         previews.setValue(labels);
@@ -159,6 +175,8 @@ public class StudyViewModel extends AndroidViewModel {
                 advance();
                 return;
             }
+            // Keep the in-memory copy in step with what was written, so the
+            // queue can decide whether this card is finished for the day.
             card.card.applySchedulingState(result.after);
             queue.requeue(card);
 
@@ -169,6 +187,11 @@ public class StudyViewModel extends AndroidViewModel {
         });
     }
 
+    /**
+     * Reverses the last answer. The card returns to the front of the queue and
+     * the card currently on screen goes back behind it, so the user lands
+     * exactly where they were.
+     */
     public void undo() {
         if (history.isEmpty() || busy) {
             return;
@@ -182,6 +205,7 @@ public class StudyViewModel extends AndroidViewModel {
             }
             Answered entry = history.pop();
 
+            // It may have been requeued into the learning store on answer.
             queue.remove(entry.card);
             entry.card.card.applySchedulingState(entry.before);
 
@@ -226,6 +250,7 @@ public class StudyViewModel extends AndroidViewModel {
         publishCounts();
     }
 
+    /** Counts include the card on screen, which the queue no longer holds. */
     private void publishCounts() {
         int newCards = queue.countNew();
         int learning = queue.countLearning();

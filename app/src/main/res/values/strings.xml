@@ -98,10 +98,34 @@
     <string name="decks_filtered_empty_title">No decks with this tag</string>
     <string name="decks_filtered_empty_body">Nothing here yet. Pick a different tag, or tag a deck from its edit screen.</string>
 
-    <!-- Placeholder filled in a later phase -->
+    <!-- Settings -->
     <string name="settings_title">Settings</string>
-    <string name="settings_coming_title">Settings are on the way</string>
-    <string name="settings_coming_body">Reminder times, study limits, and import options will appear here.</string>
+    <string name="settings_data_header">Your data</string>
+    <string name="settings_export_title">Export decks</string>
+    <string name="settings_export_body">Save every deck to a JSON file you can back up or share.</string>
+    <string name="settings_import_title">Import decks</string>
+    <string name="settings_import_body">Add decks from a JSON file or pasted text.</string>
+    <string name="settings_format_note">Exports contain your decks, tags, and cards, but not review progress. Imported cards start fresh.</string>
+    <string name="settings_more_coming">Reminder times and study limits will appear here in a later version.</string>
+
+    <!-- Import / export flow -->
+    <string name="export_all_filename">flashback-decks.json</string>
+    <string name="export_deck_filename_prefix">flashback-</string>
+    <string name="import_source_title">Import from</string>
+    <string name="import_source_file">A file</string>
+    <string name="import_source_paste">Pasted text</string>
+    <string name="import_paste_title">Paste JSON</string>
+    <string name="import_paste_hint">Paste your exported JSON here</string>
+    <string name="import_paste_action">Preview</string>
+    <string name="import_preview_title">Import these decks?</string>
+    <string name="import_preview_body">Found %1$s and %2$s%3$s. This adds to your collection; nothing is overwritten.</string>
+    <string name="import_preview_decks_one">%1$d deck</string>
+    <string name="import_preview_decks_other">%1$d decks</string>
+    <string name="import_preview_cards_one">%1$d card</string>
+    <string name="import_preview_cards_other">%1$d cards</string>
+    <string name="import_preview_tags_suffix">, %1$d tags</string>
+    <string name="import_confirm">Import</string>
+    <string name="deck_export">Export deck</string>
 
     <!-- Study session -->
     <string name="study_title">Study</string>

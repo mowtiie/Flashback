@@ -36,12 +36,12 @@
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-        android:id="@+id/addNote"
+        android:id="@+id/studyDeck"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/spacing_md"
-        android:text="@string/note_add"
-        app:icon="@drawable/ic_add" />
+        android:visibility="gone"
+        app:icon="@drawable/ic_school" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

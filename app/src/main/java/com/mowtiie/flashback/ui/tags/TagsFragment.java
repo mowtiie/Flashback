@@ -46,13 +46,15 @@ public class TagsFragment extends Fragment {
         binding.tagList.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.tagList.setAdapter(adapter);
 
-        binding.addTag.setOnClickListener(v -> navController.navigate(R.id.action_tags_to_tagEditor));
+        binding.addTag.setOnClickListener(v ->
+                navController.navigate(R.id.action_tags_to_tagEditor));
 
         binding.emptyState.emptyIcon.setImageResource(R.drawable.ic_tags);
         binding.emptyState.emptyTitle.setText(R.string.tags_empty_title);
         binding.emptyState.emptyBody.setText(R.string.tags_empty_body);
         binding.emptyState.emptyAction.setText(R.string.tag_add);
-        binding.emptyState.emptyAction.setOnClickListener(v -> navController.navigate(R.id.action_tags_to_tagEditor));
+        binding.emptyState.emptyAction.setOnClickListener(v ->
+                navController.navigate(R.id.action_tags_to_tagEditor));
 
         viewModel.getTags().observe(getViewLifecycleOwner(), tags -> {
             adapter.submitList(tags);

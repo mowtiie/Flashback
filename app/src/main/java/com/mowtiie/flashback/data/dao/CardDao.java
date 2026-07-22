@@ -1,6 +1,5 @@
 package com.mowtiie.flashback.data.dao;
 
-import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
@@ -36,6 +35,10 @@ public interface CardDao {
     @Query("DELETE FROM cards WHERE noteId = :noteId AND ordinal = :ordinal")
     void deleteByNoteAndOrdinal(long noteId, int ordinal);
 
+    /**
+     * Cards already in a learning phase and ready now. These come first in a
+     * session because their intervals are measured in minutes.
+     */
     @Query("SELECT c.*, n.front AS front, n.back AS back FROM cards c "
             + "JOIN notes n ON c.noteId = n.id "
             + "WHERE n.deckId = :deckId AND c.suspended = 0 "
@@ -43,6 +46,7 @@ public interface CardDao {
             + "ORDER BY c.dueAt LIMIT :limit")
     List<StudyCard> findDueLearning(long deckId, long now, int limit);
 
+    /** Graduated cards whose due date has arrived. */
     @Query("SELECT c.*, n.front AS front, n.back AS back FROM cards c "
             + "JOIN notes n ON c.noteId = n.id "
             + "WHERE n.deckId = :deckId AND c.suspended = 0 "
@@ -50,12 +54,14 @@ public interface CardDao {
             + "ORDER BY c.dueAt LIMIT :limit")
     List<StudyCard> findDueReviews(long deckId, long now, int limit);
 
+    /** Unseen cards, introduced up to the deck's daily allowance. */
     @Query("SELECT c.*, n.front AS front, n.back AS back FROM cards c "
             + "JOIN notes n ON c.noteId = n.id "
             + "WHERE n.deckId = :deckId AND c.suspended = 0 AND c.state = 0 "
             + "ORDER BY c.noteId, c.ordinal LIMIT :limit")
     List<StudyCard> findNew(long deckId, int limit);
 
+    /** Backs the notification worker's "cards waiting" figure. */
     @Query("SELECT COUNT(*) FROM cards WHERE suspended = 0 AND state != 0 AND dueAt <= :now")
     int countDueEverywhere(long now);
 

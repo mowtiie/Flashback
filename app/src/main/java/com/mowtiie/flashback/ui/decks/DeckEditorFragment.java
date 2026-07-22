@@ -13,13 +13,19 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 
+import com.google.android.material.chip.Chip;
 import com.mowtiie.flashback.R;
+import com.mowtiie.flashback.data.entity.Tag;
 import com.mowtiie.flashback.databinding.FragmentDeckEditorBinding;
 import com.mowtiie.flashback.util.Toolbars;
 import com.mowtiie.flashback.util.ViewModelFactory;
 
+import java.util.List;
+import java.util.Set;
+
 public class DeckEditorFragment extends Fragment {
 
+    /** Argument value meaning "create a deck" rather than edit one. */
     public static final long NEW_ID = -1L;
 
     private static final int DEFAULT_NEW_PER_DAY = 20;
@@ -75,7 +81,56 @@ public class DeckEditorFragment extends Fragment {
             }
         });
 
+        binding.newTag.setOnClickListener(v ->
+                navController.navigate(R.id.action_deckEditor_to_tagEditor));
+
+        viewModel.getAllTags().observe(getViewLifecycleOwner(), this::buildTagChips);
+        viewModel.getSelectedTagIds().observe(getViewLifecycleOwner(), ids -> applyChecks(ids));
+
         binding.saveDeck.setOnClickListener(v -> onSave());
+    }
+
+    /**
+     * One filter chip per tag. Rebuilt whenever the tag list changes, which
+     * covers returning from the tag editor with a newly created tag.
+     */
+    private void buildTagChips(List<Tag> tags) {
+        binding.deckTagChips.removeAllViews();
+        boolean hasTags = tags != null && !tags.isEmpty();
+        binding.noTagsHint.setVisibility(hasTags ? View.GONE : View.VISIBLE);
+        if (!hasTags) {
+            return;
+        }
+
+        Set<Long> selected = viewModel.getSelectedTagIds().getValue();
+        for (Tag tag : tags) {
+            Chip chip = new Chip(requireContext());
+            chip.setText(tag.name);
+            chip.setCheckable(true);
+            chip.setCheckedIconVisible(true);
+            chip.setTag(tag.id);
+            chip.setChecked(selected != null && selected.contains(tag.id));
+            chip.setOnCheckedChangeListener((button, checked) ->
+                    viewModel.toggleTag(tag.id, checked));
+            binding.deckTagChips.addView(chip);
+        }
+    }
+
+    /** Syncs chip state when the selection is seeded from the saved deck. */
+    private void applyChecks(Set<Long> ids) {
+        if (ids == null) {
+            return;
+        }
+        for (int i = 0; i < binding.deckTagChips.getChildCount(); i++) {
+            View child = binding.deckTagChips.getChildAt(i);
+            if (child instanceof Chip && child.getTag() instanceof Long) {
+                Chip chip = (Chip) child;
+                boolean shouldCheck = ids.contains((Long) child.getTag());
+                if (chip.isChecked() != shouldCheck) {
+                    chip.setChecked(shouldCheck);
+                }
+            }
+        }
     }
 
     private void onSave() {
@@ -99,6 +154,7 @@ public class DeckEditorFragment extends Fragment {
         return field.getText() == null ? "" : field.getText().toString().trim();
     }
 
+    /** Empty or nonsense input falls back to the default rather than crashing. */
     private int parsePositiveInt(String value, int fallback) {
         try {
             int parsed = Integer.parseInt(value);
