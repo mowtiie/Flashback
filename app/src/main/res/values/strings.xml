@@ -69,10 +69,36 @@
     <string name="note_deleted">Card deleted</string>
     <string name="note_has_reverse">Two-way</string>
 
-    <!-- Placeholders filled in later phases -->
+    <!-- Tags -->
     <string name="tags_title">Tags</string>
     <string name="tags_empty_title">No tags yet</string>
-    <string name="tags_empty_body">Tags group decks across subjects. They arrive in a later version.</string>
+    <string name="tags_empty_body">Tags group decks across subjects, so you can pull up everything for one course at once.</string>
+    <string name="tag_add">New tag</string>
+    <string name="tag_new_title">New tag</string>
+    <string name="tag_edit_title">Edit tag</string>
+    <string name="tag_name">Name</string>
+    <string name="tag_description">Description</string>
+    <string name="tag_colour">Colour</string>
+    <string name="tag_preview">Preview</string>
+    <string name="tag_preview_placeholder">Tag name</string>
+    <string name="tag_save">Save tag</string>
+    <string name="tag_name_required">Enter a name for the tag</string>
+    <string name="tag_delete">Delete tag</string>
+    <string name="tag_delete_title">Delete this tag?</string>
+    <string name="tag_delete_body">The tag is removed from every deck using it. The decks and their cards are untouched.</string>
+    <string name="tag_unused">Not used yet</string>
+    <plurals name="tag_deck_count">
+        <item quantity="one">Used by %1$d deck</item>
+        <item quantity="other">Used by %1$d decks</item>
+    </plurals>
+
+    <string name="deck_tags">Tags</string>
+    <string name="deck_tags_none">No tags yet. Create one to group this deck with others.</string>
+    <string name="filter_all">All</string>
+    <string name="decks_filtered_empty_title">No decks with this tag</string>
+    <string name="decks_filtered_empty_body">Nothing here yet. Pick a different tag, or tag a deck from its edit screen.</string>
+
+    <!-- Placeholder filled in a later phase -->
     <string name="settings_title">Settings</string>
     <string name="settings_coming_title">Settings are on the way</string>
     <string name="settings_coming_body">Reminder times, study limits, and import options will appear here.</string>

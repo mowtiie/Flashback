@@ -20,7 +20,9 @@ import com.mowtiie.flashback.data.entity.Note;
 import com.mowtiie.flashback.data.entity.ReviewLog;
 import com.mowtiie.flashback.data.entity.Tag;
 import com.mowtiie.flashback.data.model.DeckSummary;
+import com.mowtiie.flashback.data.model.DeckWithTags;
 import com.mowtiie.flashback.data.model.StudyCard;
+import com.mowtiie.flashback.data.model.TagWithCount;
 import com.mowtiie.flashback.scheduler.Rating;
 import com.mowtiie.flashback.scheduler.SchedulingState;
 import com.mowtiie.flashback.scheduler.Sm2Scheduler;
@@ -88,6 +90,7 @@ public class FlashbackRepository {
         void onResult(T value);
     }
 
+
     public LiveData<List<DeckSummary>> observeDeckSummaries(long now) {
         return deckDao.observeSummaries(now);
     }
@@ -114,6 +117,7 @@ public class FlashbackRepository {
     public void deleteDeck(Deck deck) {
         executors.diskIO().execute(() -> deckDao.delete(deck));
     }
+
 
     public LiveData<List<Note>> observeNotes(long deckId) {
         return noteDao.observeByDeck(deckId);
@@ -189,8 +193,7 @@ public class FlashbackRepository {
         });
     }
 
-    public void answerCard(long cardId, Rating rating, long elapsedMs, long now,
-                           Callback<AnswerResult> callback) {
+    public void answerCard(long cardId, Rating rating, long elapsedMs, long now, Callback<AnswerResult> callback) {
         executors.diskIO().execute(() -> {
             AnswerResult result = db.runInTransaction(() -> {
                 Card card = cardDao.getById(cardId);
@@ -233,6 +236,18 @@ public class FlashbackRepository {
 
     public LiveData<List<Tag>> observeAllTags() {
         return tagDao.observeAll();
+    }
+
+    public LiveData<List<TagWithCount>> observeTagsWithCounts() {
+        return tagDao.observeAllWithCounts();
+    }
+
+    public LiveData<List<DeckWithTags>> observeDecksWithTags() {
+        return deckDao.observeAllWithTags();
+    }
+
+    public void getTag(long tagId, Callback<Tag> callback) {
+        executors.diskIO().execute(() -> postBack(callback, tagDao.getById(tagId)));
     }
 
     public LiveData<List<Tag>> observeTagsForDeck(long deckId) {

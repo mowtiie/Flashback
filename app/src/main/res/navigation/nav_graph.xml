@@ -35,6 +35,9 @@
         <action
             android:id="@+id/action_deckDetail_to_deckEditor"
             app:destination="@id/deckEditorFragment" />
+        <action
+            android:id="@+id/action_deckDetail_to_study"
+            app:destination="@id/studyFragment" />
     </fragment>
 
     <fragment
@@ -48,6 +51,10 @@
             android:name="deckId"
             app:argType="long"
             android:defaultValue="-1L" />
+
+        <action
+            android:id="@+id/action_deckEditor_to_tagEditor"
+            app:destination="@id/tagEditorFragment" />
     </fragment>
 
     <fragment
@@ -66,10 +73,39 @@
     </fragment>
 
     <fragment
+        android:id="@+id/studyFragment"
+        android:name="com.mowtiie.flashback.ui.study.StudyFragment"
+        android:label="@string/study_title"
+        tools:layout="@layout/fragment_study">
+
+        <argument
+            android:name="deckId"
+            app:argType="long" />
+    </fragment>
+
+    <fragment
         android:id="@+id/tagsFragment"
         android:name="com.mowtiie.flashback.ui.tags.TagsFragment"
         android:label="@string/tags_title"
-        tools:layout="@layout/fragment_placeholder" />
+        tools:layout="@layout/fragment_tags">
+
+        <action
+            android:id="@+id/action_tags_to_tagEditor"
+            app:destination="@id/tagEditorFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/tagEditorFragment"
+        android:name="com.mowtiie.flashback.ui.tags.TagEditorFragment"
+        android:label="@string/tag_new_title"
+        tools:layout="@layout/fragment_tag_editor">
+
+        <!-- TagEditorFragment.NEW_ID (-1) means create rather than edit. -->
+        <argument
+            android:name="tagId"
+            app:argType="long"
+            android:defaultValue="-1L" />
+    </fragment>
 
     <fragment
         android:id="@+id/settingsFragment"

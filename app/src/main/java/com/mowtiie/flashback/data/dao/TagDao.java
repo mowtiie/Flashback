@@ -10,6 +10,7 @@ import androidx.room.Update;
 
 import com.mowtiie.flashback.data.entity.DeckTagCrossRef;
 import com.mowtiie.flashback.data.entity.Tag;
+import com.mowtiie.flashback.data.model.TagWithCount;
 
 import java.util.List;
 
@@ -28,8 +29,16 @@ public interface TagDao {
     @Query("SELECT * FROM tags ORDER BY name COLLATE NOCASE")
     LiveData<List<Tag>> observeAll();
 
+    @Query("SELECT * FROM tags WHERE id = :id")
+    Tag getById(long id);
+
     @Query("SELECT * FROM tags WHERE name = :name LIMIT 1")
     Tag findByName(String name);
+
+    @Query("SELECT t.*, "
+            + "(SELECT COUNT(*) FROM deck_tag dt WHERE dt.tagId = t.id) AS deckCount "
+            + "FROM tags t ORDER BY t.name COLLATE NOCASE")
+    LiveData<List<TagWithCount>> observeAllWithCounts();
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     void link(DeckTagCrossRef ref);
