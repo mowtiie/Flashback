@@ -11,6 +11,7 @@ activityKtx = "1.13.0"
 constraintlayout = "2.2.1"
 navigationVersion = "2.7.7"
 roomVersion = "2.6.1"
+workRuntime = "2.9.0"
 
 [libraries]
 json = { module = "org.json:json", version.ref = "json" }
@@ -27,6 +28,7 @@ navigation-fragment = { module = "androidx.navigation:navigation-fragment", vers
 navigation-ui = { module = "androidx.navigation:navigation-ui", version.ref = "navigationVersion" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomVersion" }
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomVersion" }
+work-runtime = { module = "androidx.work:work-runtime", version.ref = "workRuntime" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

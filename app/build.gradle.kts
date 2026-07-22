@@ -55,6 +55,7 @@ dependencies {
     implementation(libs.appcompat)
     implementation(libs.constraintlayout)
     implementation(libs.material)
+    implementation(libs.work.runtime)
     testImplementation(libs.junit)
     testImplementation(libs.json)
     androidTestImplementation(libs.espresso.core)
