@@ -100,6 +100,18 @@
 
     <!-- Settings -->
     <string name="settings_title">Settings</string>
+    <string name="settings_appearance_header">Appearance</string>
+    <string name="settings_theme_mode">Theme</string>
+    <string name="theme_mode_system">System</string>
+    <string name="theme_mode_light">Light</string>
+    <string name="theme_mode_dark">Dark</string>
+    <string name="settings_dynamic_color">Dynamic colour</string>
+    <string name="settings_dynamic_color_body">Use colours from your wallpaper on Android 12 and up.</string>
+    <string name="settings_contrast">Contrast</string>
+    <string name="settings_contrast_dynamic_hint">Contrast follows your system settings while dynamic colour is on.</string>
+    <string name="contrast_standard">Standard</string>
+    <string name="contrast_medium">Medium</string>
+    <string name="contrast_high">High</string>
     <string name="settings_data_header">Your data</string>
     <string name="settings_export_title">Export decks</string>
     <string name="settings_export_body">Save every deck to a JSON file you can back up or share.</string>

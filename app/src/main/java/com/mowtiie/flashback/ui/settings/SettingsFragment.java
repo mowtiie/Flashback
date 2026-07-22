@@ -4,6 +4,9 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
+import com.google.android.material.color.DynamicColors;
+import com.mowtiie.flashback.theme.ThemeController;
+import com.mowtiie.flashback.theme.ThemePreferences;
 import android.os.Bundle;
 import android.text.format.DateFormat;
 
@@ -17,6 +20,9 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+
+import com.mowtiie.flashback.MainActivity;
+import com.mowtiie.flashback.ui.AppBarLift;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -62,7 +68,88 @@ public class SettingsFragment extends Fragment {
         binding.rowExport.setOnClickListener(v -> viewModel.prepareExportAll());
         binding.rowImport.setOnClickListener(v -> chooseImportSource());
 
+        setupAppearanceControls();
+
+        if (requireActivity() instanceof MainActivity) {
+            AppBarLift.attach(((MainActivity) requireActivity()).getAppBar(), binding.settingsScroll);
+        }
         observe();
+    }
+
+    /**
+     * Theme mode and dynamic colour both change the palette, which requires the
+     * activity to be recreated to re-inflate with the new theme. Contrast is an
+     * overlay applied at activity creation, so it recreates too.
+     */
+    private void setupAppearanceControls() {
+        ThemePreferences prefs = viewModel.themePrefs();
+
+        checkMode(prefs.getThemeMode());
+        binding.themeModeGroup.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
+            if (!isChecked) {
+                return;
+            }
+            int mode = checkedId == R.id.modeLight ? ThemePreferences.MODE_LIGHT
+                    : checkedId == R.id.modeDark ? ThemePreferences.MODE_DARK
+                    : ThemePreferences.MODE_SYSTEM;
+            if (mode != prefs.getThemeMode()) {
+                prefs.setThemeMode(mode);
+                ThemeController.applyThemeMode(prefs);
+                // AppCompat recreates for night-mode changes automatically.
+            }
+        });
+
+        // Dynamic colour only means anything on 12+; hide the row otherwise.
+        boolean dynamicAvailable = DynamicColors.isDynamicColorAvailable();
+        binding.dynamicColorSwitch.setEnabled(dynamicAvailable);
+        binding.dynamicColorSwitch.setChecked(dynamicAvailable && prefs.isDynamicColor());
+        binding.dynamicColorSwitch.setOnCheckedChangeListener((button, checked) -> {
+            prefs.setDynamicColor(checked);
+            refreshContrastEnabled(prefs);
+            requireActivity().recreate();
+        });
+
+        checkContrast(prefs.getContrast());
+        binding.contrastGroup.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
+            if (!isChecked) {
+                return;
+            }
+            int contrast = checkedId == R.id.contrastMedium ? ThemePreferences.CONTRAST_MEDIUM
+                    : checkedId == R.id.contrastHigh ? ThemePreferences.CONTRAST_HIGH
+                    : ThemePreferences.CONTRAST_STANDARD;
+            if (contrast != prefs.getContrast()) {
+                prefs.setContrast(contrast);
+                requireActivity().recreate();
+            }
+        });
+
+        refreshContrastEnabled(prefs);
+    }
+
+    private void checkMode(int mode) {
+        int id = mode == ThemePreferences.MODE_LIGHT ? R.id.modeLight
+                : mode == ThemePreferences.MODE_DARK ? R.id.modeDark : R.id.modeSystem;
+        binding.themeModeGroup.check(id);
+    }
+
+    private void checkContrast(int contrast) {
+        int id = contrast == ThemePreferences.CONTRAST_MEDIUM ? R.id.contrastMedium
+                : contrast == ThemePreferences.CONTRAST_HIGH ? R.id.contrastHigh
+                : R.id.contrastStandard;
+        binding.contrastGroup.check(id);
+    }
+
+    /**
+     * Contrast is meaningless while dynamic colour is on (dynamic colour brings
+     * its own palette), so the picker is dimmed and a hint explains why.
+     */
+    private void refreshContrastEnabled(ThemePreferences prefs) {
+        boolean dynamicOn = DynamicColors.isDynamicColorAvailable() && prefs.isDynamicColor();
+        binding.contrastHint.setVisibility(dynamicOn ? View.VISIBLE : View.GONE);
+        binding.contrastLabel.setAlpha(dynamicOn ? 0.5f : 1f);
+        for (int i = 0; i < binding.contrastGroup.getChildCount(); i++) {
+            binding.contrastGroup.getChildAt(i).setEnabled(!dynamicOn);
+        }
     }
 
     /**

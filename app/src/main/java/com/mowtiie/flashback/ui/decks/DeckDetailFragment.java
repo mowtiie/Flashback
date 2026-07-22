@@ -11,6 +11,9 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+
+import com.mowtiie.flashback.MainActivity;
+import com.mowtiie.flashback.ui.AppBarLift;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
@@ -25,7 +28,13 @@ import com.mowtiie.flashback.AppExecutors;
 import java.io.IOException;
 import com.mowtiie.flashback.R;
 import com.mowtiie.flashback.databinding.FragmentDeckDetailBinding;
-import com.mowtiie.flashback.util.Toolbars;
+
+import androidx.core.view.MenuProvider;
+import androidx.lifecycle.Lifecycle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+
 import com.mowtiie.flashback.repository.FlashbackRepository;
 import com.mowtiie.flashback.util.ViewModelFactory;
 
@@ -64,7 +73,6 @@ public class DeckDetailFragment extends Fragment {
                 .get(DeckDetailViewModel.class);
 
         NavController navController = NavHostFragment.findNavController(this);
-        Toolbars.setup(binding.toolbar, navController);
 
         adapter = new NoteAdapter(note -> {
             Bundle args = new Bundle();
@@ -75,6 +83,10 @@ public class DeckDetailFragment extends Fragment {
 
         binding.noteList.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.noteList.setAdapter(adapter);
+
+        if (requireActivity() instanceof MainActivity) {
+            AppBarLift.attach(((MainActivity) requireActivity()).getAppBar(), binding.noteList);
+        }
 
         binding.studyDeck.setOnClickListener(v -> {
             Bundle args = new Bundle();
@@ -88,32 +100,40 @@ public class DeckDetailFragment extends Fragment {
         binding.emptyState.emptyAction.setOnClickListener(
                 v -> openNewNote(navController, deckId));
 
-        binding.toolbar.setOnMenuItemClickListener(item -> {
-            int id = item.getItemId();
-            if (id == R.id.action_add_note) {
-                openNewNote(navController, deckId);
-                return true;
+        requireActivity().addMenuProvider(new MenuProvider() {
+            @Override
+            public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+                inflater.inflate(R.menu.menu_deck_detail, menu);
             }
-            if (id == R.id.action_edit_deck) {
-                Bundle args = new Bundle();
-                args.putLong("deckId", deckId);
-                navController.navigate(R.id.action_deckDetail_to_deckEditor, args);
-                return true;
+
+            @Override
+            public boolean onMenuItemSelected(@NonNull MenuItem item) {
+                int id = item.getItemId();
+                if (id == R.id.action_add_note) {
+                    openNewNote(navController, deckId);
+                    return true;
+                }
+                if (id == R.id.action_edit_deck) {
+                    Bundle args = new Bundle();
+                    args.putLong("deckId", deckId);
+                    navController.navigate(R.id.action_deckDetail_to_deckEditor, args);
+                    return true;
+                }
+                if (id == R.id.action_export_deck) {
+                    exportDeck(deckId);
+                    return true;
+                }
+                if (id == R.id.action_delete_deck) {
+                    confirmDeleteDeck(navController);
+                    return true;
+                }
+                return false;
             }
-            if (id == R.id.action_export_deck) {
-                exportDeck(deckId);
-                return true;
-            }
-            if (id == R.id.action_delete_deck) {
-                confirmDeleteDeck(navController);
-                return true;
-            }
-            return false;
-        });
+        }, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
 
         viewModel.getDeck().observe(getViewLifecycleOwner(), deck -> {
             if (deck != null) {
-                binding.toolbar.setTitle(deck.name);
+                requireActivity().setTitle(deck.name);
             }
         });
 

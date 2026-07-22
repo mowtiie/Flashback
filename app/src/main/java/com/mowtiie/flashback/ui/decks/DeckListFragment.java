@@ -8,6 +8,9 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+
+import com.mowtiie.flashback.MainActivity;
+import com.mowtiie.flashback.ui.AppBarLift;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
@@ -17,6 +20,12 @@ import com.google.android.material.chip.Chip;
 import com.mowtiie.flashback.R;
 import com.mowtiie.flashback.data.entity.Tag;
 import com.mowtiie.flashback.databinding.FragmentDeckListBinding;
+
+import androidx.core.view.MenuProvider;
+import androidx.lifecycle.Lifecycle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 
 import java.util.List;
 
@@ -47,19 +56,31 @@ public class DeckListFragment extends Fragment {
             navController.navigate(R.id.action_deckList_to_deckDetail, args);
         });
 
+        requireActivity().addMenuProvider(new MenuProvider() {
+            @Override
+            public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+                inflater.inflate(R.menu.menu_deck_list, menu);
+            }
+
+            @Override
+            public boolean onMenuItemSelected(@NonNull MenuItem item) {
+                if (item.getItemId() == R.id.action_statistics) {
+                    navController.navigate(R.id.action_deckList_to_statistics);
+                    return true;
+                }
+                return false;
+            }
+        }, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
+
         binding.deckList.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.deckList.setAdapter(adapter);
 
+        if (requireActivity() instanceof MainActivity) {
+            AppBarLift.attach(((MainActivity) requireActivity()).getAppBar(), binding.deckList);
+        }
+
         binding.addDeck.setOnClickListener(v ->
                 navController.navigate(R.id.action_deckList_to_deckEditor));
-
-        binding.toolbar.setOnMenuItemClickListener(item -> {
-            if (item.getItemId() == R.id.action_statistics) {
-                navController.navigate(R.id.action_deckList_to_statistics);
-                return true;
-            }
-            return false;
-        });
 
         binding.emptyState.emptyTitle.setText(R.string.decks_empty_title);
         binding.emptyState.emptyBody.setText(R.string.decks_empty_body);

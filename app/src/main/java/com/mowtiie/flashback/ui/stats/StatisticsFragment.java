@@ -10,15 +10,15 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+
+import com.mowtiie.flashback.MainActivity;
+import com.mowtiie.flashback.ui.AppBarLift;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.NavController;
-import androidx.navigation.fragment.NavHostFragment;
 
 import com.google.android.material.chip.Chip;
 import com.mowtiie.flashback.R;
 import com.mowtiie.flashback.data.model.CardStateBreakdown;
 import com.mowtiie.flashback.databinding.FragmentStatisticsBinding;
-import com.mowtiie.flashback.util.Toolbars;
 
 public class StatisticsFragment extends Fragment {
 
@@ -38,9 +38,6 @@ public class StatisticsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         viewModel = new ViewModelProvider(this).get(StatisticsViewModel.class);
 
-        NavController navController = NavHostFragment.findNavController(this);
-        Toolbars.setup(binding.toolbar, navController);
-
         binding.tileReviews.tileLabel.setText(R.string.stats_reviews_today);
         binding.tileStreak.tileLabel.setText(R.string.stats_streak);
         binding.tileRetention.tileLabel.setText(R.string.stats_retention);
@@ -52,6 +49,10 @@ public class StatisticsFragment extends Fragment {
         binding.emptyState.emptyAction.setVisibility(View.GONE);
 
         viewModel.getData().observe(getViewLifecycleOwner(), this::render);
+
+        if (requireActivity() instanceof MainActivity) {
+            AppBarLift.attach(((MainActivity) requireActivity()).getAppBar(), binding.statsScroll);
+        }
     }
 
     @Override

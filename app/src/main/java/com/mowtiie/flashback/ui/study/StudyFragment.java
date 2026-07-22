@@ -19,7 +19,6 @@ import com.google.android.material.snackbar.Snackbar;
 import com.mowtiie.flashback.R;
 import com.mowtiie.flashback.databinding.FragmentStudyBinding;
 import com.mowtiie.flashback.scheduler.Rating;
-import com.mowtiie.flashback.util.Toolbars;
 import com.mowtiie.flashback.util.ViewModelFactory;
 
 import java.util.concurrent.TimeUnit;
@@ -49,8 +48,9 @@ public class StudyFragment extends Fragment {
                 .get(StudyViewModel.class);
 
         NavController navController = NavHostFragment.findNavController(this);
-        Toolbars.setup(binding.toolbar, navController);
         binding.toolbar.setTitle(R.string.study_title);
+        binding.toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
+        binding.toolbar.setNavigationOnClickListener(v -> navController.navigateUp());
 
         binding.toolbar.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.action_undo) {

@@ -44,12 +44,9 @@ public class BarChartView extends View {
         labelGapPx = LABEL_GAP_DP * density;
         minBarPx = MIN_BAR_HEIGHT_DP * density;
 
-        int primary = MaterialColors.getColor(this,
-                com.google.android.material.R.attr.colorPrimaryFixed);
-        int track = MaterialColors.getColor(this,
-                com.google.android.material.R.attr.colorSurfaceVariant);
-        int onSurfaceVariant = MaterialColors.getColor(this,
-                com.google.android.material.R.attr.colorOnSurfaceVariant);
+        int primary = MaterialColors.getColor(this, com.google.android.material.R.attr.colorPrimaryFixed);
+        int track = MaterialColors.getColor(this, com.google.android.material.R.attr.colorSurfaceVariant);
+        int onSurfaceVariant = MaterialColors.getColor(this, com.google.android.material.R.attr.colorOnSurfaceVariant);
 
         barPaint.setColor(primary);
         trackPaint.setColor(track);

@@ -8,6 +8,9 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+
+import com.mowtiie.flashback.MainActivity;
+import com.mowtiie.flashback.ui.AppBarLift;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
@@ -45,6 +48,10 @@ public class TagsFragment extends Fragment {
 
         binding.tagList.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.tagList.setAdapter(adapter);
+
+        if (requireActivity() instanceof MainActivity) {
+            AppBarLift.attach(((MainActivity) requireActivity()).getAppBar(), binding.tagList);
+        }
 
         binding.addTag.setOnClickListener(v ->
                 navController.navigate(R.id.action_tags_to_tagEditor));

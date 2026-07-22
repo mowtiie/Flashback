@@ -9,6 +9,9 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+
+import com.mowtiie.flashback.MainActivity;
+import com.mowtiie.flashback.ui.AppBarLift;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
@@ -17,7 +20,6 @@ import com.google.android.material.chip.Chip;
 import com.mowtiie.flashback.R;
 import com.mowtiie.flashback.data.entity.Tag;
 import com.mowtiie.flashback.databinding.FragmentDeckEditorBinding;
-import com.mowtiie.flashback.util.Toolbars;
 import com.mowtiie.flashback.util.ViewModelFactory;
 
 import java.util.List;
@@ -54,9 +56,7 @@ public class DeckEditorFragment extends Fragment {
                 .get(DeckEditorViewModel.class);
 
         NavController navController = NavHostFragment.findNavController(this);
-
-        Toolbars.setup(binding.toolbar, navController);
-        binding.toolbar.setTitle(viewModel.isEditing()
+        requireActivity().setTitle(viewModel.isEditing()
                 ? R.string.deck_editor_edit_title : R.string.deck_editor_new_title);
 
         if (!viewModel.isEditing()) {
@@ -88,6 +88,10 @@ public class DeckEditorFragment extends Fragment {
         viewModel.getSelectedTagIds().observe(getViewLifecycleOwner(), ids -> applyChecks(ids));
 
         binding.saveDeck.setOnClickListener(v -> onSave());
+
+        if (requireActivity() instanceof MainActivity) {
+            AppBarLift.attach(((MainActivity) requireActivity()).getAppBar(), binding.deckEditorScroll);
+        }
     }
 
     /**

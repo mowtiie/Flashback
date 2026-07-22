@@ -18,6 +18,7 @@ import com.mowtiie.flashback.data.io.DeckArchive;
 import com.mowtiie.flashback.notifications.ReminderPreferences;
 import com.mowtiie.flashback.notifications.ReminderScheduler;
 import com.mowtiie.flashback.repository.FlashbackRepository;
+import com.mowtiie.flashback.theme.ThemePreferences;
 
 import java.io.IOException;
 
@@ -53,6 +54,7 @@ public class SettingsViewModel extends AndroidViewModel {
     private final FlashbackRepository repository;
     private final AppExecutors executors;
     private final ReminderPreferences reminderPrefs;
+    private final ThemePreferences themePrefs;
     private final ArchiveSerializer serializer = new ArchiveSerializer();
     private final ArchiveParser parser = new ArchiveParser();
 
@@ -68,8 +70,13 @@ public class SettingsViewModel extends AndroidViewModel {
         this.repository = FlashbackRepository.getInstance(application);
         this.executors = AppExecutors.getInstance();
         this.reminderPrefs = new ReminderPreferences(application);
+        this.themePrefs = new ThemePreferences(application);
         reminderEnabled.setValue(reminderPrefs.isEnabled());
         reminderTime.setValue(new int[]{reminderPrefs.getHour(), reminderPrefs.getMinute()});
+    }
+
+    public ThemePreferences themePrefs() {
+        return themePrefs;
     }
 
     public LiveData<Boolean> getReminderEnabled() {

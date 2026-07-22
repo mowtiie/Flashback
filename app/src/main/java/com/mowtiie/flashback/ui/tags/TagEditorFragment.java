@@ -9,6 +9,9 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+
+import com.mowtiie.flashback.MainActivity;
+import com.mowtiie.flashback.ui.AppBarLift;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
@@ -19,8 +22,14 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.mowtiie.flashback.R;
 import com.mowtiie.flashback.data.entity.Tag;
 import com.mowtiie.flashback.databinding.FragmentTagEditorBinding;
+
+import androidx.core.view.MenuProvider;
+import androidx.lifecycle.Lifecycle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+
 import com.mowtiie.flashback.util.TagChips;
-import com.mowtiie.flashback.util.Toolbars;
 import com.mowtiie.flashback.util.ViewModelFactory;
 
 public class TagEditorFragment extends Fragment {
@@ -54,18 +63,26 @@ public class TagEditorFragment extends Fragment {
                 .get(TagEditorViewModel.class);
 
         NavController navController = NavHostFragment.findNavController(this);
-        Toolbars.setup(binding.toolbar, navController);
 
         boolean editing = viewModel.isEditing();
-        binding.toolbar.setTitle(editing ? R.string.tag_edit_title : R.string.tag_new_title);
-        binding.toolbar.getMenu().findItem(R.id.action_delete_tag).setVisible(editing);
-        binding.toolbar.setOnMenuItemClickListener(item -> {
-            if (item.getItemId() == R.id.action_delete_tag) {
-                confirmDelete(navController);
-                return true;
+        requireActivity().setTitle(editing ? R.string.tag_edit_title : R.string.tag_new_title);
+
+        requireActivity().addMenuProvider(new MenuProvider() {
+            @Override
+            public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+                inflater.inflate(R.menu.menu_tag_editor, menu);
+                menu.findItem(R.id.action_delete_tag).setVisible(editing);
             }
-            return false;
-        });
+
+            @Override
+            public boolean onMenuItemSelected(@NonNull MenuItem item) {
+                if (item.getItemId() == R.id.action_delete_tag) {
+                    confirmDelete(navController);
+                    return true;
+                }
+                return false;
+            }
+        }, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
 
         swatchAdapter = new ColorSwatchAdapter(palette, palette[0],
                 colour -> viewModel.selectColour(colour));
@@ -103,6 +120,10 @@ public class TagEditorFragment extends Fragment {
         });
 
         binding.saveTag.setOnClickListener(v -> onSave());
+
+        if (requireActivity() instanceof MainActivity) {
+            AppBarLift.attach(((MainActivity) requireActivity()).getAppBar(), binding.tagEditorScroll);
+        }
     }
 
     private void updatePreview(int colour) {
