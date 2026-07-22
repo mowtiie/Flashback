@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="tag_red">#E5484D</color>
+    <color name="tag_orange">#F76B15</color>
+    <color name="tag_amber">#FFB224</color>
+    <color name="tag_lime">#7CB518</color>
+    <color name="tag_green">#30A46C</color>
+    <color name="tag_teal">#12A594</color>
+    <color name="tag_cyan">#00A2C7</color>
+    <color name="tag_blue">#3E63DD</color>
+    <color name="tag_indigo">#6E56CF</color>
+    <color name="tag_purple">#8E4EC6</color>
+    <color name="tag_pink">#D6409F</color>
+    <color name="tag_slate">#8B8D98</color>
+    <array name="tag_palette">
+        <item>@color/tag_red</item>
+        <item>@color/tag_orange</item>
+        <item>@color/tag_amber</item>
+        <item>@color/tag_lime</item>
+        <item>@color/tag_green</item>
+        <item>@color/tag_teal</item>
+        <item>@color/tag_cyan</item>
+        <item>@color/tag_blue</item>
+        <item>@color/tag_indigo</item>
+        <item>@color/tag_purple</item>
+        <item>@color/tag_pink</item>
+        <item>@color/tag_slate</item>
+    </array>
+</resources>
