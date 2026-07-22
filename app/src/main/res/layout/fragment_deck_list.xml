@@ -16,7 +16,8 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="@string/decks_title" />
+            app:title="@string/decks_title"
+            app:menu="@menu/menu_deck_list" />
 
         <!--
           Tag filter. The whole row is hidden until at least one tag exists, so

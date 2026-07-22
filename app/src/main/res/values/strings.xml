@@ -168,6 +168,32 @@
     <string name="interval_years">%1$sy</string>
     <string name="minutes_short">%1$d min</string>
 
+    <!-- Statistics -->
+    <string name="stats_title">Statistics</string>
+    <string name="stats_reviews_today">Reviews today</string>
+    <string name="stats_streak">Day streak</string>
+    <string name="stats_retention">Retention (30d)</string>
+    <string name="stats_time_today">Time today</string>
+    <string name="stats_activity_title">Activity</string>
+    <string name="stats_breakdown_title">Card breakdown</string>
+    <string name="stats_young">Young</string>
+    <string name="stats_mature">Mature</string>
+    <string name="stats_no_value">\u2014</string>
+    <string name="stats_percent">%1$d%%</string>
+    <string name="stats_minutes">%1$d min</string>
+    <string name="stats_hours">%1$s h</string>
+    <string name="stats_legend_entry">%1$s %2$d</string>
+    <string name="stats_empty_title">No progress yet</string>
+    <string name="stats_empty_body">Study some cards and your review history, streak, and retention will show up here.</string>
+    <plurals name="stats_streak_value">
+        <item quantity="one">%1$d</item>
+        <item quantity="other">%1$d</item>
+    </plurals>
+    <plurals name="stats_total_cards">
+        <item quantity="one">%1$d card</item>
+        <item quantity="other">%1$d cards</item>
+    </plurals>
+
     <!-- Shared -->
     <string name="action_cancel">Cancel</string>
     <string name="action_delete">Delete</string>

@@ -7,6 +7,7 @@ import androidx.room.Query;
 import androidx.room.Update;
 
 import com.mowtiie.flashback.data.entity.Card;
+import com.mowtiie.flashback.data.model.CardStateBreakdown;
 import com.mowtiie.flashback.data.model.StudyCard;
 
 import java.util.List;
@@ -72,4 +73,13 @@ public interface CardDao {
 
     @Query("UPDATE cards SET suspended = :suspended WHERE id = :cardId")
     void setSuspended(long cardId, boolean suspended);
+
+    /** One-row maturity breakdown for the statistics screen. Excludes suspended. */
+    @Query("SELECT "
+            + "SUM(CASE WHEN state = 0 THEN 1 ELSE 0 END) AS newCount, "
+            + "SUM(CASE WHEN state IN (1, 3) THEN 1 ELSE 0 END) AS learningCount, "
+            + "SUM(CASE WHEN state = 2 AND intervalDays < 21 THEN 1 ELSE 0 END) AS youngCount, "
+            + "SUM(CASE WHEN state = 2 AND intervalDays >= 21 THEN 1 ELSE 0 END) AS matureCount "
+            + "FROM cards WHERE suspended = 0")
+    CardStateBreakdown stateBreakdown();
 }

@@ -22,6 +22,8 @@ import com.mowtiie.flashback.data.entity.Note;
 import com.mowtiie.flashback.data.entity.ReviewLog;
 import com.mowtiie.flashback.data.entity.Tag;
 import com.mowtiie.flashback.data.model.DeckSummary;
+import com.mowtiie.flashback.data.model.CardStateBreakdown;
+import com.mowtiie.flashback.data.model.DailyCount;
 import com.mowtiie.flashback.data.model.DeckWithTags;
 import com.mowtiie.flashback.data.model.StudyCard;
 import com.mowtiie.flashback.data.model.TagWithCount;
@@ -359,6 +361,55 @@ public class FlashbackRepository {
                               Callback<ArchiveRepository.ImportResult> callback) {
         executors.diskIO().execute(
                 () -> postBack(callback, archiveRepository.importArchive(archive)));
+    }
+
+    // ----------------------------------------------------------- statistics
+    //
+    // Blocking reads for the statistics screen, run together on the disk
+    // executor by the ViewModel so the whole page is one consistent snapshot.
+
+    @androidx.annotation.WorkerThread
+    public int reviewsSinceBlocking(long since) {
+        return reviewLogDao.countSince(since);
+    }
+
+    @androidx.annotation.WorkerThread
+    public int correctSinceBlocking(long since) {
+        return reviewLogDao.countCorrectSince(since);
+    }
+
+    @androidx.annotation.WorkerThread
+    public long timeSpentSinceBlocking(long since) {
+        return reviewLogDao.sumTimeSpentSince(since);
+    }
+
+    @androidx.annotation.WorkerThread
+    public int totalReviewsBlocking() {
+        return reviewLogDao.totalReviews();
+    }
+
+    @androidx.annotation.WorkerThread
+    public java.util.List<String> recentStudyDaysBlocking() {
+        return reviewLogDao.recentStudyDays();
+    }
+
+    @androidx.annotation.WorkerThread
+    public java.util.List<DailyCount> dailyCountsSinceBlocking(long since) {
+        return reviewLogDao.dailyCountsSince(since);
+    }
+
+    @androidx.annotation.WorkerThread
+    public CardStateBreakdown cardStateBreakdownBlocking() {
+        return cardDao.stateBreakdown();
+    }
+
+    /** Runs an arbitrary aggregation on the disk thread. */
+    public void runOnDiskThread(Runnable task) {
+        executors.diskIO().execute(task);
+    }
+
+    public void postToMain(Runnable task) {
+        executors.mainThread().execute(task);
     }
 
     // ---------------------------------------------------------------- utils

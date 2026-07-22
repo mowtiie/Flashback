@@ -33,6 +33,9 @@ public interface ReviewLogDao {
     @Query("SELECT COALESCE(SUM(elapsedMs), 0) FROM review_log WHERE reviewedAt >= :since")
     LiveData<Long> observeTimeSpentSince(long since);
 
+    @Query("SELECT COALESCE(SUM(elapsedMs), 0) FROM review_log WHERE reviewedAt >= :since")
+    long sumTimeSpentSince(long since);
+
     /** Share of answers that were not AGAIN, i.e. retention. */
     @Query("SELECT COUNT(*) FROM review_log WHERE reviewedAt >= :since AND rating > 1")
     int countCorrectSince(long since);
@@ -42,6 +45,14 @@ public interface ReviewLogDao {
             + "COUNT(*) AS count FROM review_log "
             + "WHERE reviewedAt >= :since GROUP BY day ORDER BY day")
     LiveData<List<DailyCount>> observeDailyCounts(long since);
+
+    @Query("SELECT date(reviewedAt / 1000, 'unixepoch', 'localtime') AS day, "
+            + "COUNT(*) AS count FROM review_log "
+            + "WHERE reviewedAt >= :since GROUP BY day ORDER BY day")
+    List<DailyCount> dailyCountsSince(long since);
+
+    @Query("SELECT COUNT(*) FROM review_log")
+    int totalReviews();
 
     /** Distinct study days, newest first, for the streak calculation. */
     @Query("SELECT DISTINCT date(reviewedAt / 1000, 'unixepoch', 'localtime') AS day "

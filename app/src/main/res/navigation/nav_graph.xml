@@ -17,6 +17,9 @@
         <action
             android:id="@+id/action_deckList_to_deckEditor"
             app:destination="@id/deckEditorFragment" />
+        <action
+            android:id="@+id/action_deckList_to_statistics"
+            app:destination="@id/statisticsFragment" />
     </fragment>
 
     <fragment
@@ -93,6 +96,12 @@
             android:id="@+id/action_tags_to_tagEditor"
             app:destination="@id/tagEditorFragment" />
     </fragment>
+
+    <fragment
+        android:id="@+id/statisticsFragment"
+        android:name="com.mowtiie.flashback.ui.stats.StatisticsFragment"
+        android:label="@string/stats_title"
+        tools:layout="@layout/fragment_statistics" />
 
     <fragment
         android:id="@+id/tagEditorFragment"

@@ -53,6 +53,14 @@ public class DeckListFragment extends Fragment {
         binding.addDeck.setOnClickListener(v ->
                 navController.navigate(R.id.action_deckList_to_deckEditor));
 
+        binding.toolbar.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.action_statistics) {
+                navController.navigate(R.id.action_deckList_to_statistics);
+                return true;
+            }
+            return false;
+        });
+
         binding.emptyState.emptyTitle.setText(R.string.decks_empty_title);
         binding.emptyState.emptyBody.setText(R.string.decks_empty_body);
         binding.emptyState.emptyAction.setText(R.string.decks_empty_action);
