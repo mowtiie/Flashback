@@ -15,6 +15,8 @@ import com.mowtiie.flashback.data.io.ArchiveParser;
 import com.mowtiie.flashback.data.io.ArchiveRepository;
 import com.mowtiie.flashback.data.io.ArchiveSerializer;
 import com.mowtiie.flashback.data.io.DeckArchive;
+import com.mowtiie.flashback.notifications.ReminderPreferences;
+import com.mowtiie.flashback.notifications.ReminderScheduler;
 import com.mowtiie.flashback.repository.FlashbackRepository;
 
 import java.io.IOException;
@@ -50,6 +52,7 @@ public class SettingsViewModel extends AndroidViewModel {
 
     private final FlashbackRepository repository;
     private final AppExecutors executors;
+    private final ReminderPreferences reminderPrefs;
     private final ArchiveSerializer serializer = new ArchiveSerializer();
     private final ArchiveParser parser = new ArchiveParser();
 
@@ -57,11 +60,45 @@ public class SettingsViewModel extends AndroidViewModel {
     private final MutableLiveData<String> exportPayload = new MutableLiveData<>();
     private final MutableLiveData<Pending> pendingImport = new MutableLiveData<>();
     private final MutableLiveData<Event> event = new MutableLiveData<>();
+    private final MutableLiveData<Boolean> reminderEnabled = new MutableLiveData<>();
+    private final MutableLiveData<int[]> reminderTime = new MutableLiveData<>();
 
     public SettingsViewModel(@NonNull Application application) {
         super(application);
         this.repository = FlashbackRepository.getInstance(application);
         this.executors = AppExecutors.getInstance();
+        this.reminderPrefs = new ReminderPreferences(application);
+        reminderEnabled.setValue(reminderPrefs.isEnabled());
+        reminderTime.setValue(new int[]{reminderPrefs.getHour(), reminderPrefs.getMinute()});
+    }
+
+    public LiveData<Boolean> getReminderEnabled() {
+        return reminderEnabled;
+    }
+
+    public LiveData<int[]> getReminderTime() {
+        return reminderTime;
+    }
+
+    /**
+     * Turns reminders on or off. The fragment calls this only once any needed
+     * notification permission has been granted, so reaching here means the
+     * reminder can actually fire.
+     */
+    public void setReminderEnabled(boolean enabled) {
+        reminderPrefs.setEnabled(enabled);
+        reminderEnabled.setValue(enabled);
+        ReminderScheduler.schedule(getApplication());
+    }
+
+    public void setReminderTime(int hour, int minute) {
+        reminderPrefs.setTime(hour, minute);
+        reminderTime.setValue(new int[]{hour, minute});
+        // Only reschedule if reminders are on; storing the time while off just
+        // sets the default for when they are next enabled.
+        if (Boolean.TRUE.equals(reminderEnabled.getValue())) {
+            ReminderScheduler.schedule(getApplication());
+        }
     }
 
     public LiveData<Boolean> getWorking() {

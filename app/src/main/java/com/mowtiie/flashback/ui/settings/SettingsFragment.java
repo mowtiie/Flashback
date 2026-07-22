@@ -1,7 +1,13 @@
 package com.mowtiie.flashback.ui.settings;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.text.format.DateFormat;
+
+import java.util.Calendar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,10 +17,13 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.timepicker.MaterialTimePicker;
+import com.google.android.material.timepicker.TimeFormat;
 import com.google.android.material.textfield.TextInputEditText;
 import com.mowtiie.flashback.R;
 import com.mowtiie.flashback.databinding.DialogImportPasteBinding;
@@ -30,6 +39,7 @@ public class SettingsFragment extends Fragment {
 
     private ActivityResultLauncher<String> createDocument;
     private ActivityResultLauncher<String[]> openDocument;
+    private ActivityResultLauncher<String> requestNotifications;
 
     @Nullable
     @Override
@@ -45,6 +55,9 @@ public class SettingsFragment extends Fragment {
         viewModel = new ViewModelProvider(this).get(SettingsViewModel.class);
 
         registerLaunchers();
+
+        binding.reminderSwitch.setOnClickListener(v -> onReminderToggled());
+        binding.rowReminderTime.setOnClickListener(v -> showTimePicker());
 
         binding.rowExport.setOnClickListener(v -> viewModel.prepareExportAll());
         binding.rowImport.setOnClickListener(v -> chooseImportSource());
@@ -72,6 +85,69 @@ public class SettingsFragment extends Fragment {
                         viewModel.previewImportFromUri(uri);
                     }
                 });
+
+        requestNotifications = registerForActivityResult(
+                new ActivityResultContracts.RequestPermission(), granted -> {
+                    if (granted) {
+                        viewModel.setReminderEnabled(true);
+                    } else {
+                        // Reflect the real state: the switch cannot stay on if
+                        // the system will drop every notification.
+                        binding.reminderSwitch.setChecked(false);
+                        Snackbar.make(binding.getRoot(),
+                                R.string.reminder_permission_denied,
+                                Snackbar.LENGTH_LONG).show();
+                    }
+                });
+    }
+
+    /**
+     * Enabling reminders needs the POST_NOTIFICATIONS permission on Android 13+.
+     * Requesting it here, on an explicit opt-in, is the moment the user has
+     * shown they want reminders — better than asking at first launch.
+     */
+    private void onReminderToggled() {
+        boolean wantsOn = binding.reminderSwitch.isChecked();
+        if (!wantsOn) {
+            viewModel.setReminderEnabled(false);
+            return;
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                && ContextCompat.checkSelfPermission(requireContext(),
+                Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+            requestNotifications.launch(Manifest.permission.POST_NOTIFICATIONS);
+        } else {
+            viewModel.setReminderEnabled(true);
+        }
+    }
+
+    private void showTimePicker() {
+        int[] time = viewModel.getReminderTime().getValue();
+        int hour = time == null ? 20 : time[0];
+        int minute = time == null ? 0 : time[1];
+
+        int clockFormat = DateFormat.is24HourFormat(requireContext())
+                ? TimeFormat.CLOCK_24H : TimeFormat.CLOCK_12H;
+
+        MaterialTimePicker picker = new MaterialTimePicker.Builder()
+                .setTimeFormat(clockFormat)
+                .setHour(hour)
+                .setMinute(minute)
+                .setTitleText(R.string.reminder_time_title)
+                .build();
+
+        picker.addOnPositiveButtonClickListener(v ->
+                viewModel.setReminderTime(picker.getHour(), picker.getMinute()));
+        picker.show(getChildFragmentManager(), "reminder_time");
+    }
+
+    private void renderReminderTime(int hour, int minute) {
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.HOUR_OF_DAY, hour);
+        cal.set(Calendar.MINUTE, minute);
+        binding.reminderTimeValue.setText(
+                DateFormat.getTimeFormat(requireContext()).format(cal.getTime()));
     }
 
     private void chooseImportSource() {
@@ -137,6 +213,20 @@ public class SettingsFragment extends Fragment {
         viewModel.getWorking().observe(getViewLifecycleOwner(), working ->
                 binding.progress.setVisibility(
                         Boolean.TRUE.equals(working) ? View.VISIBLE : View.GONE));
+
+        viewModel.getReminderEnabled().observe(getViewLifecycleOwner(), enabled -> {
+            boolean on = Boolean.TRUE.equals(enabled);
+            binding.reminderSwitch.setChecked(on);
+            // The time row is meaningless while reminders are off.
+            binding.rowReminderTime.setEnabled(on);
+            binding.rowReminderTime.setAlpha(on ? 1f : 0.5f);
+        });
+
+        viewModel.getReminderTime().observe(getViewLifecycleOwner(), time -> {
+            if (time != null) {
+                renderReminderTime(time[0], time[1]);
+            }
+        });
     }
 
     private void showImportPreview(SettingsViewModel.Pending pending) {

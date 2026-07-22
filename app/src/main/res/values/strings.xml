@@ -106,7 +106,19 @@
     <string name="settings_import_title">Import decks</string>
     <string name="settings_import_body">Add decks from a JSON file or pasted text.</string>
     <string name="settings_format_note">Exports contain your decks, tags, and cards, but not review progress. Imported cards start fresh.</string>
-    <string name="settings_more_coming">Reminder times and study limits will appear here in a later version.</string>
+    <string name="settings_more_coming">More study options will appear here in a later version.</string>
+    <string name="settings_reminders_header">Reminders</string>
+    <string name="reminder_toggle_title">Daily study reminder</string>
+    <string name="reminder_toggle_body">A once-a-day nudge when you have cards to review.</string>
+    <string name="reminder_time_title">Reminder time</string>
+    <string name="reminder_permission_denied">Notifications are turned off for Flashback. Enable them in system settings to get reminders.</string>
+    <string name="reminder_channel_name">Study reminders</string>
+    <string name="reminder_channel_body">The daily nudge to review your due cards.</string>
+    <string name="reminder_title">Time to study</string>
+    <plurals name="reminder_body">
+        <item quantity="one">%1$d card is waiting for review.</item>
+        <item quantity="other">%1$d cards are waiting for review.</item>
+    </plurals>
 
     <!-- Import / export flow -->
     <string name="export_all_filename">flashback-decks.json</string>

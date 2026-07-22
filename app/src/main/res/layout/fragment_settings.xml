@@ -2,6 +2,7 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -33,6 +34,87 @@
             <com.google.android.material.textview.MaterialTextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:text="@string/settings_reminders_header"
+                android:textAppearance="?attr/textAppearanceTitleSmall"
+                android:textColor="?attr/colorPrimary" />
+
+            <com.google.android.material.card.MaterialCardView
+                style="?attr/materialCardViewOutlinedStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_sm">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <LinearLayout style="@style/Widget.Flashback.SettingsRow"
+                        android:id="@+id/rowReminderToggle"
+                        android:clickable="false">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <com.google.android.material.textview.MaterialTextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/reminder_toggle_title"
+                                android:textAppearance="?attr/textAppearanceBodyLarge" />
+
+                            <com.google.android.material.textview.MaterialTextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/reminder_toggle_body"
+                                android:textAppearance="?attr/textAppearanceBodySmall"
+                                android:textColor="?attr/colorOnSurfaceVariant" />
+                        </LinearLayout>
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/reminderSwitch"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/spacing_md" />
+                    </LinearLayout>
+
+                    <View style="@style/Widget.Flashback.SettingsDivider" />
+
+                    <LinearLayout style="@style/Widget.Flashback.SettingsRow"
+                        android:id="@+id/rowReminderTime">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <com.google.android.material.textview.MaterialTextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/reminder_time_title"
+                                android:textAppearance="?attr/textAppearanceBodyLarge" />
+
+                            <com.google.android.material.textview.MaterialTextView
+                                android:id="@+id/reminderTimeValue"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="?attr/textAppearanceBodySmall"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                tools:text="8:00 PM" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.textview.MaterialTextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_lg"
                 android:text="@string/settings_data_header"
                 android:textAppearance="?attr/textAppearanceTitleSmall"
                 android:textColor="?attr/colorPrimary" />

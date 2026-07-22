@@ -338,6 +338,12 @@ public class FlashbackRepository {
                 () -> postBack(callback, cardDao.countDueEverywhere(now)));
     }
 
+    /** For the reminder worker, which already runs off the main thread. */
+    @androidx.annotation.WorkerThread
+    public int countDueEverywhereBlocking(long now) {
+        return cardDao.countDueEverywhere(now);
+    }
+
     // ------------------------------------------------------- import/export
 
     public void exportAll(Callback<DeckArchive> callback) {
