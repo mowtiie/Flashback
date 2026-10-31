@@ -1,6 +1,8 @@
 package com.mowtiie.flashback.ui.notes
 
 import com.mowtiie.flashback.data.entity.Note
+import com.mowtiie.flashback.data.model.NoteChoices
+import com.mowtiie.flashback.ui.study.AnswerMode
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -81,5 +83,78 @@ class NoteEditorFormTest {
 
         assertEquals(note, form.applyTo(note))
         assertTrue(form.suspended)
+    }
+
+    @Test
+    fun aNoteWithoutATypeStaysWithoutOne() {
+        val note = NoteEditorForm(front = "a", back = "b").toNewNote(deckId = 1)
+        assertNull(note.answerMode)
+        assertNull(note.choices)
+    }
+
+    @Test
+    fun aChoiceNoteStoresItsWrongOptionsTrimmedAndWithoutBlanks() {
+        val form = NoteEditorForm(
+            front = "Capital of France?",
+            back = "Paris",
+            answerMode = AnswerMode.Choice,
+            wrongOptions = listOf(" Rome ", "", "Madrid"),
+        )
+
+        val note = form.toNewNote(deckId = 1)
+
+        assertEquals(AnswerMode.Choice.value, note.answerMode)
+        assertEquals(listOf("Rome", "Madrid"), NoteChoices.parse(note.choices))
+    }
+
+    @Test
+    fun wrongOptionsAreDroppedWhenTheTypeIsNotChoice() {
+        val form = NoteEditorForm(
+            front = "a",
+            back = "b",
+            answerMode = AnswerMode.Type,
+            wrongOptions = listOf("x", "y", "z"),
+        )
+
+        val note = form.toNewNote(deckId = 1)
+
+        assertEquals(AnswerMode.Type.value, note.answerMode)
+        assertNull(note.choices)
+    }
+
+    @Test
+    fun editingKeepsTheNoteAndLoadsItsTypeAndOptions() {
+        val existing = Note(
+            id = 5, deckId = 2, front = "q", back = "a",
+            answerMode = AnswerMode.Choice.value, choices = NoteChoices.encode(listOf("x", "y")),
+        )
+
+        val form = NoteEditorForm.from(existing, suspended = false)
+
+        assertEquals(AnswerMode.Choice, form.answerMode)
+        assertEquals(listOf("x", "y", ""), form.wrongOptions)
+        val saved = form.copy(back = "a2").applyTo(existing)
+        assertEquals(5L, saved.id)
+        assertEquals(listOf("x", "y"), NoteChoices.parse(saved.choices))
+    }
+
+    @Test
+    fun typeAndOptionChangesAreEdits() {
+        val clean = NoteEditorForm(front = "a", back = "b")
+
+        assertFalse(clean.normalized() == clean.copy(answerMode = AnswerMode.Type).normalized())
+        val choice = clean.copy(answerMode = AnswerMode.Choice)
+        assertFalse(choice.normalized() == choice.copy(wrongOptions = listOf("x", "", "")).normalized())
+    }
+
+    @Test
+    fun nextCardKeepsTheTypeButNotTheOptions() {
+        val form = NoteEditorForm(
+            front = "a", back = "b", answerMode = AnswerMode.Choice, wrongOptions = listOf("x", "y", "z"),
+        ).clearedForNext()
+
+        assertEquals(AnswerMode.Choice, form.answerMode)
+        assertEquals(listOf("", "", ""), form.wrongOptions)
+        assertEquals("", form.front)
     }
 }

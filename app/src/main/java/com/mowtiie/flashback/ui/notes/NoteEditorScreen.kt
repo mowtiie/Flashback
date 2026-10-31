@@ -43,6 +43,8 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mowtiie.flashback.R
+import com.mowtiie.flashback.ui.settings.ChoiceRow
+import com.mowtiie.flashback.ui.study.AnswerMode
 import com.mowtiie.flashback.repository.FlashbackRepository
 import com.mowtiie.flashback.theme.FlashbackTheme
 import com.mowtiie.flashback.ui.components.DeleteDialog
@@ -85,6 +87,8 @@ fun NoteEditorRoute(
         onFrontChange = viewModel::onFrontChange,
         onBackChange = viewModel::onBackChange,
         onReverseChange = viewModel::onReverseChange,
+        onAnswerModeChange = viewModel::onAnswerModeChange,
+        onWrongOptionChange = viewModel::onWrongOptionChange,
         onSuspendedChange = viewModel::onSuspendedChange,
         onSave = { viewModel.save(addAnother = false) },
         onSaveAndAdd = { viewModel.save(addAnother = true) },
@@ -122,6 +126,8 @@ fun NoteEditorScreen(
     onFrontChange: (String) -> Unit,
     onBackChange: (String) -> Unit,
     onReverseChange: (Boolean) -> Unit,
+    onAnswerModeChange: (AnswerMode?) -> Unit,
+    onWrongOptionChange: (Int, String) -> Unit,
     onSuspendedChange: (Boolean) -> Unit,
     onSave: () -> Unit,
     onSaveAndAdd: () -> Unit,
@@ -206,6 +212,8 @@ fun NoteEditorScreen(
                     .padding(top = 16.dp),
             )
 
+            AnswerTypeSection(form, onAnswerModeChange, onWrongOptionChange)
+
             SwitchRow(
                 label = stringResource(R.string.note_reverse),
                 help = stringResource(R.string.note_reverse_help),
@@ -287,7 +295,8 @@ private fun NoteEditorNewPreview() {
             state = NoteEditorUiState(ready = true, form = NoteEditorForm(reverseEnabled = true)),
             frontFocus = remember { FocusRequester() },
             onBack = {}, onDelete = {}, onFrontChange = {}, onBackChange = {},
-            onReverseChange = {}, onSuspendedChange = {}, onSave = {}, onSaveAndAdd = {},
+            onReverseChange = {}, onAnswerModeChange = {}, onWrongOptionChange = { _, _ -> },
+            onSuspendedChange = {}, onSave = {}, onSaveAndAdd = {},
         )
     }
 }
@@ -305,7 +314,55 @@ private fun NoteEditorEditPreview() {
             ),
             frontFocus = remember { FocusRequester() },
             onBack = {}, onDelete = {}, onFrontChange = {}, onBackChange = {},
-            onReverseChange = {}, onSuspendedChange = {}, onSave = {}, onSaveAndAdd = {},
+            onReverseChange = {}, onAnswerModeChange = {}, onWrongOptionChange = { _, _ -> },
+            onSuspendedChange = {}, onSave = {}, onSaveAndAdd = {},
         )
+    }
+}
+
+@Composable
+private fun AnswerTypeSection(
+    form: NoteEditorForm,
+    onAnswerModeChange: (AnswerMode?) -> Unit,
+    onWrongOptionChange: (Int, String) -> Unit,
+) {
+    ChoiceRow(
+        title = stringResource(R.string.note_answer_type),
+        options = listOf<AnswerMode?>(null) + AnswerMode.entries,
+        selected = form.answerMode,
+        label = {
+            stringResource(
+                when (it) {
+                    null -> R.string.note_answer_type_default
+                    AnswerMode.Flip -> R.string.answer_mode_flip
+                    AnswerMode.Type -> R.string.answer_mode_type
+                    AnswerMode.Choice -> R.string.answer_mode_choice
+                },
+            )
+        },
+        onSelect = onAnswerModeChange,
+        hint = stringResource(
+            when (form.answerMode) {
+                null -> R.string.note_answer_type_default_help
+                AnswerMode.Flip -> R.string.note_answer_type_flip_help
+                AnswerMode.Type -> R.string.note_answer_type_type_help
+                AnswerMode.Choice -> R.string.note_answer_type_choice_help
+            },
+        ),
+        modifier = Modifier.padding(top = 24.dp),
+    )
+
+    if (form.answerMode == AnswerMode.Choice) {
+        form.wrongOptions.forEachIndexed { index, option ->
+            OutlinedTextField(
+                value = option,
+                onValueChange = { onWrongOptionChange(index, it) },
+                label = { Text(stringResource(R.string.note_wrong_option, index + 1)) },
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+            )
+        }
     }
 }

@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mowtiie.flashback.data.entity.Note
 import com.mowtiie.flashback.repository.FlashbackRepository
+import com.mowtiie.flashback.ui.study.AnswerMode
 import com.mowtiie.flashback.ui.navigation.Routes
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -112,6 +113,12 @@ class NoteEditorViewModel(
     }
 
     fun onReverseChange(value: Boolean) = form.update { it.copy(reverseEnabled = value) }
+
+    fun onAnswerModeChange(mode: AnswerMode?) = form.update { it.copy(answerMode = mode) }
+
+    fun onWrongOptionChange(index: Int, value: String) = form.update { current ->
+        current.copy(wrongOptions = current.wrongOptions.mapIndexed { i, old -> if (i == index) value else old })
+    }
 
     fun onSuspendedChange(value: Boolean) = form.update { it.copy(suspended = value) }
 

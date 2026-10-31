@@ -300,4 +300,11 @@
     <string name="generator_count_few">Few (%1$d)</string>
     <string name="generator_count_normal">Normal (%1$d)</string>
     <string name="generator_count_many">Many (%1$d)</string>
+    <string name="note_answer_type">How to study this card</string>
+    <string name="note_answer_type_default">Default</string>
+    <string name="note_answer_type_default_help">Follows the answer mode in Settings.</string>
+    <string name="note_answer_type_flip_help">Flip the card and rate yourself.</string>
+    <string name="note_answer_type_type_help">Type the answer. It is checked ignoring case, accents, and small typos.</string>
+    <string name="note_answer_type_choice_help">Pick the answer from options. Leave the wrong answers blank to borrow answers from other cards in the deck.</string>
+    <string name="note_wrong_option">Wrong answer %1$d</string>
 </resources>
