@@ -1,169 +1,145 @@
 package com.mowtiie.flashback.ui.navigation
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationRail
+import androidx.compose.material3.NavigationRailItem
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
-import androidx.navigation.NavBackStackEntry
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavDestination
+import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
 import com.mowtiie.flashback.AppContainer
-import com.mowtiie.flashback.R
-import com.mowtiie.flashback.ui.decks.DeckDetailRoute
-import com.mowtiie.flashback.ui.decks.DeckDetailViewModel
-import com.mowtiie.flashback.ui.decks.DeckEditorRoute
-import com.mowtiie.flashback.ui.decks.DeckEditorViewModel
-import com.mowtiie.flashback.ui.decks.DeckListRoute
-import com.mowtiie.flashback.ui.decks.DeckListViewModel
+import com.mowtiie.flashback.ui.AppMessenger
+
+/** Width at which the bottom bar becomes a side rail, whatever the orientation. */
+private val RAIL_MIN_WIDTH = 600.dp
 
 @Composable
 fun FlashbackNavHost(
     container: AppContainer,
     navController: NavHostController = rememberNavController(),
 ) {
-    Box(Modifier.fillMaxSize()) {
-        NavHost(navController = navController, startDestination = Routes.DECKS) {
-            deckDestinations(container, navController)
-            placeholderDestinations(navController)
-        }
-        MessageHost(container, Modifier.align(Alignment.BottomCenter))
-    }
-}
+    val backStackEntry by navController.currentBackStackEntryAsState()
+    val topLevel = backStackEntry?.destination?.topLevel()
+    val snackbarHostState = remember { SnackbarHostState() }
 
-private fun androidx.navigation.NavGraphBuilder.deckDestinations(
-    container: AppContainer,
-    navController: NavHostController,
-) {
-    composable(Routes.DECKS) {
-        val viewModel: DeckListViewModel = viewModel(
-            factory = viewModelFactory {
-                initializer { DeckListViewModel(container.repository) }
-            },
-        )
-        DeckListRoute(
-            viewModel = viewModel,
-            onOpenDeck = { navController.navigate(Routes.deckDetail(it)) },
-            onStudyDeck = { navController.navigate(Routes.study(it)) },
-            onAddDeck = { navController.navigate(Routes.deckEditor()) },
-        )
-    }
+    MessageEffect(container.messenger, snackbarHostState)
 
-    composable(
-        route = Routes.DECK_DETAIL,
-        arguments = listOf(navArgument(Routes.DECK_ID) { type = NavType.LongType }),
-    ) { entry ->
-        val deckId = entry.longArgument(Routes.DECK_ID)
-        val viewModel: DeckDetailViewModel = viewModel(
-            factory = viewModelFactory {
-                initializer { DeckDetailViewModel(container.repository, deckId) }
-            },
-        )
-        DeckDetailRoute(
-            viewModel = viewModel,
-            onBack = { navController.popBackStack() },
-            onEditDeck = { navController.navigate(Routes.deckEditor(deckId)) },
-            onAddNote = { navController.navigate(Routes.noteEditor(deckId)) },
-            onOpenNote = { navController.navigate(Routes.noteEditor(deckId, it)) },
-            onStudy = { navController.navigate(Routes.study(deckId)) },
-            onDeleted = { _, undo ->
-                navController.popBackStack()
-                container.messenger.showWithAction(R.string.deck_deleted, R.string.study_undo) {
-                    undo.undo()
+    BoxWithConstraints {
+        val wide = maxWidth >= RAIL_MIN_WIDTH
+        val showRail = topLevel != null && wide
+        val showBar = topLevel != null && !wide
+
+        Row {
+            if (showRail) {
+                NavigationRail {
+                    TopLevelDestination.entries.forEach { destination ->
+                        NavigationRailItem(
+                            selected = destination == topLevel,
+                            onClick = { navController.navigateTopLevel(destination) },
+                            icon = { Icon(painterResource(destination.icon), null) },
+                            label = { Text(stringResource(destination.label)) },
+                        )
+                    }
                 }
-            },
-        )
-    }
+            }
 
-    composable(
-        route = Routes.DECK_EDITOR,
-        arguments = listOf(
-            navArgument(Routes.DECK_ID) {
-                type = NavType.LongType
-                defaultValue = Routes.NEW_ID
-            },
-        ),
-    ) { entry ->
-        val deckId = entry.longArgument(Routes.DECK_ID)
-        val viewModel: DeckEditorViewModel = viewModel(
-            factory = viewModelFactory {
-                initializer { DeckEditorViewModel(container.repository, deckId) }
-            },
-        )
-        DeckEditorRoute(
-            viewModel = viewModel,
-            onClose = { navController.popBackStack() },
-            onSaved = {
-                navController.popBackStack()
-                container.messenger.show(R.string.deck_saved)
-            },
-            onNewTag = { navController.navigate(Routes.tagEditor()) },
-        )
+            Scaffold(
+                modifier = Modifier
+                    .weight(1f)
+                    .then(
+                        if (showRail) {
+                            Modifier.consumeWindowInsets(
+                                WindowInsets.systemBars.only(WindowInsetsSides.Start),
+                            )
+                        } else {
+                            Modifier
+                        },
+                    ),
+                // Each screen's own Scaffold handles the status bar; this one only hosts the bar.
+                contentWindowInsets = WindowInsets(0),
+                bottomBar = {
+                    if (showBar) {
+                        NavigationBar {
+                            TopLevelDestination.entries.forEach { destination ->
+                                NavigationBarItem(
+                                    selected = destination == topLevel,
+                                    onClick = { navController.navigateTopLevel(destination) },
+                                    icon = { Icon(painterResource(destination.icon), null) },
+                                    label = { Text(stringResource(destination.label)) },
+                                )
+                            }
+                        }
+                    }
+                },
+                snackbarHost = {
+                    SnackbarHost(
+                        hostState = snackbarHostState,
+                        // With a bottom bar the Scaffold already lifts it clear of the nav bar.
+                        modifier = if (showBar) Modifier else Modifier.navigationBarsPadding().imePadding(),
+                    )
+                },
+            ) { inner ->
+                NavHost(
+                    navController = navController,
+                    startDestination = Routes.DECKS,
+                    modifier = Modifier
+                        .padding(inner)
+                        .consumeWindowInsets(inner),
+                ) {
+                    flashbackGraph(container, navController)
+                }
+            }
+        }
     }
 }
 
-// Placeholders until each screen is ported.
-private fun androidx.navigation.NavGraphBuilder.placeholderDestinations(
-    navController: NavHostController,
-) {
-    composable(
-        route = Routes.NOTE_EDITOR,
-        arguments = listOf(
-            navArgument(Routes.DECK_ID) { type = NavType.LongType },
-            navArgument(Routes.NOTE_ID) {
-                type = NavType.LongType
-                defaultValue = Routes.NEW_ID
-            },
-        ),
-    ) {
-        PlaceholderScreen(Routes.NOTE_EDITOR, onBack = navController::popBackStack)
-    }
-    composable(
-        route = Routes.TAG_EDITOR,
-        arguments = listOf(
-            navArgument(Routes.TAG_ID) {
-                type = NavType.LongType
-                defaultValue = Routes.NEW_ID
-            },
-        ),
-    ) {
-        PlaceholderScreen(Routes.TAG_EDITOR, onBack = navController::popBackStack)
-    }
-    composable(
-        route = Routes.STUDY,
-        arguments = listOf(navArgument(Routes.DECK_ID) { type = NavType.LongType }),
-    ) {
-        PlaceholderScreen(Routes.STUDY, onBack = navController::popBackStack)
+private fun NavDestination.topLevel(): TopLevelDestination? =
+    TopLevelDestination.entries.firstOrNull { top -> hierarchy.any { it.route == top.route } }
+
+private fun NavHostController.navigateTopLevel(destination: TopLevelDestination) {
+    navigate(destination.route) {
+        popUpTo(graph.startDestinationId) { saveState = true }
+        launchSingleTop = true
+        restoreState = true
     }
 }
 
-private fun NavBackStackEntry.longArgument(key: String): Long =
-    requireNotNull(arguments) { "Missing arguments for $key" }.getLong(key)
-
-/** Lives above the nav host so a message survives the screen that raised it being popped. */
+/** Messages outlive the screen that raised them, e.g. "Deck deleted" after the detail screen pops. */
 @Composable
-private fun MessageHost(container: AppContainer, modifier: Modifier = Modifier) {
-    val hostState = remember { SnackbarHostState() }
+private fun MessageEffect(messenger: AppMessenger, hostState: SnackbarHostState) {
     val context = LocalContext.current
 
-    LaunchedEffect(container, context) {
-        container.messenger.messages.collect { message ->
+    LaunchedEffect(messenger, context) {
+        messenger.messages.collect { message ->
             val result = hostState.showSnackbar(
                 message = context.getString(message.text),
                 actionLabel = message.actionLabel?.let(context::getString),
@@ -178,6 +154,4 @@ private fun MessageHost(container: AppContainer, modifier: Modifier = Modifier) 
             }
         }
     }
-
-    SnackbarHost(hostState, modifier.navigationBarsPadding().imePadding())
 }

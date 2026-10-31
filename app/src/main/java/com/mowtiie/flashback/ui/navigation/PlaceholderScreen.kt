@@ -19,17 +19,19 @@ import com.mowtiie.flashback.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun PlaceholderScreen(title: String, onBack: () -> Unit) {
+internal fun PlaceholderScreen(title: String, onBack: (() -> Unit)? = null) {
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(title) },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.navigate_up),
-                        )
+                    if (onBack != null) {
+                        IconButton(onClick = onBack) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = stringResource(R.string.navigate_up),
+                            )
+                        }
                     }
                 },
             )

@@ -9,6 +9,9 @@ object Routes {
     const val NEW_ID = -1L
 
     const val DECKS = "decks"
+    const val TAGS = "tags"
+    const val STATS = "stats"
+    const val SETTINGS = "settings"
     const val DECK_DETAIL = "decks/{$DECK_ID}"
     const val DECK_EDITOR = "deck-editor?$DECK_ID={$DECK_ID}"
     const val NOTE_EDITOR = "note-editor/{$DECK_ID}?$NOTE_ID={$NOTE_ID}"
