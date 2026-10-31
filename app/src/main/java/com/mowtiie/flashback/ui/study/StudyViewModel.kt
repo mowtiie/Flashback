@@ -64,6 +64,8 @@ sealed interface StudyEvent {
     data object Undone : StudyEvent
 
     data object CardSuspended : StudyEvent
+
+    class EditCard(val noteId: Long) : StudyEvent
 }
 
 class StudyViewModel(
@@ -97,6 +99,7 @@ class StudyViewModel(
     private var cardShownAt = 0L
     private var answeredThisSession = 0
     private var busy = false
+    private var awaitingEdit = false
 
     private val _uiState = MutableStateFlow(StudyUiState(answerMode = answerMode))
     val uiState: StateFlow<StudyUiState> = _uiState.asStateFlow()
@@ -223,8 +226,20 @@ class StudyViewModel(
         show(card)
     }
 
-    /** Call after the card was edited elsewhere. */
-    fun refreshCurrent() {
+    fun editCard() {
+        val card = current ?: return
+        awaitingEdit = true
+        events.trySend(StudyEvent.EditCard(card.card.noteId))
+    }
+
+    /** Call on every resume; it only does something when the card was just sent off to be edited. */
+    fun onResumed() {
+        if (!awaitingEdit) return
+        awaitingEdit = false
+        refreshCurrent()
+    }
+
+    private fun refreshCurrent() {
         val card = current ?: return
         viewModelScope.launch {
             val note = data.getNote(card.card.noteId)

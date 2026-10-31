@@ -406,9 +406,31 @@ class StudyViewModelTest {
         val vm = viewModel(data)
         data.storedNote = Note(id = 1, deckId = 1, front = "edited front", back = "edited back")
 
-        vm.refreshCurrent()
+        vm.editCard()
+        vm.onResumed()
 
         assertEquals(StudyCardUi("edited front", "edited back"), vm.uiState.value.card)
+    }
+
+    @Test
+    fun resumingWithoutHavingEditedLeavesTheCardAlone() {
+        val data = FakeData(cards = listOf(card(1)))
+        val vm = viewModel(data)
+        data.storedNote = Note(id = 1, deckId = 1, front = "edited front", back = "edited back")
+
+        vm.onResumed()
+
+        assertEquals(StudyCardUi("front1", "back1"), vm.uiState.value.card)
+    }
+
+    @Test
+    fun editingAsksTheScreenToOpenTheNote() = runTest {
+        val vm = viewModel(FakeData(cards = listOf(card(1, noteId = 42))))
+
+        vm.editCard()
+
+        val event = vm.eventFlow.first() as StudyEvent.EditCard
+        assertEquals(42L, event.noteId)
     }
 
     @Test
@@ -417,7 +439,8 @@ class StudyViewModelTest {
         val vm = viewModel(data)
         data.storedNote = null
 
-        vm.refreshCurrent()
+        vm.editCard()
+        vm.onResumed()
 
         assertEquals("front2", vm.uiState.value.card?.question)
     }
