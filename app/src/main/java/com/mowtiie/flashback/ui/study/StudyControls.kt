@@ -41,6 +41,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mowtiie.flashback.R
+import com.mowtiie.flashback.ui.components.errorTrailingIcon
 import com.mowtiie.flashback.scheduler.Rating
 import com.mowtiie.flashback.util.Interval
 import java.util.Locale
@@ -132,6 +133,7 @@ private fun TypeAnswerField(state: StudyUiState, actions: StudyActions) {
         label = { Text(stringResource(R.string.study_type_hint)) },
         readOnly = result != null,
         isError = result == AnswerChecker.Result.WRONG,
+        trailingIcon = errorTrailingIcon(result == AnswerChecker.Result.WRONG),
         supportingText = result?.let {
             {
                 Text(

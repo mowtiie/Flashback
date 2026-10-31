@@ -5,8 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -53,7 +52,7 @@ internal fun Working(state: GeneratorUiState, onCancel: () -> Unit) {
                 )
             }
         } else {
-            CircularProgressIndicator()
+            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
             Text(
                 text = stringResource(R.string.generator_working),
                 style = MaterialTheme.typography.bodyLarge,
@@ -118,7 +117,7 @@ internal fun SectionSummary(state: GeneratorUiState, enabled: Boolean, onRetry: 
                             style = MaterialTheme.typography.bodySmall,
                         )
                     }
-                    Button(onClick = onRetry, enabled = enabled, modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
+                    FilledTonalButton(onClick = onRetry, enabled = enabled, modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
                         Text(
                             pluralStringResource(
                                 R.plurals.generator_retry,

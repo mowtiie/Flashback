@@ -215,7 +215,7 @@
     <string name="note_reverse">Also ask back to front</string>
     <string name="note_reverse_help">Schedules a second card that shows the back first. The two are scheduled independently.</string>
     <string name="note_save">Save</string>
-    <string name="note_save_and_add">Save and add another</string>
+    <string name="note_save_and_add">Save and add</string>
     <string name="note_front_required">Enter the front of the card</string>
     <string name="note_back_required">Enter the back of the card</string>
     <string name="note_saved">Card saved</string>
@@ -294,7 +294,7 @@
     <string name="generator_privacy_gemini">What you add here, text or a whole PDF, is sent to Google to make the cards. On the free tier Google may use it to improve its products, so do not add anything private. Review the cards before saving, since they can contain mistakes.</string>
     <string name="settings_generator_note_anthropic">Optional. Text or PDFs you generate cards from are sent to Anthropic using your own key, which is paid. Nothing else leaves the app. The key stays on this device and is left out of backups.</string>
     <string name="settings_generator_note_gemini">Optional. Text or PDFs you generate cards from are sent to Google using your own key. Google offers a free tier, but on it Google may use what you send to improve its products. Nothing else leaves the app. The key stays on this device and is left out of backups.</string>
-    <string name="generator_pdf_choose">Choose a PDF instead</string>
+    <string name="generator_pdf_choose">Use a PDF</string>
     <string name="generator_pdf_remove">Remove %1$s</string>
     <string name="generator_count_title">Most cards to make</string>
     <string name="generator_count_few">Few (%1$d)</string>
@@ -344,7 +344,7 @@
     <string name="prompt_copied">Prompt copied</string>
     <string name="prompt_share">Share prompt</string>
     <string name="prompt_share_chooser">Share prompt</string>
-    <string name="prompt_import">I have the file, import it</string>
+    <string name="prompt_import">Import the file</string>
     <string name="prompt_import_hint">In Settings, choose Import decks, then From a file. If the website only shows the JSON, copy it and choose Paste text.</string>
 
     <string name="generator_size">%1$s characters</string>
@@ -377,4 +377,5 @@
     <string name="note_section_study">Study options</string>
     <string name="deck_detail_counts">%1$d new · %2$d learning · %3$d due</string>
     <string name="new_deck_ai_section">With AI</string>
+    <string name="field_error">Error</string>
 </resources>

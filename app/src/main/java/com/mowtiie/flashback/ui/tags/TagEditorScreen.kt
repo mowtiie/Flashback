@@ -55,6 +55,7 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mowtiie.flashback.R
+import com.mowtiie.flashback.ui.components.errorTrailingIcon
 import com.mowtiie.flashback.ui.components.SectionTitle
 import com.mowtiie.flashback.ui.components.asHeading
 import com.mowtiie.flashback.data.entity.Tag
@@ -181,6 +182,7 @@ fun TagEditorScreen(
                 onValueChange = onNameChange,
                 label = { Text(stringResource(R.string.tag_name)) },
                 isError = state.nameRequired || state.nameTaken,
+                trailingIcon = errorTrailingIcon(state.nameRequired || state.nameTaken),
                 supportingText = when {
                     state.nameRequired -> {
                         { Text(stringResource(R.string.tag_name_required)) }

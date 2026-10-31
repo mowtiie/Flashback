@@ -52,7 +52,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mowtiie.flashback.R
-import com.mowtiie.flashback.ui.settings.SwitchRow
+import com.mowtiie.flashback.ui.components.errorTrailingIcon
+import com.mowtiie.flashback.ui.settings.CheckboxRow
 import com.mowtiie.flashback.ui.settings.SettingsCard
 import com.mowtiie.flashback.ui.settings.RowDivider
 import com.mowtiie.flashback.ui.components.SectionTitle
@@ -165,6 +166,7 @@ fun DeckEditorScreen(
                 onValueChange = onNameChange,
                 label = { Text(stringResource(R.string.deck_name)) },
                 isError = state.errors.nameRequired,
+                trailingIcon = errorTrailingIcon(state.errors.nameRequired),
                 supportingText = if (state.errors.nameRequired) {
                     { Text(stringResource(R.string.deck_name_required)) }
                 } else {
@@ -191,7 +193,7 @@ fun DeckEditorScreen(
 
             SectionTitle(stringResource(R.string.deck_section_study), Modifier.padding(top = 24.dp))
             SettingsCard {
-                SwitchRow(
+                CheckboxRow(
                     title = stringResource(R.string.deck_reverse_default),
                     body = stringResource(R.string.deck_reverse_default_help),
                     checked = form.reverseByDefault,
@@ -277,6 +279,7 @@ private fun LimitField(
         onValueChange = { onValueChange(it.filter(Char::isDigit)) },
         label = { Text(stringResource(label)) },
         isError = error != null,
+        trailingIcon = errorTrailingIcon(error != null),
         supportingText = error?.let {
             {
                 Text(

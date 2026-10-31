@@ -44,7 +44,8 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mowtiie.flashback.R
-import com.mowtiie.flashback.ui.settings.SwitchRow
+import com.mowtiie.flashback.ui.components.errorTrailingIcon
+import com.mowtiie.flashback.ui.settings.CheckboxRow
 import com.mowtiie.flashback.ui.settings.SettingsCard
 import com.mowtiie.flashback.ui.settings.RowDivider
 import com.mowtiie.flashback.ui.components.SectionTitle
@@ -188,6 +189,7 @@ fun NoteEditorScreen(
                 onValueChange = onFrontChange,
                 label = { Text(stringResource(R.string.note_front)) },
                 isError = state.error == NoteEditorError.FrontRequired,
+                trailingIcon = errorTrailingIcon(state.error == NoteEditorError.FrontRequired),
                 supportingText = if (state.error == NoteEditorError.FrontRequired) {
                     { Text(stringResource(R.string.note_front_required)) }
                 } else {
@@ -205,6 +207,7 @@ fun NoteEditorScreen(
                 onValueChange = onBackChange,
                 label = { Text(stringResource(R.string.note_back)) },
                 isError = state.error == NoteEditorError.BackRequired,
+                trailingIcon = errorTrailingIcon(state.error == NoteEditorError.BackRequired),
                 supportingText = if (state.error == NoteEditorError.BackRequired) {
                     { Text(stringResource(R.string.note_back_required)) }
                 } else {
@@ -221,7 +224,7 @@ fun NoteEditorScreen(
             SettingsCard {
                 AnswerTypeSection(form, onAnswerModeChange, onWrongOptionChange)
                 RowDivider()
-                SwitchRow(
+                CheckboxRow(
                     title = stringResource(R.string.note_reverse),
                     body = stringResource(R.string.note_reverse_help),
                     checked = form.reverseEnabled,
@@ -229,7 +232,7 @@ fun NoteEditorScreen(
                 )
                 if (state.isEditing) {
                     RowDivider()
-                    SwitchRow(
+                    CheckboxRow(
                         title = stringResource(R.string.note_suspend),
                         body = stringResource(R.string.note_suspend_help),
                         checked = form.suspended,

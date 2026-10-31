@@ -27,6 +27,7 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.mowtiie.flashback.R
+import com.mowtiie.flashback.ui.components.errorTrailingIcon
 import com.mowtiie.flashback.ui.components.asHeading
 import com.mowtiie.flashback.data.io.DeckArchive
 import com.mowtiie.flashback.data.io.ImportResult
@@ -163,6 +164,7 @@ private fun PasteDialog(
                 onValueChange = onTextChange,
                 label = { Text(stringResource(R.string.import_paste_hint)) },
                 isError = error != null,
+                trailingIcon = errorTrailingIcon(error != null),
                 supportingText = error?.let { { Text(it) } },
                 minLines = 5,
                 maxLines = 8,

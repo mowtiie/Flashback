@@ -54,6 +54,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mowtiie.flashback.R
+import com.mowtiie.flashback.ui.components.errorTrailingIcon
 import com.mowtiie.flashback.ui.components.flashbackCardColors
 import com.mowtiie.flashback.ui.components.asHeading
 import com.mowtiie.flashback.data.io.DeckArchive
@@ -198,6 +199,7 @@ private fun InputPage(state: GeneratorUiState, actions: GeneratorActions) {
                 label = { Text(stringResource(R.string.generator_source_label)) },
                 placeholder = { Text(stringResource(R.string.generator_source_hint)) },
                 isError = state.sourceTooLong,
+                trailingIcon = errorTrailingIcon(state.sourceTooLong),
                 supportingText = { Text(sourceSupport(state)) },
                 minLines = 8,
                 maxLines = 16,
