@@ -64,7 +64,7 @@ fun FlashbackNavHost(
                     TopLevelDestination.entries.forEach { destination ->
                         NavigationRailItem(
                             selected = destination == topLevel,
-                            onClick = { navController.navigateTopLevel(destination) },
+                            onClick = { navController.navigateTopLevel(destination.route) },
                             icon = { DestinationIcon(destination, selected = destination == topLevel) },
                             label = { Text(stringResource(destination.label)) },
                         )
@@ -92,7 +92,7 @@ fun FlashbackNavHost(
                             TopLevelDestination.entries.forEach { destination ->
                                 NavigationBarItem(
                                     selected = destination == topLevel,
-                                    onClick = { navController.navigateTopLevel(destination) },
+                                    onClick = { navController.navigateTopLevel(destination.route) },
                                     icon = { DestinationIcon(destination, selected = destination == topLevel) },
                                     label = { Text(stringResource(destination.label)) },
                                 )
@@ -125,8 +125,9 @@ fun FlashbackNavHost(
 private fun NavDestination.topLevel(): TopLevelDestination? =
     TopLevelDestination.entries.firstOrNull { top -> hierarchy.any { it.route == top.route } }
 
-private fun NavHostController.navigateTopLevel(destination: TopLevelDestination) {
-    navigate(destination.route) {
+/** Switches tabs the way the bottom bar does, so each tab keeps its own back stack. */
+internal fun NavHostController.navigateTopLevel(route: String) {
+    navigate(route) {
         popUpTo(graph.startDestinationId) { saveState = true }
         launchSingleTop = true
         restoreState = true

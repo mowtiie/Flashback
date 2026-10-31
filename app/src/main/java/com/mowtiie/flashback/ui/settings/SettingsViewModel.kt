@@ -3,6 +3,8 @@ package com.mowtiie.flashback.ui.settings
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mowtiie.flashback.generator.GeneratorPreferences
+import com.mowtiie.flashback.generator.keyHint
 import com.mowtiie.flashback.notifications.ReminderPreferences
 import com.mowtiie.flashback.notifications.ReminderScheduling
 import com.mowtiie.flashback.theme.ContrastLevel
@@ -31,6 +33,8 @@ data class SettingsUiState(
     val reminderEnabled: Boolean = false,
     val reminderHour: Int = 20,
     val reminderMinute: Int = 0,
+    /** The end of the saved API key, or null when none is set. */
+    val generatorKeyHint: String? = null,
 ) {
     /** Dynamic colour brings its own palette, so the contrast choice is ignored while it is on. */
     val contrastEnabled: Boolean get() = !dynamicColor
@@ -43,6 +47,7 @@ class SettingsViewModel(
     private val studyPrefs: StudyPreferences,
     private val themePrefs: ThemePreferences,
     private val reminderPrefs: ReminderPreferences,
+    private val generatorPrefs: GeneratorPreferences,
     private val scheduler: ReminderScheduling,
     private val ioDispatcher: CoroutineDispatcher,
     dynamicColorAvailable: Boolean,
@@ -59,6 +64,7 @@ class SettingsViewModel(
                 reminderEnabled = reminderPrefs.enabled,
                 reminderHour = reminderPrefs.hour,
                 reminderMinute = reminderPrefs.minute,
+                generatorKeyHint = generatorPrefs.apiKey?.keyHint(),
             )
         },
     )
@@ -99,6 +105,16 @@ class SettingsViewModel(
         reminderPrefs.setTime(hour, minute)
         _uiState.update { it.copy(reminderHour = hour, reminderMinute = minute) }
         if (_uiState.value.reminderEnabled) reschedule()
+    }
+
+    fun setGeneratorKey(key: String) {
+        generatorPrefs.apiKey = key
+        _uiState.update { it.copy(generatorKeyHint = generatorPrefs.apiKey?.keyHint()) }
+    }
+
+    fun clearGeneratorKey() {
+        generatorPrefs.apiKey = null
+        _uiState.update { it.copy(generatorKeyHint = null) }
     }
 
     fun onNotificationsDenied() {

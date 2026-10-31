@@ -1,6 +1,7 @@
 package com.mowtiie.flashback.ui.settings
 
 import com.mowtiie.flashback.FakePreferenceStore
+import com.mowtiie.flashback.generator.GeneratorPreferences
 import com.mowtiie.flashback.notifications.ReminderPreferences
 import com.mowtiie.flashback.notifications.ReminderScheduling
 import com.mowtiie.flashback.theme.ContrastLevel
@@ -39,6 +40,7 @@ class SettingsViewModelTest {
         studyPrefs = StudyPreferences(store),
         themePrefs = ThemePreferences(store),
         reminderPrefs = ReminderPreferences(store),
+        generatorPrefs = GeneratorPreferences(store),
         scheduler = scheduler,
         ioDispatcher = UnconfinedTestDispatcher(),
         dynamicColorAvailable = dynamicColorAvailable,
@@ -70,7 +72,7 @@ class SettingsViewModelTest {
     fun themeChangesReachThePublishedThemeSettings() {
         val themePrefs = ThemePreferences(store)
         val viewModel = SettingsViewModel(
-            StudyPreferences(store), themePrefs, ReminderPreferences(store), scheduler,
+            StudyPreferences(store), themePrefs, ReminderPreferences(store), GeneratorPreferences(store), scheduler,
             UnconfinedTestDispatcher(), true,
         )
         viewModel.setThemeMode(ThemeMode.Light)
@@ -153,5 +155,31 @@ class SettingsViewModelTest {
         assertEquals(SettingsEvent.NotificationsDenied, viewModel.eventFlow.first())
         assertFalse(viewModel.uiState.value.reminderEnabled)
         assertEquals(0, reschedules)
+    }
+
+    @Test
+    fun savingAnApiKeyStoresItAndShowsOnlyAHint() {
+        val viewModel = viewModel()
+        assertEquals(null, viewModel.uiState.value.generatorKeyHint)
+
+        viewModel.setGeneratorKey(" sk-ant-secret9876 ")
+        assertEquals("sk-ant-secret9876", GeneratorPreferences(store).apiKey)
+        assertEquals("…9876", viewModel.uiState.value.generatorKeyHint)
+    }
+
+    @Test
+    fun removingTheApiKeyClearsIt() {
+        val viewModel = viewModel()
+        viewModel.setGeneratorKey("sk-ant-secret9876")
+        viewModel.clearGeneratorKey()
+        assertEquals(null, GeneratorPreferences(store).apiKey)
+        assertEquals(null, viewModel.uiState.value.generatorKeyHint)
+    }
+
+    @Test
+    fun aBlankKeyIsIgnored() {
+        val viewModel = viewModel()
+        viewModel.setGeneratorKey("   ")
+        assertEquals(null, viewModel.uiState.value.generatorKeyHint)
     }
 }

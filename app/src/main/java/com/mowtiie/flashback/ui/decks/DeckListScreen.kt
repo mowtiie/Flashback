@@ -18,6 +18,7 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -25,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -41,6 +43,7 @@ fun DeckListRoute(
     onOpenDeck: (Long) -> Unit,
     onStudyDeck: (Long) -> Unit,
     onAddDeck: () -> Unit,
+    onGenerate: () -> Unit,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -52,6 +55,7 @@ fun DeckListRoute(
         onOpenDeck = onOpenDeck,
         onStudyDeck = onStudyDeck,
         onAddDeck = onAddDeck,
+        onGenerate = onGenerate,
     )
 }
 
@@ -63,6 +67,7 @@ fun DeckListScreen(
     onOpenDeck: (Long) -> Unit,
     onStudyDeck: (Long) -> Unit,
     onAddDeck: () -> Unit,
+    onGenerate: () -> Unit,
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val empty = state.loaded && state.items.isEmpty()
@@ -72,6 +77,14 @@ fun DeckListScreen(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.decks_title)) },
+                actions = {
+                    IconButton(onClick = onGenerate) {
+                        Icon(
+                            painterResource(R.drawable.ic_generate),
+                            contentDescription = stringResource(R.string.generator_open),
+                        )
+                    }
+                },
                 scrollBehavior = scrollBehavior,
             )
         },
@@ -179,6 +192,7 @@ private fun DeckListPreview() {
             onOpenDeck = {},
             onStudyDeck = {},
             onAddDeck = {},
+            onGenerate = {},
         )
     }
 }
@@ -193,6 +207,7 @@ private fun DeckListEmptyPreview() {
             onOpenDeck = {},
             onStudyDeck = {},
             onAddDeck = {},
+            onGenerate = {},
         )
     }
 }
@@ -208,6 +223,7 @@ private fun DeckListFilteredEmptyPreview() {
             onOpenDeck = {},
             onStudyDeck = {},
             onAddDeck = {},
+            onGenerate = {},
         )
     }
 }

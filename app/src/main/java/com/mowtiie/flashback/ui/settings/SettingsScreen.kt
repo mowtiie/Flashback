@@ -46,6 +46,8 @@ class SettingsActions(
     val onContrast: (ContrastLevel) -> Unit = {},
     val onReminderEnabled: (Boolean) -> Unit = {},
     val onReminderTime: (hour: Int, minute: Int) -> Unit = { _, _ -> },
+    val onGeneratorKey: (String) -> Unit = {},
+    val onClearGeneratorKey: () -> Unit = {},
 )
 
 @Composable
@@ -123,6 +125,8 @@ fun SettingsRoute(viewModel: SettingsViewModel, transferViewModel: DataTransferV
                 }
             },
             onReminderTime = viewModel::setReminderTime,
+            onGeneratorKey = viewModel::setGeneratorKey,
+            onClearGeneratorKey = viewModel::clearGeneratorKey,
         )
     }
 
@@ -170,6 +174,7 @@ fun SettingsScreen(
             StudySection(state, actions)
             AppearanceSection(state, actions)
             RemindersSection(state, actions)
+            GeneratorSection(state, actions)
             DataSection(transferState, transferActions)
         }
     }

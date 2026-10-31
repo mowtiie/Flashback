@@ -23,6 +23,8 @@ import com.mowtiie.flashback.ui.decks.DeckEditorRoute
 import com.mowtiie.flashback.ui.decks.DeckEditorViewModel
 import com.mowtiie.flashback.ui.decks.DeckListRoute
 import com.mowtiie.flashback.ui.decks.DeckListViewModel
+import com.mowtiie.flashback.ui.generator.GeneratorRoute
+import com.mowtiie.flashback.ui.generator.GeneratorViewModel
 import com.mowtiie.flashback.ui.notes.NoteEditorRoute
 import com.mowtiie.flashback.ui.notes.NoteEditorViewModel
 import com.mowtiie.flashback.ui.settings.DataTransferViewModel
@@ -53,6 +55,7 @@ fun NavGraphBuilder.flashbackGraph(container: AppContainer, navController: NavHo
     deckDestinations(container, navController)
     noteDestinations(container, navController)
     tagDestinations(container, navController)
+    generatorDestination(container, navController)
     statisticsDestination(container)
     settingsDestination(container)
 }
@@ -70,6 +73,7 @@ private fun NavGraphBuilder.settingsDestination(container: AppContainer) {
                 studyPrefs = container.studyPreferences,
                 themePrefs = container.themePreferences,
                 reminderPrefs = container.reminderPreferences,
+                generatorPrefs = container.generatorPreferences,
                 scheduler = container.reminderScheduler,
                 ioDispatcher = container.dispatchers.io,
                 dynamicColorAvailable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
@@ -92,6 +96,7 @@ private fun NavGraphBuilder.deckDestinations(
             onOpenDeck = { navController.navigate(Routes.deckDetail(it)) },
             onStudyDeck = { navController.navigate(Routes.study(it)) },
             onAddDeck = { navController.navigate(Routes.deckEditor()) },
+            onGenerate = { navController.navigate(Routes.GENERATOR) },
         )
     }
 
@@ -198,3 +203,23 @@ private fun AppMessenger.showUndoable(@StringRes message: Int, undo: FlashbackRe
 
 private fun NavBackStackEntry.longArgument(key: String): Long =
     requireNotNull(arguments) { "Missing arguments for $key" }.getLong(key)
+
+private fun NavGraphBuilder.generatorDestination(container: AppContainer, navController: NavHostController) {
+    composable(Routes.GENERATOR) {
+        GeneratorRoute(
+            viewModel = destinationViewModel {
+                GeneratorViewModel(
+                    generator = container.cardGenerator,
+                    archive = container.repository,
+                    hasApiKey = { container.generatorPreferences.hasApiKey },
+                )
+            },
+            onBack = { navController.popBackStack() },
+            onOpenSettings = { navController.navigateTopLevel(Routes.SETTINGS) },
+            onSaved = {
+                navController.popBackStack()
+                container.messenger.show(R.string.deck_saved)
+            },
+        )
+    }
+}

@@ -1,0 +1,173 @@
+package com.mowtiie.flashback.ui.generator
+
+import com.mowtiie.flashback.data.io.DeckArchive
+import com.mowtiie.flashback.generator.CardGenerator
+import com.mowtiie.flashback.generator.GeneratorException
+import com.mowtiie.flashback.generator.GeneratorProtocol
+import com.mowtiie.flashback.ui.settings.FakeArchive
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
+import org.junit.Before
+import org.junit.Test
+
+@OptIn(ExperimentalCoroutinesApi::class)
+class GeneratorViewModelTest {
+
+    private val archive = FakeArchive()
+    private var hasKey = true
+    private var generated: DeckArchive.Deck? = DeckArchive.Deck(
+        name = "Cells",
+        notes = listOf(DeckArchive.Note("Q1", "A1"), DeckArchive.Note("Q2", "A2"), DeckArchive.Note("Q3", "A3")),
+    )
+    private var failure: GeneratorException? = null
+    private val sources = mutableListOf<String>()
+
+    private val generator = CardGenerator { source ->
+        sources += source
+        failure?.let { throw it }
+        generated!!
+    }
+
+    @Before
+    fun setUp() = Dispatchers.setMain(UnconfinedTestDispatcher())
+
+    @After
+    fun tearDown() = Dispatchers.resetMain()
+
+    private fun viewModel() = GeneratorViewModel(generator, archive) { hasKey }
+
+    @Test
+    fun cannotGenerateWithoutAKeyOrText() {
+        hasKey = false
+        val viewModel = viewModel()
+        viewModel.setSource("Some notes")
+        assertFalse(viewModel.uiState.value.canGenerate)
+
+        hasKey = true
+        viewModel.refreshKey()
+        assertTrue(viewModel.uiState.value.canGenerate)
+
+        viewModel.setSource("   ")
+        assertFalse(viewModel.uiState.value.canGenerate)
+    }
+
+    @Test
+    fun overlongSourceIsRefusedRatherThanTrimmed() {
+        val viewModel = viewModel()
+        viewModel.setSource("x".repeat(GeneratorProtocol.MAX_SOURCE_CHARS + 1))
+        assertTrue(viewModel.uiState.value.sourceTooLong)
+        viewModel.generate()
+        assertTrue(sources.isEmpty())
+    }
+
+    @Test
+    fun generatingMovesToReviewWithTheModelsDeck() {
+        val viewModel = viewModel()
+        viewModel.setSource("  Cells have a nucleus.  ")
+        viewModel.generate()
+
+        val state = viewModel.uiState.value
+        assertEquals(GeneratorStage.Review, state.stage)
+        assertEquals("Cells", state.deckName)
+        assertEquals(3, state.cards.size)
+        assertEquals(listOf("Cells have a nucleus."), sources)
+    }
+
+    @Test
+    fun aFailureReturnsToInputWithTheTextAndMessageKept() {
+        failure = GeneratorException("Anthropic rejected the API key. Check it in Settings.")
+        val viewModel = viewModel()
+        viewModel.setSource("notes")
+        viewModel.generate()
+
+        val state = viewModel.uiState.value
+        assertEquals(GeneratorStage.Input, state.stage)
+        assertEquals("notes", state.source)
+        assertEquals("Anthropic rejected the API key. Check it in Settings.", state.error)
+
+        viewModel.setSource("notes!")
+        assertNull(viewModel.uiState.value.error)
+    }
+
+    @Test
+    fun aSecondTapWhileGeneratingDoesNotSendAgain() = runTest {
+        val gate = CompletableDeferred<DeckArchive.Deck>()
+        val slow = GeneratorViewModel({ source -> sources += source; gate.await() }, archive) { true }
+        slow.setSource("notes")
+        slow.generate()
+        slow.generate()
+
+        assertEquals(GeneratorStage.Generating, slow.uiState.value.stage)
+        assertEquals(1, sources.size)
+        gate.complete(generated!!)
+        assertEquals(GeneratorStage.Review, slow.uiState.value.stage)
+    }
+
+    @Test
+    fun removedCardsAreNotSaved() = runTest {
+        val viewModel = viewModel()
+        viewModel.setSource("notes")
+        viewModel.generate()
+        viewModel.removeCard(1)
+        viewModel.setDeckName("  Biology  ")
+        viewModel.save()
+
+        assertEquals(GeneratorEvent.Saved, viewModel.eventFlow.first())
+        val saved = archive.imported.single().decks.single()
+        assertEquals("Biology", saved.name)
+        assertEquals(listOf("Q1", "Q3"), saved.notes.map { it.front })
+    }
+
+    @Test
+    fun cannotSaveWithoutAnameOrCards() {
+        val viewModel = viewModel()
+        viewModel.setSource("notes")
+        viewModel.generate()
+
+        viewModel.setDeckName(" ")
+        viewModel.save()
+        assertTrue(archive.imported.isEmpty())
+
+        viewModel.setDeckName("Cells")
+        (0 until 3).forEach { viewModel.removeCard(0) }
+        viewModel.save()
+        assertTrue(archive.imported.isEmpty())
+    }
+
+    @Test
+    fun aFailedSaveStaysOnReviewAndTellsTheScreen() = runTest {
+        archive.importResult = null
+        val viewModel = viewModel()
+        viewModel.setSource("notes")
+        viewModel.generate()
+        viewModel.save()
+
+        assertEquals(GeneratorEvent.SaveFailed, viewModel.eventFlow.first())
+        assertEquals(GeneratorStage.Review, viewModel.uiState.value.stage)
+        assertEquals(3, viewModel.uiState.value.cards.size)
+    }
+
+    @Test
+    fun startingOverKeepsTheSourceText() {
+        val viewModel = viewModel()
+        viewModel.setSource("notes")
+        viewModel.generate()
+        viewModel.startOver()
+
+        val state = viewModel.uiState.value
+        assertEquals(GeneratorStage.Input, state.stage)
+        assertEquals("notes", state.source)
+        assertTrue(state.cards.isEmpty())
+    }
+}

@@ -25,6 +25,7 @@
     <string name="more_options">More options</string>
     <string name="action_cancel">Cancel</string>
     <string name="action_delete">Delete</string>
+    <string name="action_save">Save</string>
     <string name="study_undo">Undo</string>
 
     <string name="unsaved_title">Discard changes?</string>
@@ -149,6 +150,10 @@
         <item quantity="one">%1$d deck</item>
         <item quantity="other">%1$d decks</item>
     </plurals>
+    <plurals name="generator_review_count">
+        <item quantity="one">Review %1$d card</item>
+        <item quantity="other">Review %1$d cards</item>
+    </plurals>
     <plurals name="import_cards">
         <item quantity="one">%1$d card</item>
         <item quantity="other">%1$d cards</item>
@@ -257,4 +262,33 @@
     <string name="interval_months">%1$smo</string>
     <string name="interval_years">%1$sy</string>
     <string name="minutes_short">%1$d min</string>
+
+    <string name="settings_generator_header">AI card generator</string>
+    <string name="settings_generator_key_title">Anthropic API key</string>
+    <string name="settings_generator_key_unset">Not set. Add a key to turn on card generation.</string>
+    <string name="settings_generator_key_saved">Saved (%1$s)</string>
+    <string name="settings_generator_key_hint">API key</string>
+    <string name="settings_generator_key_remove">Remove key</string>
+    <string name="settings_generator_note">Optional. When you generate cards, the text you give is sent to Anthropic using your own key. Nothing else leaves the app. The key stays on this device and is left out of backups.</string>
+
+    <string name="generator_title">Generate cards</string>
+    <string name="generator_open">Generate cards with AI</string>
+    <string name="generator_source_label">Study material</string>
+    <string name="generator_source_hint">Paste notes, a chapter, or an exam reviewer</string>
+    <string name="generator_source_count">%1$d / %2$d characters</string>
+    <string name="generator_source_too_long">Too long. Use at most %1$d characters at a time.</string>
+    <string name="generator_privacy">This text is sent to Anthropic to make the cards. Review them before saving, since they can contain mistakes.</string>
+    <string name="generator_action">Generate</string>
+    <string name="generator_working">Making cards…</string>
+    <string name="generator_no_key_title">Add your API key first</string>
+    <string name="generator_no_key_body">Card generation uses your own Anthropic API key. Add it in Settings.</string>
+    <string name="generator_no_key_action">Open settings</string>
+    <string name="generator_deck_name">Deck name</string>
+    <string name="generator_card_front">Front</string>
+    <string name="generator_card_back">Back</string>
+    <string name="generator_remove_card">Remove card %1$s</string>
+    <string name="generator_save">Save deck</string>
+    <string name="generator_start_over">Start over</string>
+    <string name="generator_save_failed">The deck could not be saved. Nothing was added.</string>
+    <string name="generator_all_removed">Every card was removed. Start over to try again.</string>
 </resources>

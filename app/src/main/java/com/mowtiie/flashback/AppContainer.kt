@@ -2,6 +2,9 @@ package com.mowtiie.flashback
 
 import android.content.Context
 import com.mowtiie.flashback.data.FlashbackDatabase
+import com.mowtiie.flashback.generator.AnthropicCardGenerator
+import com.mowtiie.flashback.generator.CardGenerator
+import com.mowtiie.flashback.generator.GeneratorPreferences
 import com.mowtiie.flashback.notifications.ReminderPreferences
 import com.mowtiie.flashback.notifications.ReminderScheduler
 import com.mowtiie.flashback.repository.FlashbackRepository
@@ -28,6 +31,14 @@ class AppContainer(context: Context) {
     val themePreferences: ThemePreferences by lazy { ThemePreferences(preferenceStore) }
 
     val reminderPreferences: ReminderPreferences by lazy { ReminderPreferences(preferenceStore) }
+
+    val generatorPreferences: GeneratorPreferences by lazy {
+        GeneratorPreferences(SharedPreferenceStore(appContext, SharedPreferenceStore.SECRETS_FILE))
+    }
+
+    val cardGenerator: CardGenerator by lazy {
+        AnthropicCardGenerator(apiKey = { generatorPreferences.apiKey }, ioDispatcher = dispatchers.io)
+    }
 
     val reminderScheduler: ReminderScheduler by lazy {
         ReminderScheduler(appContext, reminderPreferences)
