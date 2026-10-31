@@ -1,3 +1,25 @@
 <resources>
     <string name="app_name">Flashback</string>
+
+    <string name="navigate_up">Navigate up</string>
+    <string name="not_ported_yet">This screen has not been ported yet.</string>
+
+    <string name="decks_title">Decks</string>
+    <string name="decks_empty_title">No decks yet</string>
+    <string name="decks_empty_body">A deck holds the cards for one subject. Create one to start adding cards.</string>
+    <string name="decks_empty_action">Create a deck</string>
+    <string name="decks_filtered_empty_title">No decks with this tag</string>
+    <string name="decks_filtered_empty_body">Nothing here yet. Pick a different tag, or tag a deck from its edit screen.</string>
+    <string name="deck_add">New deck</string>
+    <string name="deck_study_button">Study %1$d</string>
+    <string name="filter_all">All</string>
+
+    <plurals name="deck_card_count">
+        <item quantity="one">%1$d card</item>
+        <item quantity="other">%1$d cards</item>
+    </plurals>
+
+    <string name="count_new">New</string>
+    <string name="count_learning">Learning</string>
+    <string name="count_due">Due</string>
 </resources>

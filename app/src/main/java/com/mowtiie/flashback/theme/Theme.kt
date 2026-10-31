@@ -7,6 +7,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalContext
 
 enum class ContrastLevel { Standard, Medium, High }
@@ -28,11 +29,15 @@ fun FlashbackTheme(
         else -> staticColorScheme(darkTheme, contrast)
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content,
-    )
+    CompositionLocalProvider(
+        LocalCountColors provides if (darkTheme) DarkCountColors else LightCountColors,
+    ) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = Typography,
+            content = content,
+        )
+    }
 }
 
 internal fun staticColorScheme(darkTheme: Boolean, contrast: ContrastLevel): ColorScheme =
