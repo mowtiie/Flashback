@@ -108,7 +108,7 @@ object GeminiProtocol {
     }
 
     private fun apiErrorText(body: String): String? = try {
-        JSONObject(body).optJSONObject("error")?.optString("message")?.takeIf { it.isNotBlank() }
+        JSONObject(body).optJSONObject("error")?.optString("message")?.takeIf { it.isNotBlank() }?.take(300)
     } catch (_: JSONException) {
         null
     }

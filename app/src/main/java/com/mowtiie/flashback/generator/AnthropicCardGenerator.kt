@@ -47,16 +47,29 @@ class UrlConnectionTransport : HttpTransport {
         connection.connectTimeout = CONNECT_TIMEOUT_MS
         connection.readTimeout = READ_TIMEOUT_MS
         connection.doOutput = true
+        connection.instanceFollowRedirects = false
         headers.forEach { (name, value) -> connection.setRequestProperty(name, value) }
         connection.outputStream.use { it.write(body.toByteArray(Charsets.UTF_8)) }
 
         val status = connection.responseCode
         val stream = if (status in 200..299) connection.inputStream else connection.errorStream
-        val text = stream?.bufferedReader(Charsets.UTF_8)?.use { it.readText() }.orEmpty()
+        val text = stream?.bufferedReader(Charsets.UTF_8)?.use { readCapped(it) }.orEmpty()
         return HttpResponse(status, text)
     }
 
+    private fun readCapped(reader: java.io.Reader): String {
+        val out = StringBuilder()
+        val buffer = CharArray(8 * 1024)
+        while (out.length < MAX_RESPONSE_CHARS) {
+            val n = reader.read(buffer, 0, minOf(buffer.size, MAX_RESPONSE_CHARS - out.length))
+            if (n < 0) break
+            out.append(buffer, 0, n)
+        }
+        return out.toString()
+    }
+
     private companion object {
+        const val MAX_RESPONSE_CHARS = 2 * 1024 * 1024
         const val CONNECT_TIMEOUT_MS = 15_000
         const val READ_TIMEOUT_MS = 120_000
     }
