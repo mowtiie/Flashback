@@ -2,6 +2,7 @@ package com.mowtiie.flashback.data.io
 
 import org.json.JSONException
 import org.json.JSONObject
+import org.json.JSONTokener
 
 /** Parses and validates archive JSON. Failures throw [ArchiveException] with a user-readable message. */
 class ArchiveParser {
@@ -12,8 +13,9 @@ class ArchiveParser {
             throw ArchiveException("The file is empty.")
         }
 
+        // Pasted AI replies often carry an intro line or a code fence around the JSON.
         val root = try {
-            JSONObject(raw)
+            JSONObject(JSONTokener(raw.substring(raw.indexOf('{').coerceAtLeast(0))))
         } catch (e: JSONException) {
             throw ArchiveException("This does not look like a Flashback file. It is not valid JSON.", e)
         }
