@@ -62,6 +62,8 @@ data class NotePreview(
     val front: String,
     val back: String,
     val reverseEnabled: Boolean,
+    /** Null follows the study setting. */
+    val answerMode: Int? = null,
 )
 
 /** Identity equality on purpose: the study queue tracks the same instance across state changes. */

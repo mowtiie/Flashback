@@ -13,6 +13,7 @@ import com.mowtiie.flashback.data.entity.Tag
 import com.mowtiie.flashback.data.model.StudyCard
 import com.mowtiie.flashback.scheduler.CardState
 import com.mowtiie.flashback.scheduler.Rating
+import com.mowtiie.flashback.ui.study.AnswerMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.flow.first
@@ -340,5 +341,16 @@ class FlashbackRepositoryTest {
 
         repository.updateNote(db.noteDao().getById(noteId)!!.copy(reverseEnabled = false))
         assertEquals(listOf(Card.ORDINAL_FORWARD), db.cardDao().getByNote(noteId).map { it.ordinal })
+    }
+
+    @Test
+    fun theNoteListCarriesEachNotesAnswerMode() = runBlocking {
+        val deck = newDeck(10, 10)
+        repository.addNote(Note(deckId = deck, front = "plain", back = "b"))
+        repository.addNote(Note(deckId = deck, front = "typed", back = "b", answerMode = AnswerMode.Type.value))
+
+        val modes = repository.observeNotes(deck).first().associate { it.front to it.answerMode }
+        assertEquals(null, modes.getValue("plain"))
+        assertEquals(AnswerMode.Type.value, modes.getValue("typed"))
     }
 }

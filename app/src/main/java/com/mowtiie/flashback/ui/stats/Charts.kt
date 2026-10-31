@@ -48,6 +48,8 @@ fun ActivityChart(days: List<DayBar>, description: String, modifier: Modifier = 
         val corner = CornerRadius(3.dp.toPx())
         val minBar = 2.dp.toPx()
         val peak = max(1, days.maxOf { it.count })
+        val labels = days.map { day -> day.label.takeIf { it.isNotEmpty() }?.let { measurer.measure(it, labelStyle) } }
+        val shown = ChartLabels.visible(labels.map { it?.size?.width?.toFloat() }, slot, 4.dp.toPx())
 
         days.forEachIndexed { index, day ->
             val left = slot * index + (slot - barWidth) / 2f
@@ -63,8 +65,8 @@ fun ActivityChart(days: List<DayBar>, description: String, modifier: Modifier = 
                 )
             }
 
-            if (day.label.isNotEmpty()) {
-                val text = measurer.measure(day.label, labelStyle)
+            val text = labels[index]
+            if (text != null && shown[index]) {
                 drawText(
                     text,
                     topLeft = Offset(

@@ -14,6 +14,11 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.material3.CardDefaults
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
@@ -57,8 +62,10 @@ internal fun StudyCardFace(
     // A new card starts at the top, not wherever the last long one was scrolled to.
     val scroll = remember(card) { androidx.compose.foundation.ScrollState(0) }
 
+    val container = CardDefaults.cardColors().containerColor
+
     Card(
-        modifier = modifier.graphicsLayer {
+        modifier = modifier.testTag(STUDY_CARD_TAG).graphicsLayer {
             this.rotationY = rotationY
             cameraDistance = 8000f * density
         },
@@ -116,9 +123,24 @@ internal fun StudyCardFace(
                     )
                 }
             }
+            // A fade at the bottom says there is more to scroll to.
+            if (scroll.canScrollForward) {
+                Box(
+                    Modifier
+                        .align(Alignment.BottomCenter)
+                        .fillMaxWidth()
+                        .height(SCROLL_CUE_HEIGHT)
+                        .background(Brush.verticalGradient(listOf(Color.Transparent, container)))
+                        .testTag(SCROLL_CUE_TAG),
+                )
+            }
         }
     }
 }
+
+internal const val SCROLL_CUE_TAG = "study-scroll-cue"
+internal const val STUDY_CARD_TAG = "study-card"
+private val SCROLL_CUE_HEIGHT = 32.dp
 
 private fun TextUnit.capped(compact: Boolean): TextUnit = if (compact && value > COMPACT_MAX_SP) COMPACT_MAX_SP.sp else this
 

@@ -48,6 +48,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mowtiie.flashback.R
+import com.mowtiie.flashback.ui.study.AnswerMode
 import com.mowtiie.flashback.data.entity.Deck
 import com.mowtiie.flashback.data.io.deckExportFileName
 import com.mowtiie.flashback.data.model.NotePreview
@@ -260,6 +261,14 @@ private fun NoteCard(note: NotePreview, suspended: Boolean, onClick: () -> Unit)
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.padding(top = 4.dp),
             )
+            note.answerMode?.let {
+                Text(
+                    text = stringResource(AnswerMode.fromValue(it).labelRes()),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(top = 8.dp),
+                )
+            }
             if (note.reverseEnabled) {
                 TwoWayBadge(Modifier.padding(top = 8.dp))
             }
@@ -303,9 +312,15 @@ private fun TwoWayBadge(modifier: Modifier = Modifier) {
     }
 }
 
+private fun AnswerMode.labelRes(): Int = when (this) {
+    AnswerMode.Flip -> R.string.answer_mode_flip
+    AnswerMode.Type -> R.string.answer_mode_type
+    AnswerMode.Choice -> R.string.answer_mode_choice
+}
+
 private val previewNotes = listOf(
     NotePreview(1, "el bosque", "the forest", reverseEnabled = true),
-    NotePreview(2, "la casa", "the house", reverseEnabled = false),
+    NotePreview(2, "la casa", "the house", reverseEnabled = false, answerMode = AnswerMode.Type.value),
     NotePreview(3, "un ejemplo muy largo ".repeat(6), "a very long back ".repeat(6), false),
 )
 

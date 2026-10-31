@@ -270,7 +270,6 @@
     <string name="settings_generator_key_remove">Remove key</string>
 
     <string name="generator_title">Generate cards</string>
-    <string name="generator_open">Generate cards with AI</string>
     <string name="generator_source_label">Study material</string>
     <string name="generator_source_hint">Paste notes, a chapter, or an exam reviewer</string>
     <string name="generator_source_count">%1$s / %2$s characters</string>

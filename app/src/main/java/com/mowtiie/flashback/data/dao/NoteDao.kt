@@ -30,7 +30,7 @@ interface NoteDao {
     /** Text is cut to 200 characters: the list shows two lines and edits load the full note. */
     @Query(
         "SELECT id, substr(front, 1, 200) AS front, substr(back, 1, 200) AS back, " +
-            "reverseEnabled FROM notes WHERE deckId = :deckId ORDER BY createdAt DESC",
+            "reverseEnabled, answerMode FROM notes WHERE deckId = :deckId ORDER BY createdAt DESC",
     )
     fun observeByDeck(deckId: Long): Flow<List<NotePreview>>
 

@@ -34,6 +34,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mowtiie.flashback.R
+import com.mowtiie.flashback.ui.components.isShortWindow
+import androidx.compose.material3.IconButton
 import com.mowtiie.flashback.theme.FlashbackTheme
 import com.mowtiie.flashback.ui.components.EmptyState
 import com.mowtiie.flashback.ui.components.LightDarkPreviews
@@ -72,6 +74,7 @@ fun DeckListScreen(
     onAddDeck: () -> Unit,
     onGenerate: () -> Unit,
     onPromptHelper: () -> Unit,
+    shortWindow: Boolean = isShortWindow(),
 ) {
     var choosing by rememberSaveable { mutableStateOf(false) }
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
@@ -83,10 +86,18 @@ fun DeckListScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.decks_title)) },
                 scrollBehavior = scrollBehavior,
+                actions = {
+                    // On a short window the action lives here, so no button floats over the first deck.
+                    if (shortWindow && state.items.isNotEmpty()) {
+                        IconButton(onClick = { choosing = true }) {
+                            Icon(Icons.Default.Add, contentDescription = stringResource(R.string.deck_add))
+                        }
+                    }
+                },
             )
         },
         floatingActionButton = {
-            if (state.items.isNotEmpty()) {
+            if (!shortWindow && state.items.isNotEmpty()) {
                 ActionFab(
                     label = stringResource(R.string.deck_add),
                     onClick = { choosing = true },

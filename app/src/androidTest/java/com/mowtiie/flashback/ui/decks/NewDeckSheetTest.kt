@@ -28,7 +28,7 @@ class NewDeckSheetTest {
     private var generate = 0
     private var prompt = 0
 
-    private fun show(withDecks: Boolean = true) {
+    private fun show(withDecks: Boolean = true, shortWindow: Boolean = false) {
         rule.setContent {
             FlashbackTheme(dynamicColor = false) {
                 DeckListScreen(
@@ -37,6 +37,7 @@ class NewDeckSheetTest {
                     onAddDeck = { manual++ },
                     onGenerate = { generate++ },
                     onPromptHelper = { prompt++ },
+                    shortWindow = shortWindow,
                 )
             }
         }
@@ -96,5 +97,20 @@ class NewDeckSheetTest {
     fun theFabIsStillNamedForScreenReaders() {
         show()
         rule.onNode(hasContentDescription("New deck") or hasText("New deck")).assertExists()
+    }
+
+    @Test
+    fun onAShortWindowTheActionMovesToTheTopBarAndNothingFloatsOverTheList() {
+        show(shortWindow = true)
+        // The floating button's visible label is gone, but the action is still named and opens the sheet.
+        rule.onAllNodes(hasText("New deck"), useUnmergedTree = true).assertCountEquals(0)
+        openSheet()
+        rule.onNodeWithTag(NEW_DECK_SHEET_TAG).assertExists()
+    }
+
+    @Test
+    fun onATallWindowTheFloatingButtonStays() {
+        show(shortWindow = false)
+        rule.onAllNodes(hasText("New deck"), useUnmergedTree = true).assertCountEquals(1)
     }
 }
