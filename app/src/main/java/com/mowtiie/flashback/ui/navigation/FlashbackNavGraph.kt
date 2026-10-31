@@ -212,6 +212,7 @@ private fun NavGraphBuilder.generatorDestination(container: AppContainer, navCon
                     generator = container.cardGenerator,
                     archive = container.repository,
                     hasApiKey = { container.generatorPreferences.hasApiKey },
+                    provider = { container.generatorPreferences.provider },
                 )
             },
             onBack = { navController.popBackStack() },

@@ -6,7 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.mowtiie.flashback.data.io.DeckArchive
 import com.mowtiie.flashback.generator.CardGenerator
 import com.mowtiie.flashback.generator.GeneratorException
-import com.mowtiie.flashback.generator.GeneratorProtocol
+import com.mowtiie.flashback.generator.GeneratorLimits
+import com.mowtiie.flashback.generator.GeneratorProvider
 import com.mowtiie.flashback.repository.ArchiveDataSource
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.channels.Channel
@@ -23,6 +24,7 @@ enum class GeneratorStage { Input, Generating, Review, Saving }
 @Immutable
 data class GeneratorUiState(
     val hasApiKey: Boolean = false,
+    val provider: GeneratorProvider = GeneratorProvider.Anthropic,
     val stage: GeneratorStage = GeneratorStage.Input,
     val source: String = "",
     /** Shown on the input page after a failed attempt. */
@@ -30,7 +32,7 @@ data class GeneratorUiState(
     val deckName: String = "",
     val cards: List<DeckArchive.Note> = emptyList(),
 ) {
-    val sourceTooLong: Boolean get() = source.length > GeneratorProtocol.MAX_SOURCE_CHARS
+    val sourceTooLong: Boolean get() = source.length > GeneratorLimits.MAX_SOURCE_CHARS
 
     val canGenerate: Boolean
         get() = hasApiKey && stage == GeneratorStage.Input && source.isNotBlank() && !sourceTooLong
@@ -50,17 +52,18 @@ class GeneratorViewModel(
     private val generator: CardGenerator,
     private val archive: ArchiveDataSource,
     private val hasApiKey: () -> Boolean,
+    private val provider: () -> GeneratorProvider,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(GeneratorUiState(hasApiKey = hasApiKey()))
+    private val _uiState = MutableStateFlow(GeneratorUiState(hasApiKey = hasApiKey(), provider = provider()))
     val uiState: StateFlow<GeneratorUiState> = _uiState.asStateFlow()
 
     private val events = Channel<GeneratorEvent>(Channel.BUFFERED)
     val eventFlow = events.receiveAsFlow()
 
-    /** The key is added in Settings, so the screen re-checks when it comes back. */
+    /** The provider and key are set in Settings, so the screen re-checks when it comes back. */
     fun refreshKey() {
-        _uiState.update { it.copy(hasApiKey = hasApiKey()) }
+        _uiState.update { it.copy(hasApiKey = hasApiKey(), provider = provider()) }
     }
 
     fun setSource(text: String) {

@@ -2,6 +2,7 @@ package com.mowtiie.flashback.ui.settings
 
 import com.mowtiie.flashback.FakePreferenceStore
 import com.mowtiie.flashback.generator.GeneratorPreferences
+import com.mowtiie.flashback.generator.GeneratorProvider
 import com.mowtiie.flashback.notifications.ReminderPreferences
 import com.mowtiie.flashback.notifications.ReminderScheduling
 import com.mowtiie.flashback.theme.ContrastLevel
@@ -181,5 +182,34 @@ class SettingsViewModelTest {
         val viewModel = viewModel()
         viewModel.setGeneratorKey("   ")
         assertEquals(null, viewModel.uiState.value.generatorKeyHint)
+    }
+
+    @Test
+    fun switchingProviderShowsThatProvidersKey() {
+        val viewModel = viewModel()
+        viewModel.setGeneratorKey("anthropic-key-1111")
+
+        viewModel.setGeneratorProvider(GeneratorProvider.Gemini)
+        assertEquals(GeneratorProvider.Gemini, viewModel.uiState.value.generatorProvider)
+        assertEquals(null, viewModel.uiState.value.generatorKeyHint)
+
+        viewModel.setGeneratorKey("gemini-key-2222")
+        assertEquals("…2222", viewModel.uiState.value.generatorKeyHint)
+        assertEquals(GeneratorProvider.Gemini, GeneratorPreferences(store).provider)
+
+        viewModel.setGeneratorProvider(GeneratorProvider.Anthropic)
+        assertEquals("…1111", viewModel.uiState.value.generatorKeyHint)
+    }
+
+    @Test
+    fun removingAKeyOnlyAffectsTheSelectedProvider() {
+        val viewModel = viewModel()
+        viewModel.setGeneratorKey("anthropic-key-1111")
+        viewModel.setGeneratorProvider(GeneratorProvider.Gemini)
+        viewModel.setGeneratorKey("gemini-key-2222")
+
+        viewModel.clearGeneratorKey()
+        assertEquals("anthropic-key-1111", GeneratorPreferences(store).apiKey(GeneratorProvider.Anthropic))
+        assertEquals(null, GeneratorPreferences(store).apiKey(GeneratorProvider.Gemini))
     }
 }

@@ -2,6 +2,7 @@ package com.mowtiie.flashback.ui.settings
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -10,32 +11,40 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
 import com.mowtiie.flashback.R
+import com.mowtiie.flashback.generator.GeneratorProvider
 
 @Composable
 internal fun GeneratorSection(state: SettingsUiState, actions: SettingsActions) {
     var editing by rememberSaveable { mutableStateOf(false) }
+    val provider = state.generatorProvider
 
     SectionHeader(R.string.settings_generator_header)
     SettingsCard {
+        ChoiceRow(
+            title = stringResource(R.string.settings_generator_provider),
+            options = GeneratorProvider.entries,
+            selected = provider,
+            label = { it.displayName },
+            onSelect = actions.onGeneratorProvider,
+        )
         ActionRow(
-            title = stringResource(R.string.settings_generator_key_title),
+            title = stringResource(R.string.settings_generator_key_title, provider.displayName),
             body = state.generatorKeyHint?.let { stringResource(R.string.settings_generator_key_saved, it) }
                 ?: stringResource(R.string.settings_generator_key_unset),
             enabled = true,
             onClick = { editing = true },
         )
         Text(
-            text = stringResource(R.string.settings_generator_note),
+            text = stringResource(provider.noteRes()),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
@@ -44,6 +53,7 @@ internal fun GeneratorSection(state: SettingsUiState, actions: SettingsActions) 
 
     if (editing) {
         ApiKeyDialog(
+            provider = provider,
             hasKey = state.generatorKeyHint != null,
             onSave = {
                 editing = false
@@ -58,14 +68,25 @@ internal fun GeneratorSection(state: SettingsUiState, actions: SettingsActions) 
     }
 }
 
+private fun GeneratorProvider.noteRes(): Int = when (this) {
+    GeneratorProvider.Anthropic -> R.string.settings_generator_note_anthropic
+    GeneratorProvider.Gemini -> R.string.settings_generator_note_gemini
+}
+
 @Composable
-private fun ApiKeyDialog(hasKey: Boolean, onSave: (String) -> Unit, onRemove: () -> Unit, onDismiss: () -> Unit) {
+private fun ApiKeyDialog(
+    provider: GeneratorProvider,
+    hasKey: Boolean,
+    onSave: (String) -> Unit,
+    onRemove: () -> Unit,
+    onDismiss: () -> Unit,
+) {
     // Not rememberSaveable: the secret should not land in saved instance state.
     var key by remember { mutableStateOf("") }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.settings_generator_key_title)) },
+        title = { Text(stringResource(R.string.settings_generator_key_title, provider.displayName)) },
         text = {
             OutlinedTextField(
                 value = key,

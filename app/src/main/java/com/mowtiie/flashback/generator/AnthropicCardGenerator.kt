@@ -2,7 +2,6 @@ package com.mowtiie.flashback.generator
 
 import com.mowtiie.flashback.data.io.DeckArchive
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.withContext
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
@@ -41,30 +40,28 @@ class UrlConnectionTransport : HttpTransport {
     }
 }
 
-/** Calls the Anthropic Messages API with the user's own key; plain HTTP, since no library is needed. */
-class AnthropicCardGenerator(
-    private val apiKey: () -> String?,
-    private val ioDispatcher: CoroutineDispatcher,
-    private val transport: HttpTransport = UrlConnectionTransport(),
-) : CardGenerator {
+internal object AnthropicBackend : GeneratorBackend {
+    private const val ENDPOINT = "https://api.anthropic.com/v1/messages"
+    private const val API_VERSION = "2026-10-21"
 
-    override suspend fun generate(source: String): DeckArchive.Deck = withContext(ioDispatcher) {
-        val key = apiKey() ?: throw GeneratorException("Add your Anthropic API key in Settings first.")
-        val headers = mapOf(
+    override val provider = GeneratorProvider.Anthropic
+
+    override fun request(source: String, apiKey: String) = HttpRequest(
+        url = ENDPOINT,
+        headers = mapOf(
             "content-type" to "application/json",
-            "x-api-key" to key,
+            "x-api-key" to apiKey,
             "anthropic-version" to API_VERSION,
-        )
-        val response = try {
-            transport.post(ENDPOINT, headers, GeneratorProtocol.requestBody(source))
-        } catch (e: IOException) {
-            throw GeneratorException("Could not reach Anthropic. Check your connection and try again.", e)
-        }
-        GeneratorProtocol.parseResponse(response.status, response.body)
-    }
+        ),
+        body = GeneratorProtocol.requestBody(source),
+    )
 
-    private companion object {
-        const val ENDPOINT = "https://api.anthropic.com/v1/messages"
-        const val API_VERSION = "2026-10-21"
-    }
+    override fun parse(status: Int, body: String): DeckArchive.Deck = GeneratorProtocol.parseResponse(status, body)
 }
+
+/** Calls the Anthropic Messages API; plain HTTP, since no library is needed. */
+class AnthropicCardGenerator(
+    apiKey: () -> String?,
+    ioDispatcher: CoroutineDispatcher,
+    transport: HttpTransport = UrlConnectionTransport(),
+) : CardGenerator by RemoteCardGenerator(AnthropicBackend, apiKey, ioDispatcher, transport)

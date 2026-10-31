@@ -4,6 +4,7 @@ import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mowtiie.flashback.generator.GeneratorPreferences
+import com.mowtiie.flashback.generator.GeneratorProvider
 import com.mowtiie.flashback.generator.keyHint
 import com.mowtiie.flashback.notifications.ReminderPreferences
 import com.mowtiie.flashback.notifications.ReminderScheduling
@@ -34,6 +35,7 @@ data class SettingsUiState(
     val reminderHour: Int = 20,
     val reminderMinute: Int = 0,
     /** The end of the saved API key, or null when none is set. */
+    val generatorProvider: GeneratorProvider = GeneratorProvider.Anthropic,
     val generatorKeyHint: String? = null,
 ) {
     /** Dynamic colour brings its own palette, so the contrast choice is ignored while it is on. */
@@ -64,6 +66,7 @@ class SettingsViewModel(
                 reminderEnabled = reminderPrefs.enabled,
                 reminderHour = reminderPrefs.hour,
                 reminderMinute = reminderPrefs.minute,
+                generatorProvider = generatorPrefs.provider,
                 generatorKeyHint = generatorPrefs.apiKey?.keyHint(),
             )
         },
@@ -105,6 +108,13 @@ class SettingsViewModel(
         reminderPrefs.setTime(hour, minute)
         _uiState.update { it.copy(reminderHour = hour, reminderMinute = minute) }
         if (_uiState.value.reminderEnabled) reschedule()
+    }
+
+    fun setGeneratorProvider(provider: GeneratorProvider) {
+        generatorPrefs.provider = provider
+        _uiState.update {
+            it.copy(generatorProvider = provider, generatorKeyHint = generatorPrefs.apiKey?.keyHint())
+        }
     }
 
     fun setGeneratorKey(key: String) {

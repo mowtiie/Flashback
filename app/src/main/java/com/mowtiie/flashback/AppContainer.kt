@@ -4,7 +4,10 @@ import android.content.Context
 import com.mowtiie.flashback.data.FlashbackDatabase
 import com.mowtiie.flashback.generator.AnthropicCardGenerator
 import com.mowtiie.flashback.generator.CardGenerator
+import com.mowtiie.flashback.generator.GeminiCardGenerator
 import com.mowtiie.flashback.generator.GeneratorPreferences
+import com.mowtiie.flashback.generator.GeneratorProvider
+import com.mowtiie.flashback.generator.SelectedCardGenerator
 import com.mowtiie.flashback.notifications.ReminderPreferences
 import com.mowtiie.flashback.notifications.ReminderScheduler
 import com.mowtiie.flashback.repository.FlashbackRepository
@@ -37,7 +40,19 @@ class AppContainer(context: Context) {
     }
 
     val cardGenerator: CardGenerator by lazy {
-        AnthropicCardGenerator(apiKey = { generatorPreferences.apiKey }, ioDispatcher = dispatchers.io)
+        SelectedCardGenerator(
+            generatorPreferences,
+            mapOf(
+                GeneratorProvider.Anthropic to AnthropicCardGenerator(
+                    apiKey = { generatorPreferences.apiKey(GeneratorProvider.Anthropic) },
+                    ioDispatcher = dispatchers.io,
+                ),
+                GeneratorProvider.Gemini to GeminiCardGenerator(
+                    apiKey = { generatorPreferences.apiKey(GeneratorProvider.Gemini) },
+                    ioDispatcher = dispatchers.io,
+                ),
+            ),
+        )
     }
 
     val reminderScheduler: ReminderScheduler by lazy {

@@ -29,6 +29,7 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mowtiie.flashback.R
 import com.mowtiie.flashback.data.io.ArchiveFiles
+import com.mowtiie.flashback.generator.GeneratorProvider
 import com.mowtiie.flashback.notifications.canPostNotifications
 import com.mowtiie.flashback.theme.ContrastLevel
 import com.mowtiie.flashback.theme.ThemeMode
@@ -46,6 +47,7 @@ class SettingsActions(
     val onContrast: (ContrastLevel) -> Unit = {},
     val onReminderEnabled: (Boolean) -> Unit = {},
     val onReminderTime: (hour: Int, minute: Int) -> Unit = { _, _ -> },
+    val onGeneratorProvider: (GeneratorProvider) -> Unit = {},
     val onGeneratorKey: (String) -> Unit = {},
     val onClearGeneratorKey: () -> Unit = {},
 )
@@ -125,6 +127,7 @@ fun SettingsRoute(viewModel: SettingsViewModel, transferViewModel: DataTransferV
                 }
             },
             onReminderTime = viewModel::setReminderTime,
+            onGeneratorProvider = viewModel::setGeneratorProvider,
             onGeneratorKey = viewModel::setGeneratorKey,
             onClearGeneratorKey = viewModel::clearGeneratorKey,
         )

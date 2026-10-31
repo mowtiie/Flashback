@@ -3,7 +3,8 @@ package com.mowtiie.flashback.ui.generator
 import com.mowtiie.flashback.data.io.DeckArchive
 import com.mowtiie.flashback.generator.CardGenerator
 import com.mowtiie.flashback.generator.GeneratorException
-import com.mowtiie.flashback.generator.GeneratorProtocol
+import com.mowtiie.flashback.generator.GeneratorLimits
+import com.mowtiie.flashback.generator.GeneratorProvider
 import com.mowtiie.flashback.ui.settings.FakeArchive
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
@@ -26,6 +27,7 @@ class GeneratorViewModelTest {
 
     private val archive = FakeArchive()
     private var hasKey = true
+    private var provider = GeneratorProvider.Anthropic
     private var generated: DeckArchive.Deck? = DeckArchive.Deck(
         name = "Cells",
         notes = listOf(DeckArchive.Note("Q1", "A1"), DeckArchive.Note("Q2", "A2"), DeckArchive.Note("Q3", "A3")),
@@ -45,7 +47,7 @@ class GeneratorViewModelTest {
     @After
     fun tearDown() = Dispatchers.resetMain()
 
-    private fun viewModel() = GeneratorViewModel(generator, archive) { hasKey }
+    private fun viewModel() = GeneratorViewModel(generator, archive, { hasKey }, { provider })
 
     @Test
     fun cannotGenerateWithoutAKeyOrText() {
@@ -65,7 +67,7 @@ class GeneratorViewModelTest {
     @Test
     fun overlongSourceIsRefusedRatherThanTrimmed() {
         val viewModel = viewModel()
-        viewModel.setSource("x".repeat(GeneratorProtocol.MAX_SOURCE_CHARS + 1))
+        viewModel.setSource("x".repeat(GeneratorLimits.MAX_SOURCE_CHARS + 1))
         assertTrue(viewModel.uiState.value.sourceTooLong)
         viewModel.generate()
         assertTrue(sources.isEmpty())
@@ -103,7 +105,7 @@ class GeneratorViewModelTest {
     @Test
     fun aSecondTapWhileGeneratingDoesNotSendAgain() = runTest {
         val gate = CompletableDeferred<DeckArchive.Deck>()
-        val slow = GeneratorViewModel({ source -> sources += source; gate.await() }, archive) { true }
+        val slow = GeneratorViewModel({ source -> sources += source; gate.await() }, archive, { true }, { provider })
         slow.setSource("notes")
         slow.generate()
         slow.generate()

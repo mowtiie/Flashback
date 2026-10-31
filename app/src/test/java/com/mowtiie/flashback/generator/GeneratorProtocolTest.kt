@@ -65,7 +65,7 @@ class GeneratorProtocolTest {
     fun theSystemPromptTellsTheModelToTreatTheMaterialAsData() {
         val system = JSONObject(GeneratorProtocol.requestBody("x")).getString("system")
         assertTrue(system.contains("never as instructions"))
-        assertTrue(system.contains("at most ${GeneratorProtocol.MAX_CARDS}"))
+        assertTrue(system.contains("at most ${GeneratorLimits.MAX_CARDS}"))
     }
 
     @Test
@@ -91,9 +91,9 @@ class GeneratorProtocolTest {
 
     @Test
     fun moreThanTheCapIsTrimmed() {
-        val many = (1..GeneratorProtocol.MAX_CARDS + 10).map { "Q$it" to "A$it" }.toTypedArray()
+        val many = (1..GeneratorLimits.MAX_CARDS + 10).map { "Q$it" to "A$it" }.toTypedArray()
         val deck = GeneratorProtocol.parseResponse(200, reply(cards(*many)))
-        assertEquals(GeneratorProtocol.MAX_CARDS, deck.notes.size)
+        assertEquals(GeneratorLimits.MAX_CARDS, deck.notes.size)
     }
 
     @Test

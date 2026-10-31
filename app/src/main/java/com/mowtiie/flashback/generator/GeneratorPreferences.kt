@@ -2,17 +2,34 @@ package com.mowtiie.flashback.generator
 
 import com.mowtiie.flashback.PreferenceStore
 
-/** The user's own Anthropic API key. Its absence keeps the generator, and the network, switched off. */
+/** The chosen provider and the user's own key for each. No key keeps the generator, and the network, off. */
 class GeneratorPreferences(private val store: PreferenceStore) {
 
+    var provider: GeneratorProvider
+        get() = GeneratorProvider.entries.getOrNull(store.getInt(KEY_PROVIDER, 0)) ?: GeneratorProvider.Anthropic
+        set(value) = store.putInt(KEY_PROVIDER, value.ordinal)
+
+    /** The key for the selected provider. */
     var apiKey: String?
-        get() = store.getString(KEY_API_KEY)?.takeIf { it.isNotEmpty() }
-        set(value) = store.putString(KEY_API_KEY, value?.trim()?.ifEmpty { null })
+        get() = apiKey(provider)
+        set(value) = setApiKey(provider, value)
 
     val hasApiKey: Boolean get() = apiKey != null
 
+    fun apiKey(provider: GeneratorProvider): String? =
+        store.getString(keyName(provider))?.takeIf { it.isNotEmpty() }
+
+    fun setApiKey(provider: GeneratorProvider, value: String?) =
+        store.putString(keyName(provider), value?.trim()?.ifEmpty { null })
+
+    // Anthropic keeps the name it was first saved under.
+    private fun keyName(provider: GeneratorProvider) = when (provider) {
+        GeneratorProvider.Anthropic -> "generator_api_key"
+        GeneratorProvider.Gemini -> "generator_api_key_gemini"
+    }
+
     private companion object {
-        const val KEY_API_KEY = "generator_api_key"
+        const val KEY_PROVIDER = "generator_provider"
     }
 }
 

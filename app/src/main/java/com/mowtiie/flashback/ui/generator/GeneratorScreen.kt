@@ -43,7 +43,8 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mowtiie.flashback.R
 import com.mowtiie.flashback.data.io.DeckArchive
-import com.mowtiie.flashback.generator.GeneratorProtocol
+import com.mowtiie.flashback.generator.GeneratorLimits
+import com.mowtiie.flashback.generator.GeneratorProvider
 import com.mowtiie.flashback.theme.FlashbackTheme
 import com.mowtiie.flashback.ui.components.CenteredScrollColumn
 import com.mowtiie.flashback.ui.components.EmptyState
@@ -169,12 +170,12 @@ private fun InputPage(state: GeneratorUiState, actions: GeneratorActions) {
             supportingText = {
                 Text(
                     if (state.sourceTooLong) {
-                        stringResource(R.string.generator_source_too_long, GeneratorProtocol.MAX_SOURCE_CHARS)
+                        stringResource(R.string.generator_source_too_long, GeneratorLimits.MAX_SOURCE_CHARS)
                     } else {
                         stringResource(
                             R.string.generator_source_count,
                             state.source.length,
-                            GeneratorProtocol.MAX_SOURCE_CHARS,
+                            GeneratorLimits.MAX_SOURCE_CHARS,
                         )
                     },
                 )
@@ -187,7 +188,7 @@ private fun InputPage(state: GeneratorUiState, actions: GeneratorActions) {
             Text(it, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error)
         }
         Text(
-            text = stringResource(R.string.generator_privacy),
+            text = stringResource(state.provider.privacyRes()),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -314,4 +315,9 @@ private fun GeneratorNoKeyPreview() {
     FlashbackTheme(dynamicColor = false) {
         GeneratorScreen(GeneratorUiState(), GeneratorActions())
     }
+}
+
+private fun GeneratorProvider.privacyRes(): Int = when (this) {
+    GeneratorProvider.Anthropic -> R.string.generator_privacy_anthropic
+    GeneratorProvider.Gemini -> R.string.generator_privacy_gemini
 }
