@@ -347,4 +347,31 @@
     <string name="prompt_share_chooser">Share prompt</string>
     <string name="prompt_import">I have the file, import it</string>
     <string name="prompt_import_hint">In Settings, choose Import decks, then From a file. If the website only shows the JSON, copy it and choose Paste text.</string>
+
+    <string name="generator_size">%1$s characters</string>
+    <plurals name="generator_estimate">
+        <item quantity="one">About %1$d request, sent to %2$s on its own.</item>
+        <item quantity="other">About %1$d requests, sent to %2$s one at a time.</item>
+    </plurals>
+    <string name="generator_confirm_title">Send many requests?</string>
+    <plurals name="generator_confirm_body">
+        <item quantity="one">Your material makes %1$d request to %2$s. It is billed to your own key.</item>
+        <item quantity="other">Your material is split into %1$d parts. Each is sent to %2$s on its own, and each request is billed to your own key.</item>
+    </plurals>
+    <string name="generator_confirm_send">Send</string>
+    <string name="generator_progress">Section %1$d of %2$d</string>
+    <plurals name="generator_cards_so_far">
+        <item quantity="one">%d card so far</item>
+        <item quantity="other">%d cards so far</item>
+    </plurals>
+    <string name="generator_from_sections">From %1$d sections: %2$s</string>
+    <plurals name="generator_failed_title">
+        <item quantity="one">%d section made no cards</item>
+        <item quantity="other">%d sections made no cards</item>
+    </plurals>
+    <string name="generator_failed_row">Section %1$d: %2$s</string>
+    <plurals name="generator_retry">
+        <item quantity="one">Retry %d section</item>
+        <item quantity="other">Retry %d sections</item>
+    </plurals>
 </resources>

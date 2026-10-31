@@ -52,7 +52,7 @@ object GeneratorProtocol {
     fun requestBody(request: GeneratorRequest): String = JSONObject()
         .put("model", MODEL)
         .put("max_tokens", MAX_OUTPUT_TOKENS)
-        .put("system", CardPrompt.system(request.cardCount.max, request.cardTypes))
+        .put("system", CardPrompt.system(request))
         .put(
             "output_config",
             JSONObject()
@@ -93,7 +93,7 @@ object GeneratorProtocol {
         maxCards: Int,
         types: CardTypes = CardTypes.Setting,
     ): DeckArchive.Deck {
-        if (status !in 200..299) throw GeneratorException(errorMessage(status, body))
+        if (status !in 200..299) throw GeneratorException(errorMessage(status, body), kind = failureKind(status))
 
         val root = try {
             JSONObject(body)
@@ -120,6 +120,12 @@ object GeneratorProtocol {
                 if (block.optString("type") == "text") append(block.optString("text"))
             }
         }.trim()
+    }
+
+    private fun failureKind(status: Int) = when (status) {
+        401, 403 -> FailureKind.BadKey
+        429 -> FailureKind.RateLimited
+        else -> FailureKind.Other
     }
 
     private fun errorMessage(status: Int, body: String): String = when (status) {

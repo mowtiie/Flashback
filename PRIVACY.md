@@ -16,7 +16,7 @@ The generator is off until you add your own API key in Settings. If you never ad
 
 When you use it:
 
-- The text or PDF you choose, and the options you pick (card count, card types), are sent over HTTPS to the provider you selected: Anthropic (`api.anthropic.com`) or Google (`generativelanguage.googleapis.com`).
+- The text or PDF you choose, and the options you pick (coverage, card types), are sent over HTTPS to the provider you selected: Anthropic (`api.anthropic.com`) or Google (`generativelanguage.googleapis.com`). Long text is split into parts and sent as several requests, one after another. Each later request also carries the questions already made, so they are not repeated. The app asks you to confirm before it sends more than three.
 - Your API key is sent to that same provider so it can bill your account. The key is paid for by you, under your agreement with the provider.
 - Nothing else is sent. The app does not send your existing decks, your study history, a device identifier or any other information.
 - The provider handles what you send under its own terms and privacy policy, which may differ between free and paid accounts. Read them before you send anything private, such as other people's personal details.

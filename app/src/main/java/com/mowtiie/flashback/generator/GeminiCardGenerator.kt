@@ -16,7 +16,7 @@ object GeminiProtocol {
         .put(
             "systemInstruction",
             textParts(
-                "${CardPrompt.system(request.cardCount.max, request.cardTypes)}\n${CardPrompt.jsonShape(request.cardTypes)}",
+                "${CardPrompt.system(request)}\n${CardPrompt.jsonShape(request.cardTypes)}",
             ),
         )
         .put("contents", JSONArray().put(userContent(request.input)))
@@ -55,7 +55,7 @@ object GeminiProtocol {
         maxCards: Int,
         types: CardTypes = CardTypes.Setting,
     ): DeckArchive.Deck {
-        if (status !in 200..299) throw GeneratorException(errorMessage(status, body))
+        if (status !in 200..299) throw GeneratorException(errorMessage(status, body), kind = failureKind(status, body))
 
         val root = try {
             JSONObject(body)
@@ -93,10 +93,18 @@ object GeminiProtocol {
         }.trim()
     }
 
+    private fun isBadKey(status: Int, message: String?) = status == 401 || status == 403 ||
+        (status == 400 && message?.contains("API key", ignoreCase = true) == true)
+
+    private fun failureKind(status: Int, body: String) = when {
+        isBadKey(status, apiErrorText(body)) -> FailureKind.BadKey
+        status == 429 -> FailureKind.RateLimited
+        else -> FailureKind.Other
+    }
+
     private fun errorMessage(status: Int, body: String): String {
         val message = apiErrorText(body)
-        val badKey = status == 401 || status == 403 ||
-            (status == 400 && message?.contains("API key", ignoreCase = true) == true)
+        val badKey = isBadKey(status, message)
         return when {
             badKey -> "Google rejected the API key. Check it in Settings."
             status == 429 -> "The free quota is used up for now. Wait a while and try again."
@@ -129,7 +137,7 @@ internal object GeminiBackend : GeneratorBackend {
     )
 
     override fun parse(status: Int, body: String, request: GeneratorRequest): DeckArchive.Deck =
-        GeminiProtocol.parseResponse(status, body, request.cardCount.max, request.cardTypes)
+        GeminiProtocol.parseResponse(status, body, request.maxCards, request.cardTypes)
 }
 
 /** Calls the Gemini API, which has a free tier. */

@@ -212,6 +212,7 @@ class GeneratorViewModelTest {
             UnconfinedTestDispatcher(),
         )
         viewModel.setSource("notes")
+        viewModel.setCoverage(com.mowtiie.flashback.generator.Coverage.KeyPoints)
         viewModel.setCardCount(CardCount.Many)
         viewModel.setCardTypes(CardTypes.Setting)
         viewModel.generate()

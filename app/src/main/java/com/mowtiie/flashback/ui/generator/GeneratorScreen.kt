@@ -58,7 +58,8 @@ import com.mowtiie.flashback.ui.components.asHeading
 import com.mowtiie.flashback.data.io.DeckArchive
 import com.mowtiie.flashback.generator.CardCount
 import com.mowtiie.flashback.generator.CardTypes
-import com.mowtiie.flashback.generator.GeneratorLimits
+import com.mowtiie.flashback.generator.Coverage
+import com.mowtiie.flashback.generator.GeneratorPlan
 import com.mowtiie.flashback.generator.GeneratorProvider
 import com.mowtiie.flashback.theme.FlashbackTheme
 import com.mowtiie.flashback.ui.components.CenteredScrollColumn
@@ -75,9 +76,14 @@ class GeneratorActions(
     val onSourceChange: (String) -> Unit = {},
     val onChoosePdf: () -> Unit = {},
     val onRemovePdf: () -> Unit = {},
+    val onCoverage: (Coverage) -> Unit = {},
     val onCardCount: (CardCount) -> Unit = {},
     val onCardTypes: (CardTypes) -> Unit = {},
     val onGenerate: () -> Unit = {},
+    val onCancel: () -> Unit = {},
+    val onRetry: () -> Unit = {},
+    val onConfirm: () -> Unit = {},
+    val onDismissConfirm: () -> Unit = {},
     val onDeckNameChange: (String) -> Unit = {},
     val onRemoveCard: (Int) -> Unit = {},
     val onStartOver: () -> Unit = {},
@@ -121,9 +127,14 @@ fun GeneratorRoute(
             onSourceChange = viewModel::setSource,
             onChoosePdf = { pdfLauncher.launch(arrayOf("application/pdf")) },
             onRemovePdf = viewModel::removePdf,
+            onCoverage = viewModel::setCoverage,
             onCardCount = viewModel::setCardCount,
             onCardTypes = viewModel::setCardTypes,
             onGenerate = viewModel::generate,
+            onCancel = viewModel::cancelGeneration,
+            onRetry = viewModel::retryFailed,
+            onConfirm = viewModel::confirmGenerate,
+            onDismissConfirm = viewModel::dismissConfirm,
             onDeckNameChange = viewModel::setDeckName,
             onRemoveCard = viewModel::removeCard,
             onStartOver = viewModel::startOver,
@@ -165,27 +176,11 @@ fun GeneratorScreen(
                     actionLabel = stringResource(R.string.generator_no_key_action),
                     onAction = actions.onOpenSettings,
                 )
-                state.stage == GeneratorStage.Generating -> Working(R.string.generator_working)
+                state.stage == GeneratorStage.Generating -> Working(state, actions.onCancel)
                 state.stage == GeneratorStage.Input -> InputPage(state, actions)
                 else -> ReviewPage(state, actions)
             }
         }
-    }
-}
-
-@Composable
-private fun Working(messageRes: Int) {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-    ) {
-        CircularProgressIndicator()
-        Text(
-            text = stringResource(messageRes),
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.padding(top = 16.dp),
-        )
     }
 }
 
@@ -201,19 +196,7 @@ private fun InputPage(state: GeneratorUiState, actions: GeneratorActions) {
                 label = { Text(stringResource(R.string.generator_source_label)) },
                 placeholder = { Text(stringResource(R.string.generator_source_hint)) },
                 isError = state.sourceTooLong,
-                supportingText = {
-                    Text(
-                        if (state.sourceTooLong) {
-                            stringResource(R.string.generator_source_too_long, grouped(GeneratorLimits.MAX_SOURCE_CHARS))
-                        } else {
-                            stringResource(
-                                R.string.generator_source_count,
-                                grouped(state.source.length),
-                                grouped(GeneratorLimits.MAX_SOURCE_CHARS),
-                            )
-                        },
-                    )
-                },
+                supportingText = { Text(sourceSupport(state)) },
                 minLines = 8,
                 maxLines = 16,
                 modifier = Modifier.fillMaxWidth(),
@@ -223,13 +206,24 @@ private fun InputPage(state: GeneratorUiState, actions: GeneratorActions) {
             }
         }
         ChoiceRow(
-            title = stringResource(R.string.generator_count_title),
-            options = CardCount.entries,
-            selected = state.cardCount,
-            label = { stringResource(it.labelRes(), it.max) },
-            onSelect = actions.onCardCount,
+            title = stringResource(R.string.prompt_coverage_title),
+            options = Coverage.entries,
+            selected = state.coverage,
+            label = { stringResource(it.labelRes()) },
+            onSelect = actions.onCoverage,
+            hint = stringResource(state.coverage.hintRes()),
             modifier = Modifier.padding(horizontal = 0.dp),
         )
+        if (state.coverage == Coverage.KeyPoints) {
+            ChoiceRow(
+                title = stringResource(R.string.generator_count_title),
+                options = CardCount.entries,
+                selected = state.cardCount,
+                label = { stringResource(it.labelRes(), it.max) },
+                onSelect = actions.onCardCount,
+                modifier = Modifier.padding(horizontal = 0.dp),
+            )
+        }
         CardTypesChoice(state.cardTypes, actions.onCardTypes)
         state.error?.let {
             Text(
@@ -248,6 +242,28 @@ private fun InputPage(state: GeneratorUiState, actions: GeneratorActions) {
             Text(stringResource(R.string.generator_action))
         }
     }
+    if (state.confirming) ConfirmRunDialog(state, actions.onConfirm, actions.onDismissConfirm)
+}
+
+@Composable
+private fun sourceSupport(state: GeneratorUiState): String = when {
+    state.sourceTooLong ->
+        stringResource(R.string.generator_source_too_long, grouped(GeneratorPlan.maxChars(state.coverage)))
+    state.coverage == Coverage.Everything && state.source.isNotBlank() -> {
+        val size = stringResource(R.string.generator_size, grouped(state.source.length))
+        val estimate = pluralStringResource(
+            R.plurals.generator_estimate,
+            state.estimatedRequests,
+            state.estimatedRequests,
+            state.provider.displayName,
+        )
+        "$size. $estimate"
+    }
+    else -> stringResource(
+        R.string.generator_source_count,
+        grouped(state.source.length),
+        grouped(GeneratorPlan.maxChars(state.coverage)),
+    )
 }
 
 @Composable
@@ -274,6 +290,9 @@ private fun ReviewPage(state: GeneratorUiState, actions: GeneratorActions) {
                     text = pluralStringResource(R.plurals.generator_review_count, state.cards.size, state.cards.size),
                     style = MaterialTheme.typography.titleSmall,
                 )
+            }
+            if (state.sectionCounts.size > 1 || state.failedSections.isNotEmpty()) {
+                item(key = "sections") { SectionSummary(state, enabled = !saving, onRetry = actions.onRetry) }
             }
             if (state.cards.isEmpty()) {
                 item(key = "empty") {
@@ -416,6 +435,16 @@ private fun PdfCard(state: GeneratorUiState, onRemove: () -> Unit) {
     }
 }
 
+private fun Coverage.labelRes(): Int = when (this) {
+    Coverage.Everything -> R.string.prompt_coverage_everything
+    Coverage.KeyPoints -> R.string.prompt_coverage_key
+}
+
+private fun Coverage.hintRes(): Int = when (this) {
+    Coverage.Everything -> R.string.prompt_coverage_hint_everything
+    Coverage.KeyPoints -> R.string.prompt_coverage_hint_key
+}
+
 private fun CardCount.labelRes(): Int = when (this) {
     CardCount.Few -> R.string.generator_count_few
     CardCount.Normal -> R.string.generator_count_normal
@@ -480,4 +509,39 @@ private fun AnswerMode.labelRes(): Int = when (this) {
     AnswerMode.Flip -> R.string.answer_mode_flip
     AnswerMode.Type -> R.string.answer_mode_type
     AnswerMode.Choice -> R.string.answer_mode_choice
+}
+
+@LightDarkPreviews
+@Composable
+private fun GeneratorProgressPreview() {
+    FlashbackTheme(dynamicColor = false) {
+        GeneratorScreen(
+            GeneratorUiState(
+                hasApiKey = true,
+                stage = GeneratorStage.Generating,
+                sectionTotal = 6,
+                sectionsFinished = 2,
+                cards = previewCards,
+            ),
+            GeneratorActions(),
+        )
+    }
+}
+
+@LightDarkPreviews
+@Composable
+private fun GeneratorPartialReviewPreview() {
+    FlashbackTheme(dynamicColor = false) {
+        GeneratorScreen(
+            GeneratorUiState(
+                hasApiKey = true,
+                stage = GeneratorStage.Review,
+                deckName = "Cell biology",
+                cards = previewCards,
+                sectionCounts = listOf(2, 0, 1),
+                failedSections = listOf(FailedSection(2, "Anthropic is unavailable at the moment. Try again later.")),
+            ),
+            GeneratorActions(),
+        )
+    }
 }
