@@ -30,7 +30,7 @@ class FlashbackRepository(
     private val db: FlashbackDatabase,
     private val dispatchers: AppDispatchers,
     private val scheduler: Sm2Scheduler = Sm2Scheduler(),
-) : StudyDataSource {
+) : StudyDataSource, StatisticsSource {
     private val deckDao = db.deckDao()
     private val noteDao = db.noteDao()
     private val cardDao = db.cardDao()
@@ -290,21 +290,21 @@ class FlashbackRepository(
 
     suspend fun countDueEverywhere(now: Long): Int = io { cardDao.countDueEverywhere(now) }
 
-    suspend fun reviewsSince(since: Long): Int = io { reviewLogDao.countSince(since) }
+    override suspend fun reviewsSince(since: Long): Int = io { reviewLogDao.countSince(since) }
 
-    suspend fun correctSince(since: Long): Int = io { reviewLogDao.countCorrectSince(since) }
+    override suspend fun correctSince(since: Long): Int = io { reviewLogDao.countCorrectSince(since) }
 
-    suspend fun timeSpentSince(since: Long): Long = io { reviewLogDao.sumTimeSpentSince(since) }
+    override suspend fun timeSpentSince(since: Long): Long = io { reviewLogDao.sumTimeSpentSince(since) }
 
-    suspend fun totalReviews(): Int = io { reviewLogDao.totalReviews() }
+    override suspend fun totalReviews(): Int = io { reviewLogDao.totalReviews() }
 
-    suspend fun recentStudyDays(since: Long): List<String> =
+    override suspend fun recentStudyDays(since: Long): List<String> =
         io { reviewLogDao.recentStudyDays(since) }
 
-    suspend fun dailyCountsSince(since: Long): List<DailyCount> =
+    override suspend fun dailyCountsSince(since: Long): List<DailyCount> =
         io { reviewLogDao.dailyCountsSince(since) }
 
-    suspend fun cardStateBreakdown(): CardStateBreakdown = io { cardDao.stateBreakdown() }
+    override suspend fun cardStateBreakdown(): CardStateBreakdown = io { cardDao.stateBreakdown() }
 
     private suspend fun <T> write(block: suspend () -> T): T =
         withContext(dispatchers.write) { block() }
