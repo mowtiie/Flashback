@@ -18,7 +18,7 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
+import com.mowtiie.flashback.ui.components.ActionFab
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -158,12 +158,10 @@ fun DeckDetailScreen(
         },
         floatingActionButton = {
             if (state.studyableCount > 0) {
-                ExtendedFloatingActionButton(
+                ActionFab(
+                    label = stringResource(R.string.deck_study_button, state.studyableCount),
                     onClick = onStudy,
-                    icon = {
-                        Icon(painterResource(R.drawable.ic_school), contentDescription = null)
-                    },
-                    text = { Text(stringResource(R.string.deck_study_button, state.studyableCount)) },
+                    icon = { Icon(painterResource(R.drawable.ic_school), contentDescription = null) },
                 )
             }
         },

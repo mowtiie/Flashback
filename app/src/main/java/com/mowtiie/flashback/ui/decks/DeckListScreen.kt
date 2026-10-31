@@ -14,7 +14,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
+import com.mowtiie.flashback.ui.components.ActionFab
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
@@ -90,10 +90,10 @@ fun DeckListScreen(
         },
         floatingActionButton = {
             if (state.items.isNotEmpty()) {
-                ExtendedFloatingActionButton(
+                ActionFab(
+                    label = stringResource(R.string.deck_add),
                     onClick = onAddDeck,
                     icon = { Icon(Icons.Default.Add, contentDescription = null) },
-                    text = { Text(stringResource(R.string.deck_add)) },
                 )
             }
         },

@@ -16,7 +16,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
+import com.mowtiie.flashback.ui.components.ActionFab
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
@@ -63,10 +63,10 @@ fun TagsScreen(state: TagsUiState, onOpenTag: (Long) -> Unit, onAddTag: () -> Un
         },
         floatingActionButton = {
             if (state.tags.isNotEmpty()) {
-                ExtendedFloatingActionButton(
+                ActionFab(
+                    label = stringResource(R.string.tag_add),
                     onClick = onAddTag,
                     icon = { Icon(Icons.Default.Add, contentDescription = null) },
-                    text = { Text(stringResource(R.string.tag_add)) },
                 )
             }
         },
