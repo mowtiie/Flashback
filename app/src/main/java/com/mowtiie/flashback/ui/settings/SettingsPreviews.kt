@@ -8,8 +8,8 @@ import com.mowtiie.flashback.ui.components.LightDarkPreviews
 import com.mowtiie.flashback.ui.study.AnswerMode
 
 @Composable
-private fun Preview(state: SettingsUiState) {
-    FlashbackTheme(dynamicColor = false) { SettingsScreen(state, SettingsActions()) }
+private fun Preview(state: SettingsUiState, transferState: DataTransferUiState = DataTransferUiState()) {
+    FlashbackTheme(dynamicColor = false) { SettingsScreen(state, transferState, SettingsActions(), DataTransferActions()) }
 }
 
 @LightDarkPreviews

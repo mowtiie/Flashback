@@ -1,7 +1,9 @@
 package com.mowtiie.flashback.ui.navigation
 
 import android.os.Build
+import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
@@ -13,6 +15,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.mowtiie.flashback.AppContainer
 import com.mowtiie.flashback.R
+import com.mowtiie.flashback.repository.FlashbackRepository
+import com.mowtiie.flashback.ui.AppMessenger
 import com.mowtiie.flashback.ui.decks.DeckDetailRoute
 import com.mowtiie.flashback.ui.decks.DeckDetailViewModel
 import com.mowtiie.flashback.ui.decks.DeckEditorRoute
@@ -21,6 +25,7 @@ import com.mowtiie.flashback.ui.decks.DeckListRoute
 import com.mowtiie.flashback.ui.decks.DeckListViewModel
 import com.mowtiie.flashback.ui.notes.NoteEditorRoute
 import com.mowtiie.flashback.ui.notes.NoteEditorViewModel
+import com.mowtiie.flashback.ui.settings.DataTransferViewModel
 import com.mowtiie.flashback.ui.settings.SettingsRoute
 import com.mowtiie.flashback.ui.settings.SettingsViewModel
 import com.mowtiie.flashback.ui.stats.StatisticsRoute
@@ -39,35 +44,41 @@ private fun optionalIdArgument(name: String) = navArgument(name) {
     defaultValue = Routes.NEW_ID
 }
 
+/** A ViewModel scoped to the current destination, built by hand since there is no DI framework. */
+@Composable
+private inline fun <reified VM : ViewModel> destinationViewModel(crossinline create: () -> VM): VM =
+    viewModel(factory = viewModelFactory { initializer { create() } })
+
 fun NavGraphBuilder.flashbackGraph(container: AppContainer, navController: NavHostController) {
     deckDestinations(container, navController)
     noteDestinations(container, navController)
     tagDestinations(container, navController)
+    statisticsDestination(container)
+    settingsDestination(container)
+}
 
+private fun NavGraphBuilder.statisticsDestination(container: AppContainer) {
     composable(Routes.STATS) {
-        val viewModel: StatisticsViewModel = viewModel(
-            factory = viewModelFactory { initializer { StatisticsViewModel(container.repository) } },
-        )
-        StatisticsRoute(viewModel)
+        StatisticsRoute(destinationViewModel { StatisticsViewModel(container.repository) })
     }
+}
 
+private fun NavGraphBuilder.settingsDestination(container: AppContainer) {
     composable(Routes.SETTINGS) {
-        val viewModel: SettingsViewModel = viewModel(
-            factory = viewModelFactory {
-                initializer {
-                    SettingsViewModel(
-                        studyPrefs = container.studyPreferences,
-                        themePrefs = container.themePreferences,
-                        reminderPrefs = container.reminderPreferences,
-                        scheduler = container.reminderScheduler,
-                        archive = container.repository,
-                        ioDispatcher = container.dispatchers.io,
-                        dynamicColorAvailable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
-                    )
-                }
-            },
-        )
-        SettingsRoute(viewModel)
+        val settings = destinationViewModel {
+            SettingsViewModel(
+                studyPrefs = container.studyPreferences,
+                themePrefs = container.themePreferences,
+                reminderPrefs = container.reminderPreferences,
+                scheduler = container.reminderScheduler,
+                ioDispatcher = container.dispatchers.io,
+                dynamicColorAvailable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
+            )
+        }
+        val transfer = destinationViewModel {
+            DataTransferViewModel(archive = container.repository, ioDispatcher = container.dispatchers.io)
+        }
+        SettingsRoute(settings, transfer)
     }
 }
 
@@ -76,11 +87,8 @@ private fun NavGraphBuilder.deckDestinations(
     navController: NavHostController,
 ) {
     composable(Routes.DECKS) {
-        val viewModel: DeckListViewModel = viewModel(
-            factory = viewModelFactory { initializer { DeckListViewModel(container.repository) } },
-        )
         DeckListRoute(
-            viewModel = viewModel,
+            viewModel = destinationViewModel { DeckListViewModel(container.repository) },
             onOpenDeck = { navController.navigate(Routes.deckDetail(it)) },
             onStudyDeck = { navController.navigate(Routes.study(it)) },
             onAddDeck = { navController.navigate(Routes.deckEditor()) },
@@ -89,15 +97,10 @@ private fun NavGraphBuilder.deckDestinations(
 
     composable(Routes.STUDY, arguments = listOf(deckIdArgument)) { entry ->
         val deckId = entry.longArgument(Routes.DECK_ID)
-        val viewModel: StudyViewModel = viewModel(
-            factory = viewModelFactory {
-                initializer {
-                    StudyViewModel(container.repository, deckId, container.studyPreferences.answerMode)
-                }
-            },
-        )
         StudyRoute(
-            viewModel = viewModel,
+            viewModel = destinationViewModel {
+                StudyViewModel(container.repository, deckId, container.studyPreferences.answerMode)
+            },
             onBack = { navController.popBackStack() },
             onEditCard = { navController.navigate(Routes.noteEditor(deckId, it)) },
         )
@@ -105,15 +108,10 @@ private fun NavGraphBuilder.deckDestinations(
 
     composable(Routes.DECK_DETAIL, arguments = listOf(deckIdArgument)) { entry ->
         val deckId = entry.longArgument(Routes.DECK_ID)
-        val viewModel: DeckDetailViewModel = viewModel(
-            factory = viewModelFactory {
-                initializer {
-                    DeckDetailViewModel(container.repository, deckId, container.dispatchers.io)
-                }
-            },
-        )
         DeckDetailRoute(
-            viewModel = viewModel,
+            viewModel = destinationViewModel {
+                DeckDetailViewModel(container.repository, deckId, container.dispatchers.io)
+            },
             onBack = { navController.popBackStack() },
             onEditDeck = { navController.navigate(Routes.deckEditor(deckId)) },
             onAddNote = { navController.navigate(Routes.noteEditor(deckId)) },
@@ -121,9 +119,7 @@ private fun NavGraphBuilder.deckDestinations(
             onStudy = { navController.navigate(Routes.study(deckId)) },
             onDeleted = { _, undo ->
                 navController.popBackStack()
-                container.messenger.showWithAction(R.string.deck_deleted, R.string.study_undo) {
-                    undo.undo()
-                }
+                container.messenger.showUndoable(R.string.deck_deleted, undo)
             },
             onMessage = container.messenger::show,
         )
@@ -134,13 +130,8 @@ private fun NavGraphBuilder.deckDestinations(
         arguments = listOf(optionalIdArgument(Routes.DECK_ID)),
     ) { entry ->
         val deckId = entry.longArgument(Routes.DECK_ID)
-        val viewModel: DeckEditorViewModel = viewModel(
-            factory = viewModelFactory {
-                initializer { DeckEditorViewModel(container.repository, deckId) }
-            },
-        )
         DeckEditorRoute(
-            viewModel = viewModel,
+            viewModel = destinationViewModel { DeckEditorViewModel(container.repository, deckId) },
             onClose = { navController.popBackStack() },
             onSaved = {
                 navController.popBackStack()
@@ -161,20 +152,13 @@ private fun NavGraphBuilder.noteDestinations(
     ) { entry ->
         val deckId = entry.longArgument(Routes.DECK_ID)
         val noteId = entry.longArgument(Routes.NOTE_ID)
-        val viewModel: NoteEditorViewModel = viewModel(
-            factory = viewModelFactory {
-                initializer { NoteEditorViewModel(container.repository, deckId, noteId) }
-            },
-        )
         NoteEditorRoute(
-            viewModel = viewModel,
+            viewModel = destinationViewModel { NoteEditorViewModel(container.repository, deckId, noteId) },
             onClose = { navController.popBackStack() },
             onSavedAnother = { container.messenger.show(R.string.note_saved) },
             onDeleted = { undo ->
                 navController.popBackStack()
-                container.messenger.showWithAction(R.string.note_deleted, R.string.study_undo) {
-                    undo.undo()
-                }
+                container.messenger.showUndoable(R.string.note_deleted, undo)
             },
         )
     }
@@ -185,11 +169,8 @@ private fun NavGraphBuilder.tagDestinations(
     navController: NavHostController,
 ) {
     composable(Routes.TAGS) {
-        val viewModel: TagsViewModel = viewModel(
-            factory = viewModelFactory { initializer { TagsViewModel(container.repository) } },
-        )
         TagsRoute(
-            viewModel = viewModel,
+            viewModel = destinationViewModel { TagsViewModel(container.repository) },
             onOpenTag = { navController.navigate(Routes.tagEditor(it)) },
             onAddTag = { navController.navigate(Routes.tagEditor()) },
         )
@@ -200,23 +181,20 @@ private fun NavGraphBuilder.tagDestinations(
         arguments = listOf(optionalIdArgument(Routes.TAG_ID)),
     ) { entry ->
         val tagId = entry.longArgument(Routes.TAG_ID)
-        val viewModel: TagEditorViewModel = viewModel(
-            factory = viewModelFactory {
-                initializer { TagEditorViewModel(container.repository, tagId) }
-            },
-        )
         TagEditorRoute(
-            viewModel = viewModel,
+            viewModel = destinationViewModel { TagEditorViewModel(container.repository, tagId) },
             onClose = { navController.popBackStack() },
             onDeleted = { undo ->
                 navController.popBackStack()
-                container.messenger.showWithAction(R.string.tag_deleted, R.string.study_undo) {
-                    undo.undo()
-                }
+                container.messenger.showUndoable(R.string.tag_deleted, undo)
             },
         )
     }
 }
+
+/** The "deleted" snackbar with an Undo that outlives the screen that raised it. */
+private fun AppMessenger.showUndoable(@StringRes message: Int, undo: FlashbackRepository.UndoAction) =
+    showWithAction(message, R.string.study_undo) { undo.undo() }
 
 private fun NavBackStackEntry.longArgument(key: String): Long =
     requireNotNull(arguments) { "Missing arguments for $key" }.getLong(key)

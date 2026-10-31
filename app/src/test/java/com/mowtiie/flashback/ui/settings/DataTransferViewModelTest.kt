@@ -1,9 +1,5 @@
 package com.mowtiie.flashback.ui.settings
 
-import com.mowtiie.flashback.FakePreferenceStore
-import com.mowtiie.flashback.notifications.ReminderPreferences
-import com.mowtiie.flashback.theme.ThemePreferences
-import com.mowtiie.flashback.ui.study.StudyPreferences
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -23,7 +19,7 @@ import org.junit.Test
 import java.io.IOException
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class SettingsArchiveTest {
+class DataTransferViewModelTest {
 
     private val archive = FakeArchive()
     private val validJson = "{\"version\":1,\"decks\":[{\"name\":\"D\",\"tags\":[{\"name\":\"t\"}]," +
@@ -35,24 +31,13 @@ class SettingsArchiveTest {
     @After
     fun tearDown() = Dispatchers.resetMain()
 
-    private fun viewModel(): SettingsViewModel {
-        val store = FakePreferenceStore()
-        return SettingsViewModel(
-            studyPrefs = StudyPreferences(store),
-            themePrefs = ThemePreferences(store),
-            reminderPrefs = ReminderPreferences(store),
-            scheduler = {},
-            archive = archive,
-            ioDispatcher = UnconfinedTestDispatcher(),
-            dynamicColorAvailable = false,
-        )
-    }
+    private fun viewModel() = DataTransferViewModel(archive, UnconfinedTestDispatcher())
 
     @Test
     fun exportWithNothingToExportSaysSo() = runTest {
         val viewModel = viewModel()
         viewModel.prepareExportAll()
-        assertEquals(SettingsEvent.ExportNothing, viewModel.eventFlow.first())
+        assertEquals(DataTransferEvent.ExportNothing, viewModel.eventFlow.first())
         assertFalse(viewModel.uiState.value.working)
     }
 
@@ -61,15 +46,15 @@ class SettingsArchiveTest {
         archive.exportText = "{export}"
         val viewModel = viewModel()
         viewModel.prepareExportAll()
-        assertEquals(SettingsEvent.ExportReady, viewModel.eventFlow.first())
+        assertEquals(DataTransferEvent.ExportReady, viewModel.eventFlow.first())
 
         val written = mutableListOf<String>()
         viewModel.saveExport { written += it }
-        assertEquals(SettingsEvent.ExportSaved, viewModel.eventFlow.first())
+        assertEquals(DataTransferEvent.ExportSaved, viewModel.eventFlow.first())
         assertEquals(listOf("{export}"), written)
 
         viewModel.saveExport { written += it }
-        assertEquals(SettingsEvent.ExportWriteFailed, viewModel.eventFlow.first())
+        assertEquals(DataTransferEvent.ExportWriteFailed, viewModel.eventFlow.first())
         assertEquals(1, written.size)
     }
 
@@ -81,7 +66,7 @@ class SettingsArchiveTest {
         viewModel.eventFlow.first()
 
         viewModel.saveExport { throw IOException("disk full") }
-        assertEquals(SettingsEvent.ExportWriteFailed, viewModel.eventFlow.first())
+        assertEquals(DataTransferEvent.ExportWriteFailed, viewModel.eventFlow.first())
         assertFalse(viewModel.uiState.value.working)
     }
 
@@ -95,7 +80,7 @@ class SettingsArchiveTest {
         viewModel.discardExport()
         var wrote = false
         viewModel.saveExport { wrote = true }
-        assertEquals(SettingsEvent.ExportWriteFailed, viewModel.eventFlow.first())
+        assertEquals(DataTransferEvent.ExportWriteFailed, viewModel.eventFlow.first())
         assertFalse(wrote)
     }
 
@@ -137,7 +122,7 @@ class SettingsArchiveTest {
         val viewModel = viewModel()
         viewModel.previewImportFromFile { "{\"version\":99,\"decks\":[{\"name\":\"x\"}]}" }
 
-        val event = viewModel.eventFlow.first() as SettingsEvent.ImportRejected
+        val event = viewModel.eventFlow.first() as DataTransferEvent.ImportRejected
         assertTrue(event.message.contains("newer version"))
         assertNull(viewModel.uiState.value.pasteError)
         assertNull(viewModel.uiState.value.pendingImport)
@@ -148,7 +133,7 @@ class SettingsArchiveTest {
         val viewModel = viewModel()
         viewModel.previewImportFromFile { throw IOException("too large") }
 
-        val event = viewModel.eventFlow.first() as SettingsEvent.ImportReadFailed
+        val event = viewModel.eventFlow.first() as DataTransferEvent.ImportReadFailed
         assertEquals("too large", event.message)
         assertFalse(viewModel.uiState.value.working)
     }
@@ -168,7 +153,7 @@ class SettingsArchiveTest {
 
         viewModel.confirmImport()
 
-        val event = viewModel.eventFlow.first() as SettingsEvent.ImportDone
+        val event = viewModel.eventFlow.first() as DataTransferEvent.ImportDone
         assertEquals(2, event.result.notes)
         assertSame(pending.archive, archive.imported.single())
         assertNull(viewModel.uiState.value.pendingImport)
@@ -182,7 +167,7 @@ class SettingsArchiveTest {
         viewModel.previewImportFromText(validJson)
 
         viewModel.confirmImport()
-        assertEquals(SettingsEvent.ImportFailed, viewModel.eventFlow.first())
+        assertEquals(DataTransferEvent.ImportFailed, viewModel.eventFlow.first())
     }
 
     @Test

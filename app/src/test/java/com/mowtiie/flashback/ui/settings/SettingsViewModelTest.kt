@@ -40,7 +40,6 @@ class SettingsViewModelTest {
         themePrefs = ThemePreferences(store),
         reminderPrefs = ReminderPreferences(store),
         scheduler = scheduler,
-        archive = FakeArchive(),
         ioDispatcher = UnconfinedTestDispatcher(),
         dynamicColorAvailable = dynamicColorAvailable,
     )
@@ -72,7 +71,7 @@ class SettingsViewModelTest {
         val themePrefs = ThemePreferences(store)
         val viewModel = SettingsViewModel(
             StudyPreferences(store), themePrefs, ReminderPreferences(store), scheduler,
-            FakeArchive(), UnconfinedTestDispatcher(), true,
+            UnconfinedTestDispatcher(), true,
         )
         viewModel.setThemeMode(ThemeMode.Light)
         viewModel.setContrast(ContrastLevel.Medium)

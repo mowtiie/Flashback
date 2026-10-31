@@ -57,6 +57,7 @@ import com.mowtiie.flashback.R
 import com.mowtiie.flashback.scheduler.Rating
 import com.mowtiie.flashback.theme.countColors
 import com.mowtiie.flashback.ui.components.EmptyState
+import com.mowtiie.flashback.ui.components.showReplacing
 import kotlinx.coroutines.launch
 
 /** Width at which the card and the controls sit side by side. */
@@ -93,16 +94,11 @@ fun StudyRoute(
             when (event) {
                 // Launched, so a snackbar waiting to be dismissed never holds up the next event.
                 StudyEvent.Undone -> launch {
-                    snackbarHostState.currentSnackbarData?.dismiss()
-                    snackbarHostState.showSnackbar(
-                        message = context.getString(R.string.study_undone),
-                        duration = SnackbarDuration.Short,
-                    )
+                    snackbarHostState.showReplacing(context.getString(R.string.study_undone))
                 }
 
                 StudyEvent.CardSuspended -> launch {
-                    snackbarHostState.currentSnackbarData?.dismiss()
-                    val result = snackbarHostState.showSnackbar(
+                    val result = snackbarHostState.showReplacing(
                         message = context.getString(R.string.study_card_suspended),
                         actionLabel = context.getString(R.string.study_undo),
                         duration = SnackbarDuration.Long,

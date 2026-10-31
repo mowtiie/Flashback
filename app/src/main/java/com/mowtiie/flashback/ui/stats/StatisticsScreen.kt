@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
@@ -11,10 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -38,11 +36,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mowtiie.flashback.R
 import com.mowtiie.flashback.data.model.CardStateBreakdown
 import com.mowtiie.flashback.theme.countColors
+import com.mowtiie.flashback.ui.components.CenteredScrollColumn
 import com.mowtiie.flashback.ui.components.EmptyState
 import com.mowtiie.flashback.ui.tags.TagPalette
 import java.util.Locale
-
-private val CONTENT_MAX_WIDTH = 720.dp
 
 @Composable
 fun StatisticsRoute(viewModel: StatisticsViewModel) {
@@ -75,60 +72,45 @@ fun StatisticsScreen(state: StatisticsUiState) {
                 modifier = Modifier.padding(padding),
             )
 
-            else -> Box(
-                contentAlignment = Alignment.TopCenter,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .verticalScroll(rememberScrollState()),
-            ) {
-                StatisticsContent(
-                    data = state.data,
-                    modifier = Modifier
-                        .widthIn(max = CONTENT_MAX_WIDTH)
-                        .padding(16.dp),
-                )
-            }
+            else -> CenteredScrollColumn(Modifier.padding(padding)) { StatisticsContent(state.data) }
         }
     }
 }
 
 @Composable
-private fun StatisticsContent(data: StatisticsData, modifier: Modifier = Modifier) {
-    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            StatTile(
-                value = data.reviewsToday.toString(),
-                label = stringResource(R.string.stats_reviews_today),
-                modifier = Modifier.weight(1f),
-            )
-            StatTile(
-                value = pluralStringResource(R.plurals.stats_streak_value, data.streakDays, data.streakDays),
-                label = stringResource(R.string.stats_streak),
-                modifier = Modifier.weight(1f),
-            )
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            StatTile(
-                value = data.retentionPercent
-                    ?.let { stringResource(R.string.stats_percent, it) }
-                    ?: stringResource(R.string.stats_no_value),
-                label = stringResource(R.string.stats_retention),
-                modifier = Modifier.weight(1f),
-            )
-            StatTile(
-                value = data.timeToday.text(),
-                label = stringResource(R.string.stats_time_today),
-                modifier = Modifier.weight(1f),
-            )
-        }
-
-        SectionTitle(R.string.stats_activity_title)
-        ActivityCard(data.days)
-
-        SectionTitle(R.string.stats_breakdown_title)
-        BreakdownCard(data.breakdown)
+private fun ColumnScope.StatisticsContent(data: StatisticsData) {
+    Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+        StatTile(
+            value = data.reviewsToday.toString(),
+            label = stringResource(R.string.stats_reviews_today),
+            modifier = Modifier.weight(1f),
+        )
+        StatTile(
+            value = pluralStringResource(R.plurals.stats_streak_value, data.streakDays, data.streakDays),
+            label = stringResource(R.string.stats_streak),
+            modifier = Modifier.weight(1f),
+        )
     }
+    Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+        StatTile(
+            value = data.retentionPercent
+                ?.let { stringResource(R.string.stats_percent, it) }
+                ?: stringResource(R.string.stats_no_value),
+            label = stringResource(R.string.stats_retention),
+            modifier = Modifier.weight(1f),
+        )
+        StatTile(
+            value = data.timeToday.text(),
+            label = stringResource(R.string.stats_time_today),
+            modifier = Modifier.weight(1f),
+        )
+    }
+
+    SectionTitle(R.string.stats_activity_title)
+    ActivityCard(data.days)
+
+    SectionTitle(R.string.stats_breakdown_title)
+    BreakdownCard(data.breakdown)
 }
 
 @Composable

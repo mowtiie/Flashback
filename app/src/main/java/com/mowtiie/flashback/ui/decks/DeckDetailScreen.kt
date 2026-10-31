@@ -1,7 +1,5 @@
 package com.mowtiie.flashback.ui.decks
 
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -51,7 +49,6 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mowtiie.flashback.R
 import com.mowtiie.flashback.data.entity.Deck
-import com.mowtiie.flashback.data.io.ArchiveFiles
 import com.mowtiie.flashback.data.io.deckExportFileName
 import com.mowtiie.flashback.data.model.NotePreview
 import com.mowtiie.flashback.repository.FlashbackRepository
@@ -59,6 +56,7 @@ import com.mowtiie.flashback.theme.FlashbackTheme
 import com.mowtiie.flashback.ui.components.DeleteDialog
 import com.mowtiie.flashback.ui.components.EmptyState
 import com.mowtiie.flashback.ui.components.LightDarkPreviews
+import com.mowtiie.flashback.ui.export.rememberSaveDocumentLauncher
 
 @Composable
 fun DeckDetailRoute(
@@ -77,15 +75,10 @@ fun DeckDetailRoute(
 
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.refresh() }
 
-    val saveLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.CreateDocument("application/json"),
-    ) { uri ->
-        if (uri == null) {
-            viewModel.discardExport()
-        } else {
-            viewModel.saveExport { text -> ArchiveFiles.write(context.contentResolver, uri, text) }
-        }
-    }
+    val saveLauncher = rememberSaveDocumentLauncher(
+        onChosen = viewModel::saveExport,
+        onCancelled = viewModel::discardExport,
+    )
 
     LaunchedEffect(viewModel) {
         viewModel.eventFlow.collect { event ->
