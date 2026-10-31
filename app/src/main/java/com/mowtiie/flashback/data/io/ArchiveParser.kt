@@ -47,7 +47,7 @@ class ArchiveParser {
     }
 
     private fun parseDeck(json: JSONObject, index: Int): DeckArchive.Deck {
-        val name = json.optString("name", "").trim()
+        val name = json.text("name")
         if (name.isEmpty()) {
             throw ArchiveException("Deck ${index + 1} has no name.")
         }
@@ -73,7 +73,7 @@ class ArchiveParser {
     }
 
     private fun parseTag(json: JSONObject): DeckArchive.Tag? {
-        val name = json.optString("name", "").trim()
+        val name = json.text("name")
         if (name.isEmpty()) return null
 
         // 0 means "no colour". Anything else is forced opaque: a stray alpha of
@@ -87,8 +87,8 @@ class ArchiveParser {
     }
 
     private fun parseNote(json: JSONObject, deckName: String, index: Int): DeckArchive.Note {
-        val front = json.optString("front", "").trim()
-        val back = json.optString("back", "").trim()
+        val front = json.text("front")
+        val back = json.text("back")
 
         if (front.isEmpty() || back.isEmpty()) {
             throw ArchiveException(
@@ -106,8 +106,10 @@ class ArchiveParser {
 
     private fun positiveOr(value: Int, fallback: Int) = if (value > 0) value else fallback
 
-    private fun JSONObject.optTrimmedOrNull(key: String): String? =
-        optString(key, "").trim().ifEmpty { null }
+    /** Android's optString turns a JSON null into the text "null", so nulls are checked first. */
+    private fun JSONObject.text(key: String): String = if (isNull(key)) "" else optString(key, "").trim()
+
+    private fun JSONObject.optTrimmedOrNull(key: String): String? = text(key).ifEmpty { null }
 
     private companion object {
         const val MAX_NAME_LENGTH = 200
