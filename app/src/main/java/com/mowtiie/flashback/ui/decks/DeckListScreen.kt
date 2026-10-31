@@ -34,6 +34,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mowtiie.flashback.R
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.foundation.layout.widthIn
 import com.mowtiie.flashback.ui.components.isShortWindow
 import androidx.compose.material3.IconButton
 import com.mowtiie.flashback.theme.FlashbackTheme
@@ -162,12 +164,15 @@ private fun TagFilterRow(state: DeckListUiState, onSelectTag: (Long?) -> Unit) {
     }
 }
 
+/** A long tag name is cut, so the next chip stays in view and the row shows it scrolls. */
+private val FILTER_LABEL_MAX_WIDTH = 150.dp
+
 @Composable
 private fun TagFilterChip(label: String, selected: Boolean, onClick: () -> Unit) {
     FilterChip(
         selected = selected,
         onClick = onClick,
-        label = { Text(label) },
+        label = { Text(label, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.widthIn(max = FILTER_LABEL_MAX_WIDTH)) },
         leadingIcon = if (selected) {
             {
                 Icon(

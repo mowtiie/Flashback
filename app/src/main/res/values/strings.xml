@@ -373,4 +373,8 @@
         <item quantity="one">Retry %d section</item>
         <item quantity="other">Retry %d sections</item>
     </plurals>
+    <string name="deck_section_study">Study</string>
+    <string name="note_section_study">Study options</string>
+    <string name="deck_detail_counts">%1$d new · %2$d learning · %3$d due</string>
+    <string name="new_deck_ai_section">With AI</string>
 </resources>

@@ -4,6 +4,7 @@ import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mowtiie.flashback.data.entity.Deck
+import com.mowtiie.flashback.data.entity.Tag
 import com.mowtiie.flashback.data.model.NotePreview
 import com.mowtiie.flashback.repository.FlashbackRepository
 import com.mowtiie.flashback.ui.export.ExportSession
@@ -27,6 +28,11 @@ data class DeckDetailUiState(
     val notes: List<NotePreview> = emptyList(),
     val suspendedNoteIds: Set<Long> = emptySet(),
     val studyableCount: Int = 0,
+    val tags: List<Tag> = emptyList(),
+    /** What can be studied today, for the summary at the top of the page. */
+    val newCount: Int = 0,
+    val learnCount: Int = 0,
+    val dueCount: Int = 0,
 )
 
 sealed interface DeckDetailEvent {
@@ -64,13 +70,18 @@ class DeckDetailViewModel(
         repository.observeNotes(deckId),
         repository.observeSuspendedNoteIds(deckId),
         now.flatMapLatest { repository.observeDeckSummary(deckId, it) },
-    ) { deck, notes, suspendedIds, summary ->
+        repository.observeDeckTags(deckId),
+    ) { deck, notes, suspendedIds, summary, tags ->
         DeckDetailUiState(
             loaded = true,
             deck = deck,
             notes = notes,
             suspendedNoteIds = suspendedIds.toSet(),
             studyableCount = summary?.studyableCount() ?: 0,
+            tags = tags,
+            newCount = summary?.availableNew() ?: 0,
+            learnCount = summary?.learnCount ?: 0,
+            dueCount = summary?.availableDue() ?: 0,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), DeckDetailUiState())
 

@@ -15,6 +15,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.mowtiie.flashback.R
+import com.mowtiie.flashback.ui.components.SectionTitle
 import com.mowtiie.flashback.ui.components.asHeading
 import com.mowtiie.flashback.ui.settings.ActionRow
 import kotlinx.coroutines.launch
@@ -56,6 +57,10 @@ internal fun NewDeckSheet(
             body = stringResource(R.string.new_deck_manual_body),
             leadingIcon = R.drawable.ic_edit,
             onClick = { choose(onManual) },
+        )
+        SectionTitle(
+            text = stringResource(R.string.new_deck_ai_section),
+            modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 4.dp),
         )
         ActionRow(
             title = stringResource(R.string.new_deck_ai),

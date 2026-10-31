@@ -26,6 +26,7 @@ import com.mowtiie.flashback.scheduler.Rating
 import com.mowtiie.flashback.scheduler.SchedulingState
 import com.mowtiie.flashback.scheduler.Sm2Scheduler
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import java.util.Calendar
 
@@ -63,6 +64,9 @@ class FlashbackRepository(
         deckDao.observeSummary(deckId, now, startOfTodayMillis(now))
 
     fun observeDecksWithTags(): Flow<List<DeckWithTags>> = deckDao.observeAllWithTags()
+
+    fun observeDeckTags(deckId: Long): Flow<List<Tag>> =
+        deckDao.observeAllWithTags().map { decks -> decks.firstOrNull { it.deck.id == deckId }?.tags.orEmpty() }
 
     fun observeNotes(deckId: Long): Flow<List<NotePreview>> = noteDao.observeByDeck(deckId)
 

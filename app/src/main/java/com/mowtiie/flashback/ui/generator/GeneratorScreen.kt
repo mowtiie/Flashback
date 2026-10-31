@@ -54,6 +54,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mowtiie.flashback.R
+import com.mowtiie.flashback.ui.components.flashbackCardColors
 import com.mowtiie.flashback.ui.components.asHeading
 import com.mowtiie.flashback.data.io.DeckArchive
 import com.mowtiie.flashback.generator.CardCount
@@ -324,7 +325,7 @@ private fun ReviewPage(state: GeneratorUiState, actions: GeneratorActions) {
 
 @Composable
 private fun DraftCard(note: DeckArchive.Note, enabled: Boolean, onRemove: () -> Unit) {
-    OutlinedCard(Modifier.fillMaxWidth()) {
+    OutlinedCard(Modifier.fillMaxWidth(), colors = flashbackCardColors()) {
         Row(
             verticalAlignment = Alignment.Top,
             modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 8.dp),
@@ -413,7 +414,7 @@ private fun grouped(count: Int): String = NumberFormat.getIntegerInstance().form
 
 @Composable
 private fun PdfCard(state: GeneratorUiState, onRemove: () -> Unit) {
-    OutlinedCard(Modifier.fillMaxWidth()) {
+    OutlinedCard(Modifier.fillMaxWidth(), colors = flashbackCardColors()) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 8.dp),

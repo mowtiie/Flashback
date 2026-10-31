@@ -4,6 +4,10 @@ import android.content.ClipData
 import android.content.Intent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Surface
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
@@ -36,6 +40,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mowtiie.flashback.R
+import com.mowtiie.flashback.ui.components.flashbackCardColors
 import com.mowtiie.flashback.ui.components.SectionTitle
 import com.mowtiie.flashback.ui.components.asHeading
 import com.mowtiie.flashback.generator.CardTypes
@@ -100,6 +105,22 @@ fun PromptBuilderScreen(
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
     Scaffold(
+        // Copy and Share stay in reach however long the options above them get.
+        bottomBar = {
+            Surface(tonalElevation = 3.dp) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(16.dp),
+                ) {
+                    OutlinedButton(onClick = actions.onShare, modifier = Modifier.weight(1f)) {
+                        Text(stringResource(R.string.prompt_share))
+                    }
+                    Button(onClick = actions.onCopy, modifier = Modifier.weight(1f)) {
+                        Text(stringResource(R.string.prompt_copy))
+                    }
+                }
+            }
+        },
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.prompt_title)) },
@@ -143,7 +164,7 @@ fun PromptBuilderScreen(
                     modifier = Modifier.fillMaxWidth(),
                 )
                 SectionTitle(stringResource(R.string.prompt_preview_title))
-                OutlinedCard(Modifier.fillMaxWidth()) {
+                OutlinedCard(Modifier.fillMaxWidth(), colors = flashbackCardColors()) {
                     Text(
                         text = state.prompt,
                         style = MaterialTheme.typography.bodySmall,
@@ -151,12 +172,6 @@ fun PromptBuilderScreen(
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.padding(12.dp),
                     )
-                }
-                Button(onClick = actions.onCopy, modifier = Modifier.fillMaxWidth()) {
-                    Text(stringResource(R.string.prompt_copy))
-                }
-                OutlinedButton(onClick = actions.onShare, modifier = Modifier.fillMaxWidth()) {
-                    Text(stringResource(R.string.prompt_share))
                 }
                 Text(
                     text = stringResource(R.string.prompt_import_hint),

@@ -36,6 +36,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mowtiie.flashback.R
+import com.mowtiie.flashback.ui.components.flashbackCardColors
 import com.mowtiie.flashback.data.entity.Tag
 import com.mowtiie.flashback.data.model.TagWithCount
 import com.mowtiie.flashback.theme.FlashbackTheme
@@ -104,7 +105,7 @@ private fun TagCard(item: TagWithCount, onClick: () -> Unit) {
     val tag = item.tag
     val swatch = if (tag.color == 0) MaterialTheme.colorScheme.outline else Color(tag.color)
 
-    OutlinedCard(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
+    OutlinedCard(onClick = onClick, modifier = Modifier.fillMaxWidth(), colors = flashbackCardColors()) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(16.dp),
@@ -124,7 +125,7 @@ private fun TagCard(item: TagWithCount, onClick: () -> Unit) {
                 if (!tag.description.isNullOrBlank()) {
                     Text(
                         text = tag.description,
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -136,7 +137,7 @@ private fun TagCard(item: TagWithCount, onClick: () -> Unit) {
                     } else {
                         pluralStringResource(R.plurals.tag_deck_count, item.deckCount, item.deckCount)
                     },
-                    style = MaterialTheme.typography.labelSmall,
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 4.dp),
                 )

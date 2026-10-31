@@ -52,6 +52,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mowtiie.flashback.R
+import com.mowtiie.flashback.ui.settings.SwitchRow
+import com.mowtiie.flashback.ui.settings.SettingsCard
+import com.mowtiie.flashback.ui.settings.RowDivider
 import com.mowtiie.flashback.ui.components.SectionTitle
 import com.mowtiie.flashback.ui.components.asHeading
 import com.mowtiie.flashback.data.entity.Tag
@@ -186,56 +189,38 @@ fun DeckEditorScreen(
                     .padding(top = 16.dp),
             )
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 24.dp)
-                    .heightIn(min = 48.dp)
-                    .toggleable(
-                        value = form.reverseByDefault,
-                        role = Role.Switch,
-                        onValueChange = onReverseChange,
-                    ),
-            ) {
-                Text(
-                    text = stringResource(R.string.deck_reverse_default),
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.weight(1f),
+            SectionTitle(stringResource(R.string.deck_section_study), Modifier.padding(top = 24.dp))
+            SettingsCard {
+                SwitchRow(
+                    title = stringResource(R.string.deck_reverse_default),
+                    body = stringResource(R.string.deck_reverse_default_help),
+                    checked = form.reverseByDefault,
+                    onCheckedChange = onReverseChange,
                 )
-                Switch(checked = form.reverseByDefault, onCheckedChange = null)
-            }
-            Text(
-                text = stringResource(R.string.deck_reverse_default_help),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 4.dp),
-            )
-
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 24.dp),
-            ) {
-                LimitField(
-                    value = form.newPerDay,
-                    onValueChange = onNewPerDayChange,
-                    label = R.string.deck_new_per_day,
-                    error = state.errors.newPerDay,
-                    imeAction = ImeAction.Next,
-                    onDone = {},
-                    modifier = Modifier.weight(1f),
-                )
-                LimitField(
-                    value = form.reviewsPerDay,
-                    onValueChange = onReviewsPerDayChange,
-                    label = R.string.deck_reviews_per_day,
-                    error = state.errors.reviewsPerDay,
-                    imeAction = ImeAction.Done,
-                    onDone = { focusManager.clearFocus() },
-                    modifier = Modifier.weight(1f),
-                )
+                RowDivider()
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+                ) {
+                    LimitField(
+                        value = form.newPerDay,
+                        onValueChange = onNewPerDayChange,
+                        label = R.string.deck_new_per_day,
+                        error = state.errors.newPerDay,
+                        imeAction = ImeAction.Next,
+                        onDone = {},
+                        modifier = Modifier.weight(1f),
+                    )
+                    LimitField(
+                        value = form.reviewsPerDay,
+                        onValueChange = onReviewsPerDayChange,
+                        label = R.string.deck_reviews_per_day,
+                        error = state.errors.reviewsPerDay,
+                        imeAction = ImeAction.Done,
+                        onDone = { focusManager.clearFocus() },
+                        modifier = Modifier.weight(1f),
+                    )
+                }
             }
 
             SectionTitle(stringResource(R.string.deck_tags), Modifier.padding(top = 24.dp))

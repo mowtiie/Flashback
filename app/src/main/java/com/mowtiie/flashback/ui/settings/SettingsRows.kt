@@ -35,6 +35,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.mowtiie.flashback.ui.components.SectionTitle
+import com.mowtiie.flashback.ui.components.flashbackCardColors
 
 internal const val DISABLED_ALPHA = 0.5f
 
@@ -52,7 +53,7 @@ internal fun SectionHeader(@StringRes titleRes: Int) {
 
 @Composable
 internal fun SettingsCard(content: @Composable () -> Unit) {
-    OutlinedCard(Modifier.fillMaxWidth()) {
+    OutlinedCard(Modifier.fillMaxWidth(), colors = flashbackCardColors()) {
         Column(Modifier.padding(vertical = 8.dp)) { content() }
     }
 }

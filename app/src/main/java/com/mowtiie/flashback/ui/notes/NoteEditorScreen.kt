@@ -44,8 +44,11 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mowtiie.flashback.R
+import com.mowtiie.flashback.ui.settings.SwitchRow
+import com.mowtiie.flashback.ui.settings.SettingsCard
+import com.mowtiie.flashback.ui.settings.RowDivider
+import com.mowtiie.flashback.ui.components.SectionTitle
 import com.mowtiie.flashback.ui.settings.ChoiceRow
-import com.mowtiie.flashback.ui.settings.ChoiceRowStyle
 import com.mowtiie.flashback.ui.study.AnswerMode
 import com.mowtiie.flashback.repository.FlashbackRepository
 import com.mowtiie.flashback.theme.FlashbackTheme
@@ -214,24 +217,25 @@ fun NoteEditorScreen(
                     .padding(top = 16.dp),
             )
 
-            AnswerTypeSection(form, onAnswerModeChange, onWrongOptionChange)
-
-            SwitchRow(
-                label = stringResource(R.string.note_reverse),
-                help = stringResource(R.string.note_reverse_help),
-                checked = form.reverseEnabled,
-                onCheckedChange = onReverseChange,
-                modifier = Modifier.padding(top = 24.dp),
-            )
-
-            if (state.isEditing) {
+            SectionTitle(stringResource(R.string.note_section_study), Modifier.padding(top = 24.dp))
+            SettingsCard {
+                AnswerTypeSection(form, onAnswerModeChange, onWrongOptionChange)
+                RowDivider()
                 SwitchRow(
-                    label = stringResource(R.string.note_suspend),
-                    help = stringResource(R.string.note_suspend_help),
-                    checked = form.suspended,
-                    onCheckedChange = onSuspendedChange,
-                    modifier = Modifier.padding(top = 24.dp),
+                    title = stringResource(R.string.note_reverse),
+                    body = stringResource(R.string.note_reverse_help),
+                    checked = form.reverseEnabled,
+                    onCheckedChange = onReverseChange,
                 )
+                if (state.isEditing) {
+                    RowDivider()
+                    SwitchRow(
+                        title = stringResource(R.string.note_suspend),
+                        body = stringResource(R.string.note_suspend_help),
+                        checked = form.suspended,
+                        onCheckedChange = onSuspendedChange,
+                    )
+                }
             }
 
             Button(
@@ -258,39 +262,6 @@ fun NoteEditorScreen(
     }
 }
 
-@Composable
-private fun SwitchRow(
-    label: String,
-    help: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Column(modifier) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = 48.dp)
-                .toggleable(value = checked, role = Role.Switch, onValueChange = onCheckedChange),
-        ) {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.weight(1f),
-            )
-            Switch(checked = checked, onCheckedChange = null)
-        }
-        Text(
-            text = help,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(top = 4.dp),
-        )
-    }
-}
-
-@LightDarkPreviews
 @Composable
 private fun NoteEditorNewPreview() {
     FlashbackTheme(dynamicColor = false) {
@@ -330,7 +301,6 @@ private fun AnswerTypeSection(
     onWrongOptionChange: (Int, String) -> Unit,
 ) {
     ChoiceRow(
-        style = ChoiceRowStyle.Form,
         title = stringResource(R.string.note_answer_type),
         options = listOf<AnswerMode?>(null) + AnswerMode.entries,
         selected = form.answerMode,
@@ -353,7 +323,6 @@ private fun AnswerTypeSection(
                 AnswerMode.Choice -> R.string.note_answer_type_choice_help
             },
         ),
-        modifier = Modifier.padding(top = 24.dp),
     )
 
     if (form.answerMode == AnswerMode.Choice) {
@@ -365,7 +334,7 @@ private fun AnswerTypeSection(
                 singleLine = true,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp),
+                    .padding(horizontal = 16.dp, vertical = 4.dp),
             )
         }
     }

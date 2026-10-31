@@ -353,4 +353,16 @@ class FlashbackRepositoryTest {
         assertEquals(null, modes.getValue("plain"))
         assertEquals(AnswerMode.Type.value, modes.getValue("typed"))
     }
+
+    @Test
+    fun aDecksTagsComeBackForThatDeckOnly() = runBlocking {
+        val language = repository.saveTag(Tag(name = "Language"))!!
+        val science = repository.saveTag(Tag(name = "Science"))!!
+        val first = repository.saveDeck(Deck(name = "Spanish"), listOf(language))
+        val second = repository.saveDeck(Deck(name = "Biology"), listOf(science))
+
+        assertEquals(listOf("Language"), repository.observeDeckTags(first).first().map { it.name })
+        assertEquals(listOf("Science"), repository.observeDeckTags(second).first().map { it.name })
+        assertEquals(emptyList<Tag>(), repository.observeDeckTags(9999).first())
+    }
 }

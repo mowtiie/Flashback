@@ -248,14 +248,24 @@ private fun CountsRow(counts: StudyCounts) {
 @Composable
 private fun Count(value: Int, labelRes: Int, color: androidx.compose.ui.graphics.Color) {
     val description = stringResource(R.string.study_count_desc, stringResource(labelRes), value)
-    Text(
-        text = value.toString(),
-        style = MaterialTheme.typography.labelLarge,
-        color = color,
+    Row(
+        verticalAlignment = Alignment.Bottom,
         modifier = Modifier
-            .padding(horizontal = 8.dp)
-            .semantics { contentDescription = description },
-    )
+            .padding(horizontal = 10.dp)
+            .semantics(mergeDescendants = true) { contentDescription = description },
+    ) {
+        Text(
+            text = value.toString(),
+            style = MaterialTheme.typography.titleSmall,
+            color = color,
+        )
+        Text(
+            text = stringResource(labelRes),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(start = 4.dp),
+        )
+    }
 }
 
 @Composable

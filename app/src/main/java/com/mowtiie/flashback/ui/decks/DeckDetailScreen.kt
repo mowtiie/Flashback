@@ -48,6 +48,10 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mowtiie.flashback.R
+import com.mowtiie.flashback.ui.components.TagChip
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import com.mowtiie.flashback.ui.components.flashbackCardColors
 import com.mowtiie.flashback.ui.study.AnswerMode
 import com.mowtiie.flashback.data.entity.Deck
 import com.mowtiie.flashback.data.io.deckExportFileName
@@ -186,6 +190,7 @@ fun DeckDetailScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.fillMaxSize(),
             ) {
+                item(key = "summary") { DeckSummary(state) }
                 items(state.notes, key = { it.id }) { note ->
                     NoteCard(
                         note = note,
@@ -238,6 +243,38 @@ private fun DeckDetailActions(
     }
 }
 
+/** Description, tags and today's counts, so the page says what the deck is before listing its cards. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun DeckSummary(state: DeckDetailUiState) {
+    val description = state.deck?.description
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 8.dp),
+    ) {
+        if (!description.isNullOrBlank()) {
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        if (state.tags.isNotEmpty()) {
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                state.tags.forEach { TagChip(it) }
+            }
+        }
+        Text(
+            text = stringResource(R.string.deck_detail_counts, state.newCount, state.learnCount, state.dueCount),
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.primary,
+        )
+    }
+}
+
 @Composable
 private fun NoteCard(note: NotePreview, suspended: Boolean, onClick: () -> Unit) {
     OutlinedCard(
@@ -245,6 +282,7 @@ private fun NoteCard(note: NotePreview, suspended: Boolean, onClick: () -> Unit)
         modifier = Modifier
             .fillMaxWidth()
             .alpha(if (suspended) 0.6f else 1f),
+        colors = flashbackCardColors(),
     ) {
         Column(Modifier.padding(16.dp)) {
             Text(

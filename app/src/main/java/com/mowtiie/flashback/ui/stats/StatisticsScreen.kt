@@ -34,6 +34,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mowtiie.flashback.R
+import com.mowtiie.flashback.ui.components.flashbackCardColors
 import com.mowtiie.flashback.ui.components.SectionTitle
 import com.mowtiie.flashback.ui.components.asHeading
 import com.mowtiie.flashback.data.model.CardStateBreakdown
@@ -117,7 +118,7 @@ private fun ColumnScope.StatisticsContent(data: StatisticsData) {
 
 @Composable
 private fun StatTile(value: String, label: String, modifier: Modifier = Modifier) {
-    Card(modifier = modifier) {
+    OutlinedCard(modifier = modifier, colors = flashbackCardColors()) {
         Column(Modifier.padding(16.dp)) {
             Text(
                 text = value,
@@ -146,7 +147,7 @@ private fun ActivityCard(days: List<DayBar>) {
         days.size,
         days.joinToString(", ") { it.count.toString() },
     )
-    OutlinedCard(Modifier.fillMaxWidth()) {
+    OutlinedCard(Modifier.fillMaxWidth(), colors = flashbackCardColors()) {
         ActivityChart(days, description, Modifier.padding(16.dp))
     }
 }
@@ -164,7 +165,7 @@ private fun BreakdownCard(breakdown: CardStateBreakdown) {
     val legendText = entries.map { stringResource(R.string.stats_legend_entry, it.label, it.count) }
     val description = stringResource(R.string.stats_breakdown_desc, legendText.joinToString(", "))
 
-    OutlinedCard(Modifier.fillMaxWidth()) {
+    OutlinedCard(Modifier.fillMaxWidth(), colors = flashbackCardColors()) {
         Column(Modifier.padding(16.dp)) {
             SegmentBar(entries.map { it.count }, entries.map { it.color }, description)
             Text(

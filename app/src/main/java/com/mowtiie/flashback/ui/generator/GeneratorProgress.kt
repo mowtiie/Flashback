@@ -22,6 +22,7 @@ import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.mowtiie.flashback.R
+import com.mowtiie.flashback.ui.components.flashbackCardColors
 import com.mowtiie.flashback.ui.components.ConfirmDialog
 import com.mowtiie.flashback.ui.components.asHeading
 
@@ -99,7 +100,7 @@ internal fun SectionSummary(state: GeneratorUiState, enabled: Boolean, onRetry: 
             )
         }
         if (state.failedSections.isNotEmpty()) {
-            OutlinedCard(Modifier.fillMaxWidth().semantics { liveRegion = LiveRegionMode.Polite }) {
+            OutlinedCard(Modifier.fillMaxWidth().semantics { liveRegion = LiveRegionMode.Polite }, colors = flashbackCardColors()) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(
                         text = pluralStringResource(
