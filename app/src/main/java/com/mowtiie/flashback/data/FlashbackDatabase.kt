@@ -53,7 +53,6 @@ abstract class FlashbackDatabase : RoomDatabase() {
                     FlashbackDatabase::class.java,
                     DB_NAME,
                 )
-                    .addMigrations(MIGRATION_1_2)
                     // Lets the study screen read while a write is in flight.
                     .setJournalMode(JournalMode.WRITE_AHEAD_LOGGING)
                     .build()
