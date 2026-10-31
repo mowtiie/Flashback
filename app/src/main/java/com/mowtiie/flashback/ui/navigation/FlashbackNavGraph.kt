@@ -1,7 +1,7 @@
 package com.mowtiie.flashback.ui.navigation
 
+import android.os.Build
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
@@ -21,6 +21,8 @@ import com.mowtiie.flashback.ui.decks.DeckListRoute
 import com.mowtiie.flashback.ui.decks.DeckListViewModel
 import com.mowtiie.flashback.ui.notes.NoteEditorRoute
 import com.mowtiie.flashback.ui.notes.NoteEditorViewModel
+import com.mowtiie.flashback.ui.settings.SettingsRoute
+import com.mowtiie.flashback.ui.settings.SettingsViewModel
 import com.mowtiie.flashback.ui.stats.StatisticsRoute
 import com.mowtiie.flashback.ui.stats.StatisticsViewModel
 import com.mowtiie.flashback.ui.study.StudyRoute
@@ -49,8 +51,23 @@ fun NavGraphBuilder.flashbackGraph(container: AppContainer, navController: NavHo
         StatisticsRoute(viewModel)
     }
 
-    // Placeholder until the screen is ported.
-    composable(Routes.SETTINGS) { PlaceholderScreen(stringResource(R.string.settings_title)) }
+    composable(Routes.SETTINGS) {
+        val viewModel: SettingsViewModel = viewModel(
+            factory = viewModelFactory {
+                initializer {
+                    SettingsViewModel(
+                        studyPrefs = container.studyPreferences,
+                        themePrefs = container.themePreferences,
+                        reminderPrefs = container.reminderPreferences,
+                        scheduler = container.reminderScheduler,
+                        ioDispatcher = container.dispatchers.io,
+                        dynamicColorAvailable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
+                    )
+                }
+            },
+        )
+        SettingsRoute(viewModel)
+    }
 }
 
 private fun NavGraphBuilder.deckDestinations(

@@ -2,7 +2,6 @@
     <string name="app_name">Flashback</string>
 
     <string name="navigate_up">Navigate up</string>
-    <string name="not_ported_yet">This screen has not been ported yet.</string>
 
     <string name="decks_title">Decks</string>
     <string name="decks_empty_title">No decks yet</string>
@@ -92,6 +91,35 @@
         <item quantity="other">%1$d scheduled cards</item>
     </plurals>
     <string name="settings_title">Settings</string>
+    <string name="settings_appearance_header">Appearance</string>
+    <string name="settings_theme_mode">Theme</string>
+    <string name="theme_mode_system">System</string>
+    <string name="theme_mode_light">Light</string>
+    <string name="theme_mode_dark">Dark</string>
+    <string name="settings_dynamic_color">Dynamic colour</string>
+    <string name="settings_dynamic_color_body">Use colours from your wallpaper on Android 12 and up.</string>
+    <string name="settings_contrast">Contrast</string>
+    <string name="settings_contrast_dynamic_hint">Contrast follows your system settings while dynamic colour is on.</string>
+    <string name="contrast_standard">Standard</string>
+    <string name="contrast_medium">Medium</string>
+    <string name="contrast_high">High</string>
+    <string name="settings_reminders_header">Reminders</string>
+    <string name="reminder_toggle_title">Daily study reminder</string>
+    <string name="reminder_toggle_body">A once-a-day nudge when you have cards to review.</string>
+    <string name="reminder_time_title">Reminder time</string>
+    <string name="reminder_permission_denied">Notifications are turned off for Flashback. Enable them in system settings to get reminders.</string>
+    <string name="reminder_channel_name">Study reminders</string>
+    <string name="reminder_channel_body">The daily nudge to review your due cards.</string>
+    <string name="reminder_title">Time to study</string>
+    <plurals name="reminder_body">
+        <item quantity="one">%1$d card is waiting for review.</item>
+        <item quantity="other">%1$d cards are waiting for review.</item>
+    </plurals>
+    <string name="settings_study_header">Study</string>
+    <string name="settings_answer_mode">Answer mode</string>
+    <string name="answer_mode_flip">Flip</string>
+    <string name="answer_mode_type">Type</string>
+    <string name="answer_mode_choice">Choice</string>
 
     <string name="tags_title">Tags</string>
     <string name="tags_empty_title">No tags yet</string>
