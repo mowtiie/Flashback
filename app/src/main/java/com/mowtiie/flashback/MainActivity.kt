@@ -1,6 +1,8 @@
 package com.mowtiie.flashback
 
+import android.content.res.Configuration
 import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
@@ -18,13 +20,11 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val container = (application as FlashbackApp).container
+        paintWindow(isDark(container.themePreferences.settings.value.mode, systemDark()))
+
         setContent {
             val settings by container.themePreferences.settings.collectAsStateWithLifecycle()
-            val darkTheme = when (settings.mode) {
-                ThemeMode.System -> isSystemInDarkTheme()
-                ThemeMode.Light -> false
-                ThemeMode.Dark -> true
-            }
+            val darkTheme = isDark(settings.mode, isSystemInDarkTheme())
 
             // System bar icons follow the chosen theme, not the system one.
             DisposableEffect(darkTheme) {
@@ -32,6 +32,7 @@ class MainActivity : ComponentActivity() {
                     statusBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT) { darkTheme },
                     navigationBarStyle = SystemBarStyle.auto(LIGHT_SCRIM, DARK_SCRIM) { darkTheme },
                 )
+                paintWindow(darkTheme)
                 onDispose {}
             }
 
@@ -43,6 +44,21 @@ class MainActivity : ComponentActivity() {
                 FlashbackNavHost(container)
             }
         }
+    }
+
+    private fun systemDark() =
+        resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
+
+    private fun isDark(mode: ThemeMode, systemDark: Boolean) = when (mode) {
+        ThemeMode.System -> systemDark
+        ThemeMode.Light -> false
+        ThemeMode.Dark -> true
+    }
+
+    /** The theme's window colour follows the system; a forced mode needs it set by hand to avoid a flash. */
+    private fun paintWindow(dark: Boolean) {
+        val color = getColor(if (dark) R.color.window_background_dark else R.color.window_background_light)
+        window.setBackgroundDrawable(ColorDrawable(color))
     }
 
     private companion object {
