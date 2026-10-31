@@ -3,7 +3,10 @@ package com.mowtiie.flashback.generator
 import com.mowtiie.flashback.PreferenceStore
 
 /** The chosen provider and the user's own key for each. No key keeps the generator, and the network, off. */
-class GeneratorPreferences(private val store: PreferenceStore) {
+class GeneratorPreferences(
+    private val store: PreferenceStore,
+    private val cipher: SecretCipher = SecretCipher.None,
+) {
 
     var provider: GeneratorProvider
         get() = GeneratorProvider.entries.getOrNull(store.getInt(KEY_PROVIDER, 0)) ?: GeneratorProvider.Anthropic
@@ -16,11 +19,18 @@ class GeneratorPreferences(private val store: PreferenceStore) {
 
     val hasApiKey: Boolean get() = apiKey != null
 
-    fun apiKey(provider: GeneratorProvider): String? =
-        store.getString(keyName(provider))?.takeIf { it.isNotEmpty() }
+    fun apiKey(provider: GeneratorProvider): String? {
+        val name = keyName(provider)
+        val stored = store.getString(name)?.takeIf { it.isNotEmpty() } ?: return null
+        if (stored.startsWith(PREFIX)) return cipher.decrypt(stored.removePrefix(PREFIX))
+        setApiKey(provider, stored)
+        return stored
+    }
 
-    fun setApiKey(provider: GeneratorProvider, value: String?) =
-        store.putString(keyName(provider), value?.trim()?.ifEmpty { null })
+    fun setApiKey(provider: GeneratorProvider, value: String?) {
+        val clean = value?.trim()?.ifEmpty { null }
+        store.putString(keyName(provider), clean?.let { PREFIX + cipher.encrypt(it) })
+    }
 
     // Anthropic keeps the name it was first saved under.
     private fun keyName(provider: GeneratorProvider) = when (provider) {
@@ -30,6 +40,7 @@ class GeneratorPreferences(private val store: PreferenceStore) {
 
     private companion object {
         const val KEY_PROVIDER = "generator_provider"
+        const val PREFIX = "enc1:"
     }
 }
 

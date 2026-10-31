@@ -7,6 +7,7 @@ import com.mowtiie.flashback.generator.CardGenerator
 import com.mowtiie.flashback.generator.GeminiCardGenerator
 import com.mowtiie.flashback.generator.GeneratorPreferences
 import com.mowtiie.flashback.generator.GeneratorProvider
+import com.mowtiie.flashback.generator.KeystoreSecretCipher
 import com.mowtiie.flashback.generator.SelectedCardGenerator
 import com.mowtiie.flashback.notifications.ReminderPreferences
 import com.mowtiie.flashback.notifications.ReminderScheduler
@@ -36,7 +37,10 @@ class AppContainer(context: Context) {
     val reminderPreferences: ReminderPreferences by lazy { ReminderPreferences(preferenceStore) }
 
     val generatorPreferences: GeneratorPreferences by lazy {
-        GeneratorPreferences(SharedPreferenceStore(appContext, SharedPreferenceStore.SECRETS_FILE))
+        GeneratorPreferences(
+            SharedPreferenceStore(appContext, SharedPreferenceStore.SECRETS_FILE),
+            KeystoreSecretCipher(),
+        )
     }
 
     val cardGenerator: CardGenerator by lazy {
