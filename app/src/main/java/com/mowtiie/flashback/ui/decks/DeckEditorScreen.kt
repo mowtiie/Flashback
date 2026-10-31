@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -51,6 +52,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mowtiie.flashback.R
+import com.mowtiie.flashback.ui.components.asHeading
 import com.mowtiie.flashback.data.entity.Tag
 import com.mowtiie.flashback.theme.FlashbackTheme
 import com.mowtiie.flashback.ui.components.DiscardChangesDialog
@@ -188,6 +190,7 @@ fun DeckEditorScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 24.dp)
+                    .heightIn(min = 48.dp)
                     .toggleable(
                         value = form.reverseByDefault,
                         role = Role.Switch,
@@ -237,7 +240,7 @@ fun DeckEditorScreen(
             Text(
                 text = stringResource(R.string.deck_tags),
                 style = MaterialTheme.typography.titleSmall,
-                modifier = Modifier.padding(top = 24.dp),
+                modifier = Modifier.padding(top = 24.dp).asHeading(),
             )
             if (state.tags.isEmpty()) {
                 Text(

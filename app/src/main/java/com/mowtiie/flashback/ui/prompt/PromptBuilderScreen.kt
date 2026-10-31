@@ -2,7 +2,9 @@ package com.mowtiie.flashback.ui.prompt
 
 import android.content.ClipData
 import android.content.Intent
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -24,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalContext
@@ -33,6 +36,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mowtiie.flashback.R
+import com.mowtiie.flashback.ui.components.asHeading
 import com.mowtiie.flashback.generator.CardTypes
 import com.mowtiie.flashback.generator.PromptCoverage
 import com.mowtiie.flashback.theme.FlashbackTheme
@@ -107,58 +111,61 @@ fun PromptBuilderScreen(
                 },
             )
         },
-        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
-        CenteredScrollColumn(Modifier.padding(padding)) {
-            Text(stringResource(R.string.prompt_intro), style = MaterialTheme.typography.bodyMedium)
-            ChoiceRow(
-                title = stringResource(R.string.prompt_coverage_title),
-                options = PromptCoverage.entries,
-                selected = state.options.coverage,
-                label = { stringResource(it.labelRes()) },
-                onSelect = actions.onCoverage,
-                hint = stringResource(state.options.coverage.hintRes()),
-            )
-            CardTypesChoice(state.options.cardTypes, actions.onCardTypes)
-            OutlinedTextField(
-                value = state.options.language,
-                onValueChange = actions.onLanguage,
-                label = { Text(stringResource(R.string.prompt_language_label)) },
-                supportingText = { Text(stringResource(R.string.prompt_language_hint)) },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            OutlinedTextField(
-                value = state.options.deckName,
-                onValueChange = actions.onDeckName,
-                label = { Text(stringResource(R.string.prompt_name_label)) },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            Text(stringResource(R.string.prompt_preview_title), style = MaterialTheme.typography.titleSmall)
-            OutlinedCard(Modifier.fillMaxWidth()) {
-                Text(
-                    text = state.prompt,
-                    style = MaterialTheme.typography.bodySmall,
-                    maxLines = PREVIEW_LINES,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(12.dp),
+        Box(Modifier.fillMaxSize()) {
+            CenteredScrollColumn(Modifier.padding(padding)) {
+                Text(stringResource(R.string.prompt_intro), style = MaterialTheme.typography.bodyMedium)
+                ChoiceRow(
+                    title = stringResource(R.string.prompt_coverage_title),
+                    options = PromptCoverage.entries,
+                    selected = state.options.coverage,
+                    label = { stringResource(it.labelRes()) },
+                    onSelect = actions.onCoverage,
+                    hint = stringResource(state.options.coverage.hintRes()),
                 )
+                CardTypesChoice(state.options.cardTypes, actions.onCardTypes)
+                OutlinedTextField(
+                    value = state.options.language,
+                    onValueChange = actions.onLanguage,
+                    label = { Text(stringResource(R.string.prompt_language_label)) },
+                    supportingText = { Text(stringResource(R.string.prompt_language_hint)) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                OutlinedTextField(
+                    value = state.options.deckName,
+                    onValueChange = actions.onDeckName,
+                    label = { Text(stringResource(R.string.prompt_name_label)) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Text(stringResource(R.string.prompt_preview_title), style = MaterialTheme.typography.titleSmall, modifier = Modifier.asHeading())
+                OutlinedCard(Modifier.fillMaxWidth()) {
+                    Text(
+                        text = state.prompt,
+                        style = MaterialTheme.typography.bodySmall,
+                        maxLines = PREVIEW_LINES,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.padding(12.dp),
+                    )
+                }
+                Button(onClick = actions.onCopy, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.prompt_copy))
+                }
+                OutlinedButton(onClick = actions.onShare, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.prompt_share))
+                }
+                Text(
+                    text = stringResource(R.string.prompt_import_hint),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                TextButton(onClick = actions.onImport, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.prompt_import))
+                }
             }
-            Button(onClick = actions.onCopy, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.prompt_copy))
-            }
-            OutlinedButton(onClick = actions.onShare, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.prompt_share))
-            }
-            Text(
-                text = stringResource(R.string.prompt_import_hint),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            TextButton(onClick = actions.onImport, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.prompt_import))
-            }
+            // At the top, so it never covers the import button.
+            SnackbarHost(snackbarHostState, Modifier.align(Alignment.TopCenter).padding(padding))
         }
     }
 }

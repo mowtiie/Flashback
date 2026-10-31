@@ -15,9 +15,12 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
@@ -27,11 +30,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
+import com.mowtiie.flashback.ui.components.asHeading
 
 internal const val DISABLED_ALPHA = 0.5f
+
+/** Above this font scale, choice rows stack vertically. */
+private const val STACK_FONT_SCALE = 1.3f
 
 /** Test tags: the leading icon of an action row, and the import chooser. */
 internal const val ROW_ICON_TAG = "settings-row-icon"
@@ -43,7 +51,7 @@ internal fun SectionHeader(@StringRes titleRes: Int) {
         text = stringResource(titleRes),
         style = MaterialTheme.typography.titleSmall,
         color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(top = 16.dp, start = 4.dp),
+        modifier = Modifier.padding(top = 16.dp, start = 4.dp).asHeading(),
     )
 }
 
@@ -176,16 +184,39 @@ internal fun <T> ChoiceRow(
             style = MaterialTheme.typography.bodyLarge,
             modifier = Modifier.alpha(if (enabled) 1f else DISABLED_ALPHA),
         )
-        SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(top = 8.dp)) {
-            options.forEachIndexed { index, option ->
-                SegmentedButton(
-                    selected = option == selected,
-                    onClick = { onSelect(option) },
-                    enabled = enabled,
-                    shape = SegmentedButtonDefaults.itemShape(index, options.size),
-                    modifier = Modifier.heightIn(min = 48.dp),
-                ) {
-                    Text(label(option))
+        if (LocalDensity.current.fontScale > STACK_FONT_SCALE) {
+            // Segments get too narrow for large text and split words, so list the options instead.
+            Column(Modifier.fillMaxWidth().padding(top = 4.dp).selectableGroup()) {
+                options.forEach { option ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 48.dp)
+                            .selectable(
+                                selected = option == selected,
+                                enabled = enabled,
+                                role = Role.RadioButton,
+                                onClick = { onSelect(option) },
+                            ),
+                    ) {
+                        RadioButton(selected = option == selected, onClick = null, enabled = enabled)
+                        Text(label(option), Modifier.padding(start = 16.dp))
+                    }
+                }
+            }
+        } else {
+            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(top = 8.dp)) {
+                options.forEachIndexed { index, option ->
+                    SegmentedButton(
+                        selected = option == selected,
+                        onClick = { onSelect(option) },
+                        enabled = enabled,
+                        shape = SegmentedButtonDefaults.itemShape(index, options.size),
+                        modifier = Modifier.heightIn(min = 48.dp),
+                    ) {
+                        Text(label(option))
+                    }
                 }
             }
         }

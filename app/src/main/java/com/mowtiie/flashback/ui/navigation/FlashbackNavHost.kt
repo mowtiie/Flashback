@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -66,7 +67,7 @@ fun FlashbackNavHost(
                             selected = destination == topLevel,
                             onClick = { navController.navigateTopLevel(destination.route) },
                             icon = { DestinationIcon(destination, selected = destination == topLevel) },
-                            label = { Text(stringResource(destination.label)) },
+                            label = { Text(stringResource(destination.label), maxLines = 1, overflow = TextOverflow.Ellipsis) },
                         )
                     }
                 }
@@ -94,7 +95,7 @@ fun FlashbackNavHost(
                                     selected = destination == topLevel,
                                     onClick = { navController.navigateTopLevel(destination.route) },
                                     icon = { DestinationIcon(destination, selected = destination == topLevel) },
-                                    label = { Text(stringResource(destination.label)) },
+                                    label = { Text(stringResource(destination.label), maxLines = 1, overflow = TextOverflow.Ellipsis) },
                                 )
                             }
                         }

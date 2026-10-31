@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
@@ -70,24 +71,27 @@ fun DeckCard(
                 }
             }
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp),
-                verticalAlignment = Alignment.Bottom,
-            ) {
-                CountBlock(summary.availableNew(), R.string.count_new, colors.new)
-                CountBlock(summary.learnCount, R.string.count_learning, colors.learning)
-                CountBlock(summary.availableDue(), R.string.count_due, colors.due)
-                Text(
-                    text = pluralStringResource(
-                        R.plurals.deck_card_count,
-                        summary.totalCount,
-                        summary.totalCount,
-                    ),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+            // At large font sizes the counters become one line each, so their labels keep whole words.
+            val stacked = LocalDensity.current.fontScale > 1.3f
+            if (stacked) {
+                Column(Modifier.fillMaxWidth().padding(top = 16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    CountLine(summary.availableNew(), R.string.count_new, colors.new)
+                    CountLine(summary.learnCount, R.string.count_learning, colors.learning)
+                    CountLine(summary.availableDue(), R.string.count_due, colors.due)
+                    CardCount(summary.totalCount)
+                }
+            } else {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp),
+                    verticalAlignment = Alignment.Bottom,
+                ) {
+                    CountBlock(summary.availableNew(), R.string.count_new, colors.new)
+                    CountBlock(summary.learnCount, R.string.count_learning, colors.learning)
+                    CountBlock(summary.availableDue(), R.string.count_due, colors.due)
+                    CardCount(summary.totalCount)
+                }
             }
 
             val studyable = summary.studyableCount()
@@ -124,6 +128,39 @@ private fun RowScope.CountBlock(count: Int, labelRes: Int, activeColor: Color) {
             style = MaterialTheme.typography.labelSmall,
             letterSpacing = 0.08.em,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+private fun CardCount(total: Int, modifier: Modifier = Modifier) {
+    Text(
+        text = pluralStringResource(R.plurals.deck_card_count, total, total),
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = modifier,
+    )
+}
+
+@Composable
+private fun CountLine(count: Int, labelRes: Int, activeColor: Color) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.Bottom,
+        modifier = Modifier.semantics(mergeDescendants = true) {},
+    ) {
+        Text(
+            text = count.toString(),
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+            color = if (count > 0) activeColor else MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(
+            text = stringResource(labelRes).uppercase(),
+            style = MaterialTheme.typography.labelSmall,
+            letterSpacing = 0.08.em,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(bottom = 4.dp),
         )
     }
 }

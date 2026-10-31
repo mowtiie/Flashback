@@ -27,6 +27,7 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.mowtiie.flashback.R
+import com.mowtiie.flashback.ui.components.asHeading
 import com.mowtiie.flashback.data.io.DeckArchive
 import com.mowtiie.flashback.data.io.ImportResult
 
@@ -126,7 +127,7 @@ private fun ImportSourceSheet(onFile: () -> Unit, onPaste: () -> Unit, onDismiss
         Text(
             text = stringResource(R.string.import_source_title),
             style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).asHeading(),
         )
         ActionRow(
             title = stringResource(R.string.import_source_file),

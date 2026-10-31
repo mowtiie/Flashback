@@ -7,7 +7,10 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.material3.RadioButton
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import com.mowtiie.flashback.ui.study.AnswerMode
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -51,6 +54,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mowtiie.flashback.R
+import com.mowtiie.flashback.ui.components.asHeading
 import com.mowtiie.flashback.data.io.DeckArchive
 import com.mowtiie.flashback.generator.CardCount
 import com.mowtiie.flashback.generator.CardTypes
@@ -228,7 +232,12 @@ private fun InputPage(state: GeneratorUiState, actions: GeneratorActions) {
         )
         CardTypesChoice(state.cardTypes, actions.onCardTypes)
         state.error?.let {
-            Text(it, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error)
+            Text(
+                it,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+            )
         }
         Text(
             text = stringResource(state.provider.privacyRes()),
@@ -420,7 +429,7 @@ internal fun CardTypesChoice(selected: CardTypes?, onSelect: (CardTypes) -> Unit
         Text(
             text = stringResource(R.string.generator_types_title),
             style = MaterialTheme.typography.titleSmall,
-            modifier = Modifier.padding(top = 8.dp, bottom = 4.dp),
+            modifier = Modifier.padding(top = 8.dp, bottom = 4.dp).asHeading(),
         )
         if (selected == null) {
             Text(

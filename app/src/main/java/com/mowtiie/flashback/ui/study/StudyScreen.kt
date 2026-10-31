@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.statusBars
@@ -151,19 +152,22 @@ fun StudyScreen(
 
     Scaffold(
         topBar = { if (!compact) StudyTopBar(state, actions) },
-        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
-        Column(
-            Modifier
-                .padding(padding)
-                .then(if (compact) Modifier.windowInsetsPadding(WindowInsets.statusBars) else Modifier)
-                .fillMaxSize(),
-        ) {
-            val ending = state.ending
-            when {
-                ending != null -> StudyEndingContent(ending, actions.onBack)
-                state.card != null -> StudyContent(state, state.card, actions, compact)
+        Box(Modifier.fillMaxSize()) {
+            Column(
+                Modifier
+                    .padding(padding)
+                    .then(if (compact) Modifier.windowInsetsPadding(WindowInsets.statusBars) else Modifier)
+                    .fillMaxSize(),
+            ) {
+                val ending = state.ending
+                when {
+                    ending != null -> StudyEndingContent(ending, actions.onBack)
+                    state.card != null -> StudyContent(state, state.card, actions, compact)
+                }
             }
+            // At the top, so it never covers the answer and rating buttons.
+            SnackbarHost(snackbarHostState, Modifier.align(Alignment.TopCenter).padding(padding))
         }
     }
 }

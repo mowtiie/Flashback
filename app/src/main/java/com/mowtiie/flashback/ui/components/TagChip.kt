@@ -2,7 +2,7 @@ package com.mowtiie.flashback.ui.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -35,7 +35,7 @@ fun TagChip(tag: Tag, modifier: Modifier = Modifier) {
         contentColor = scheme.onSurface,
         border = BorderStroke(1.dp, accent.copy(alpha = STROKE_ALPHA)),
     ) {
-        Box(Modifier.height(26.dp), contentAlignment = Alignment.Center) {
+        Box(Modifier.heightIn(min = 26.dp), contentAlignment = Alignment.Center) {
             Text(
                 text = tag.name,
                 style = MaterialTheme.typography.labelLarge,

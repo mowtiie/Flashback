@@ -43,7 +43,7 @@ fun EmptyState(
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Spacer(Modifier.height(16.dp))
-        Text(text = title, style = MaterialTheme.typography.titleMedium)
+        Text(text = title, style = MaterialTheme.typography.titleMedium, modifier = Modifier.asHeading())
         Spacer(Modifier.height(8.dp))
         Text(
             text = body,

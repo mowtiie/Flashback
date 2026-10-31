@@ -31,7 +31,9 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -128,7 +130,7 @@ private fun TypeAnswerField(state: StudyUiState, actions: StudyActions) {
         value = state.typed,
         onValueChange = actions.onTypedChange,
         label = { Text(stringResource(R.string.study_type_hint)) },
-        enabled = result == null,
+        readOnly = result != null,
         isError = result == AnswerChecker.Result.WRONG,
         supportingText = result?.let {
             {
@@ -140,6 +142,7 @@ private fun TypeAnswerField(state: StudyUiState, actions: StudyActions) {
                             AnswerChecker.Result.WRONG -> R.string.study_result_wrong
                         },
                     ),
+                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
                 )
             }
         },

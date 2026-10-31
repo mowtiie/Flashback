@@ -34,6 +34,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mowtiie.flashback.R
+import com.mowtiie.flashback.ui.components.asHeading
 import com.mowtiie.flashback.data.model.CardStateBreakdown
 import com.mowtiie.flashback.theme.countColors
 import com.mowtiie.flashback.ui.components.CenteredScrollColumn
@@ -137,7 +138,7 @@ private fun SectionTitle(titleRes: Int) {
     Text(
         text = stringResource(titleRes),
         style = MaterialTheme.typography.titleSmall,
-        modifier = Modifier.padding(top = 16.dp),
+        modifier = Modifier.padding(top = 16.dp).asHeading(),
     )
 }
 
