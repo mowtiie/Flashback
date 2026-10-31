@@ -209,6 +209,7 @@ private fun AppearanceSection(state: SettingsUiState, actions: SettingsActions) 
             onSelect = actions.onThemeMode,
         )
         if (state.dynamicColorAvailable) {
+            RowDivider()
             SwitchRow(
                 title = stringResource(R.string.settings_dynamic_color),
                 body = stringResource(R.string.settings_dynamic_color_body),
@@ -216,6 +217,7 @@ private fun AppearanceSection(state: SettingsUiState, actions: SettingsActions) 
                 onCheckedChange = actions.onDynamicColor,
             )
         }
+        RowDivider()
         ChoiceRow(
             title = stringResource(R.string.settings_contrast),
             options = ContrastLevel.entries,

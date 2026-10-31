@@ -2,15 +2,8 @@ package com.mowtiie.flashback.ui.settings
 
 import android.content.Context
 import android.text.format.DateFormat
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
@@ -20,13 +13,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.unit.dp
 import com.mowtiie.flashback.R
 import java.util.Calendar
 
@@ -43,23 +31,13 @@ internal fun RemindersSection(state: SettingsUiState, actions: SettingsActions) 
             checked = state.reminderEnabled,
             onCheckedChange = actions.onReminderEnabled,
         )
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier
-                .fillMaxWidth()
-                .alpha(if (state.reminderEnabled) 1f else DISABLED_ALPHA)
-                .clickable(enabled = state.reminderEnabled, role = Role.Button) { picking = true }
-                .heightIn(min = 56.dp)
-                .padding(horizontal = 16.dp),
-        ) {
-            Text(stringResource(R.string.reminder_time_title), style = MaterialTheme.typography.bodyLarge)
-            Text(
-                text = formatTime(context, state.reminderHour, state.reminderMinute),
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.primary,
-            )
-        }
+        RowDivider()
+        ActionRow(
+            title = stringResource(R.string.reminder_time_title),
+            value = formatTime(context, state.reminderHour, state.reminderMinute),
+            enabled = state.reminderEnabled,
+            onClick = { picking = true },
+        )
     }
 
     if (picking) {

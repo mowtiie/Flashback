@@ -2,11 +2,9 @@ package com.mowtiie.flashback.ui.settings
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -21,7 +19,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.unit.dp
 import com.mowtiie.flashback.R
 import com.mowtiie.flashback.generator.GeneratorProvider
 
@@ -39,20 +36,15 @@ internal fun GeneratorSection(state: SettingsUiState, actions: SettingsActions) 
             label = { it.displayName },
             onSelect = actions.onGeneratorProvider,
         )
+        RowDivider()
         ActionRow(
             title = stringResource(R.string.settings_generator_key_title, provider.displayName),
-            body = state.generatorKeyHint?.let { stringResource(R.string.settings_generator_key_saved, it) }
-                ?: stringResource(R.string.settings_generator_key_unset),
-            enabled = true,
+            value = state.generatorKeyHint ?: stringResource(R.string.settings_generator_key_value_unset),
+            valueHighlighted = state.generatorKeyHint != null,
             onClick = { editing = true },
         )
-        Text(
-            text = stringResource(provider.noteRes()),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-        )
     }
+    Footnote(stringResource(provider.noteRes()))
 
     if (editing) {
         ApiKeyDialog(

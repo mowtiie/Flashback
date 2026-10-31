@@ -129,9 +129,11 @@
     <string name="settings_format_note">Exports contain your decks, tags, and cards, but not review progress. Imported cards start fresh.</string>
     <string name="export_all_filename">flashback-decks.json</string>
     <string name="export_deck_filename_prefix">flashback-</string>
-    <string name="import_source_title">Import from</string>
-    <string name="import_source_file">A file</string>
-    <string name="import_source_paste">Pasted text</string>
+    <string name="import_source_title">Import decks</string>
+    <string name="import_source_file">From a file</string>
+    <string name="import_source_file_body">Pick a Flashback JSON file from your device.</string>
+    <string name="import_source_paste">Paste text</string>
+    <string name="import_source_paste_body">Paste JSON you copied from an export.</string>
     <string name="import_paste_title">Paste JSON</string>
     <string name="import_paste_hint">Paste your exported JSON here</string>
     <string name="import_paste_action">Preview</string>
@@ -264,8 +266,7 @@
     <string name="minutes_short">%1$d min</string>
 
     <string name="settings_generator_header">AI card generator</string>
-    <string name="settings_generator_key_unset">Not set. Add a key to turn on card generation.</string>
-    <string name="settings_generator_key_saved">Saved (%1$s)</string>
+    <string name="settings_generator_key_value_unset">Not set</string>
     <string name="settings_generator_key_remove">Remove key</string>
 
     <string name="generator_title">Generate cards</string>
