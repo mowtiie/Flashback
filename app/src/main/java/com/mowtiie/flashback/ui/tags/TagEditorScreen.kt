@@ -55,6 +55,7 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mowtiie.flashback.R
+import com.mowtiie.flashback.ui.components.SectionTitle
 import com.mowtiie.flashback.ui.components.asHeading
 import com.mowtiie.flashback.data.entity.Tag
 import com.mowtiie.flashback.repository.FlashbackRepository
@@ -212,22 +213,14 @@ fun TagEditorScreen(
                     .padding(top = 16.dp),
             )
 
-            Text(
-                text = stringResource(R.string.tag_colour),
-                style = MaterialTheme.typography.titleSmall,
-                modifier = Modifier.padding(top = 24.dp).asHeading(),
-            )
+            SectionTitle(stringResource(R.string.tag_colour), Modifier.padding(top = 24.dp))
             ColorSwatches(
                 selected = form.color,
                 onSelected = onColorSelected,
                 modifier = Modifier.padding(top = 8.dp),
             )
 
-            Text(
-                text = stringResource(R.string.tag_preview),
-                style = MaterialTheme.typography.titleSmall,
-                modifier = Modifier.padding(top = 16.dp).asHeading(),
-            )
+            SectionTitle(stringResource(R.string.tag_preview), Modifier.padding(top = 16.dp))
             TagChip(
                 tag = Tag(
                     name = form.name.trim().ifEmpty { stringResource(R.string.tag_preview_placeholder) },

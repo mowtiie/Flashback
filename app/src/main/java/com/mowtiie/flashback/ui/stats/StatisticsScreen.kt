@@ -34,6 +34,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mowtiie.flashback.R
+import com.mowtiie.flashback.ui.components.SectionTitle
 import com.mowtiie.flashback.ui.components.asHeading
 import com.mowtiie.flashback.data.model.CardStateBreakdown
 import com.mowtiie.flashback.theme.countColors
@@ -135,11 +136,7 @@ private fun StatTile(value: String, label: String, modifier: Modifier = Modifier
 
 @Composable
 private fun SectionTitle(titleRes: Int) {
-    Text(
-        text = stringResource(titleRes),
-        style = MaterialTheme.typography.titleSmall,
-        modifier = Modifier.padding(top = 16.dp).asHeading(),
-    )
+    SectionTitle(stringResource(titleRes), Modifier.padding(top = 16.dp))
 }
 
 @Composable

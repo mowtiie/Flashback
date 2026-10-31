@@ -52,6 +52,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mowtiie.flashback.R
+import com.mowtiie.flashback.ui.components.SectionTitle
 import com.mowtiie.flashback.ui.components.asHeading
 import com.mowtiie.flashback.data.entity.Tag
 import com.mowtiie.flashback.theme.FlashbackTheme
@@ -237,11 +238,7 @@ fun DeckEditorScreen(
                 )
             }
 
-            Text(
-                text = stringResource(R.string.deck_tags),
-                style = MaterialTheme.typography.titleSmall,
-                modifier = Modifier.padding(top = 24.dp).asHeading(),
-            )
+            SectionTitle(stringResource(R.string.deck_tags), Modifier.padding(top = 24.dp))
             if (state.tags.isEmpty()) {
                 Text(
                     text = stringResource(R.string.deck_tags_none),

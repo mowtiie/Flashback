@@ -34,7 +34,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
-import com.mowtiie.flashback.ui.components.asHeading
+import com.mowtiie.flashback.ui.components.SectionTitle
 
 internal const val DISABLED_ALPHA = 0.5f
 
@@ -47,12 +47,7 @@ internal const val IMPORT_SHEET_TAG = "import-sheet"
 
 @Composable
 internal fun SectionHeader(@StringRes titleRes: Int) {
-    Text(
-        text = stringResource(titleRes),
-        style = MaterialTheme.typography.titleSmall,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(top = 16.dp, start = 4.dp).asHeading(),
-    )
+    SectionTitle(stringResource(titleRes), Modifier.padding(top = 16.dp, start = 4.dp))
 }
 
 @Composable
@@ -163,6 +158,9 @@ internal fun Footnote(text: String) {
     )
 }
 
+/** Card sits inside a settings card; Form sits among a form's own fields and lines up with them. */
+internal enum class ChoiceRowStyle { Card, Form }
+
 @Composable
 internal fun <T> ChoiceRow(
     title: String,
@@ -173,15 +171,16 @@ internal fun <T> ChoiceRow(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     hint: String? = null,
+    style: ChoiceRowStyle = ChoiceRowStyle.Card,
 ) {
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = if (style == ChoiceRowStyle.Form) 0.dp else 16.dp, vertical = 8.dp),
     ) {
         Text(
             text = title,
-            style = MaterialTheme.typography.bodyLarge,
+            style = if (style == ChoiceRowStyle.Form) MaterialTheme.typography.titleSmall else MaterialTheme.typography.bodyLarge,
             modifier = Modifier.alpha(if (enabled) 1f else DISABLED_ALPHA),
         )
         if (LocalDensity.current.fontScale > STACK_FONT_SCALE) {

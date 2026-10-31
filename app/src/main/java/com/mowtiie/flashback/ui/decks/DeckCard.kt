@@ -45,7 +45,7 @@ fun DeckCard(
         Column(Modifier.padding(16.dp)) {
             Text(
                 text = deck.name,
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleLarge,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -119,7 +119,7 @@ private fun RowScope.CountBlock(count: Int, labelRes: Int, activeColor: Color) {
     ) {
         Text(
             text = count.toString(),
-            style = MaterialTheme.typography.headlineSmall,
+            style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = if (count > 0) activeColor else MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -151,7 +151,7 @@ private fun CountLine(count: Int, labelRes: Int, activeColor: Color) {
     ) {
         Text(
             text = count.toString(),
-            style = MaterialTheme.typography.headlineSmall,
+            style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = if (count > 0) activeColor else MaterialTheme.colorScheme.onSurfaceVariant,
         )

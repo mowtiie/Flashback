@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mowtiie.flashback.R
 import com.mowtiie.flashback.ui.settings.ChoiceRow
+import com.mowtiie.flashback.ui.settings.ChoiceRowStyle
 import com.mowtiie.flashback.ui.study.AnswerMode
 import com.mowtiie.flashback.repository.FlashbackRepository
 import com.mowtiie.flashback.theme.FlashbackTheme
@@ -329,6 +330,7 @@ private fun AnswerTypeSection(
     onWrongOptionChange: (Int, String) -> Unit,
 ) {
     ChoiceRow(
+        style = ChoiceRowStyle.Form,
         title = stringResource(R.string.note_answer_type),
         options = listOf<AnswerMode?>(null) + AnswerMode.entries,
         selected = form.answerMode,

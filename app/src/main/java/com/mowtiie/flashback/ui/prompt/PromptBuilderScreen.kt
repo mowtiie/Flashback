@@ -36,6 +36,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mowtiie.flashback.R
+import com.mowtiie.flashback.ui.components.SectionTitle
 import com.mowtiie.flashback.ui.components.asHeading
 import com.mowtiie.flashback.generator.CardTypes
 import com.mowtiie.flashback.generator.PromptCoverage
@@ -44,6 +45,7 @@ import com.mowtiie.flashback.ui.components.CenteredScrollColumn
 import com.mowtiie.flashback.ui.components.LightDarkPreviews
 import com.mowtiie.flashback.ui.generator.CardTypesChoice
 import com.mowtiie.flashback.ui.settings.ChoiceRow
+import com.mowtiie.flashback.ui.settings.ChoiceRowStyle
 import kotlinx.coroutines.launch
 
 class PromptBuilderActions(
@@ -116,6 +118,7 @@ fun PromptBuilderScreen(
             CenteredScrollColumn(Modifier.padding(padding)) {
                 Text(stringResource(R.string.prompt_intro), style = MaterialTheme.typography.bodyMedium)
                 ChoiceRow(
+                    style = ChoiceRowStyle.Form,
                     title = stringResource(R.string.prompt_coverage_title),
                     options = PromptCoverage.entries,
                     selected = state.options.coverage,
@@ -139,7 +142,7 @@ fun PromptBuilderScreen(
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                 )
-                Text(stringResource(R.string.prompt_preview_title), style = MaterialTheme.typography.titleSmall, modifier = Modifier.asHeading())
+                SectionTitle(stringResource(R.string.prompt_preview_title))
                 OutlinedCard(Modifier.fillMaxWidth()) {
                     Text(
                         text = state.prompt,

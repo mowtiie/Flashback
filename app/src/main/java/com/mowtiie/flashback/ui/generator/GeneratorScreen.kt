@@ -67,6 +67,7 @@ import com.mowtiie.flashback.ui.components.EmptyState
 import com.mowtiie.flashback.ui.components.LightDarkPreviews
 import com.mowtiie.flashback.ui.components.showReplacing
 import com.mowtiie.flashback.ui.settings.ChoiceRow
+import com.mowtiie.flashback.ui.settings.ChoiceRowStyle
 import android.text.format.Formatter
 import java.text.NumberFormat
 
@@ -206,22 +207,22 @@ private fun InputPage(state: GeneratorUiState, actions: GeneratorActions) {
             }
         }
         ChoiceRow(
+            style = ChoiceRowStyle.Form,
             title = stringResource(R.string.prompt_coverage_title),
             options = Coverage.entries,
             selected = state.coverage,
             label = { stringResource(it.labelRes()) },
             onSelect = actions.onCoverage,
             hint = stringResource(state.coverage.hintRes()),
-            modifier = Modifier.padding(horizontal = 0.dp),
         )
         if (state.coverage == Coverage.KeyPoints) {
             ChoiceRow(
+                style = ChoiceRowStyle.Form,
                 title = stringResource(R.string.generator_count_title),
                 options = CardCount.entries,
                 selected = state.cardCount,
                 label = { stringResource(it.labelRes(), it.max) },
                 onSelect = actions.onCardCount,
-                modifier = Modifier.padding(horizontal = 0.dp),
             )
         }
         CardTypesChoice(state.cardTypes, actions.onCardTypes)
