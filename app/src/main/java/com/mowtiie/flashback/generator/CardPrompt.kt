@@ -65,13 +65,29 @@ internal fun deckFromModelText(
 
     val deck = archive.decks.first()
     val notes = deck.notes
+        .mapNotNull { clean(it) }
         .distinctBy { it.front.lowercase() }
         .take(maxCards)
         .map { applyTypes(it, types) }
     if (notes.isEmpty()) throw GeneratorException("No cards could be made from this text.")
 
-    return DeckArchive.Deck(name = deck.name, notes = notes)
+    return DeckArchive.Deck(name = deck.name.stripInvisible().trim(), notes = notes)
 }
+
+/** Model text is shown as plain text, but hidden direction and control characters can still disguise it. */
+private fun clean(note: DeckArchive.Note): DeckArchive.Note? {
+    val front = note.front.stripInvisible().trim()
+    val back = note.back.stripInvisible().trim()
+    if (front.isEmpty() || back.isEmpty()) return null
+    return note.copy(front = front, back = back, choices = note.choices.map { it.stripInvisible().trim() }.filter { it.isNotEmpty() })
+}
+
+internal fun String.stripInvisible(): String = filterNot { c ->
+    val code = c.code
+    (c.isISOControl() && c != '\n' && c != '\t') ||
+        code in 0x200B..0x200F || code in 0x202A..0x202E || code in 0x2066..0x2069 || code == 0xFEFF
+}
+
 
 /** The user's choice wins over what the model returned, so a forgotten or odd type never slips through. */
 private fun applyTypes(note: DeckArchive.Note, types: CardTypes): DeckArchive.Note = when (types) {

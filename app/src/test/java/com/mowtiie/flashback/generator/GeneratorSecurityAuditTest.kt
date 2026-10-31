@@ -5,7 +5,6 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
@@ -111,11 +110,30 @@ class GeneratorSecurityAuditTest {
     }
 
     @Test
-    fun controlCharactersAndBidiMarksSurviveAsTextOnly() {
-        val front = "evil‮fdp.exe\u0000tail"
-        val note = parse(reply("""{"front":${JSONObject.quote(front)},"back":"a"}""")).notes.single()
-        println("AUDIT: NUL kept in card text: ${note.front.contains('\u0000')}; bidi override kept: ${note.front.contains('‮')}")
-        assertNotNull(note.front)
+    fun controlAndBidiCharactersAreStrippedFromEveryField() {
+        val dirty = "evil‮fdp.exe\u0000tail​⁦x⁩"
+        val clean = "evilfdp.exetailx"
+        val choices = JSONArray(listOf(dirty, "ok")).toString()
+        val note = deckFromModelText(
+            reply("""{"front":${JSONObject.quote(dirty)},"back":"right","answerMode":"choice","choices":$choices}"""),
+            30, CardTypes.Choice,
+        ).notes.single()
+
+        assertEquals(clean, note.front)
+        assertEquals("right", note.back)
+        assertEquals(listOf(clean, "ok"), note.choices)
+    }
+
+    @Test
+    fun newlinesAndTabsSurviveCleaning() {
+        val note = parse(reply("""{"front":"line1\nline2\tx","back":"a"}""")).notes.single()
+        assertEquals("line1\nline2\tx", note.front)
+    }
+
+    @Test
+    fun aCardThatIsOnlyInvisibleCharactersIsDropped() {
+        val notes = parse(reply("""{"front":"​\u0000","back":"a"},{"front":"real","back":"b"}""")).notes
+        assertEquals(listOf("real"), notes.map { it.front })
     }
 
     // --- the provider's own error text -------------------------------------------------------
