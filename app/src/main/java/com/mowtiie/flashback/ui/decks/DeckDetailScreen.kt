@@ -39,7 +39,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -70,7 +70,7 @@ fun DeckDetailRoute(
     onMessage: (Int) -> Unit,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    val context = LocalContext.current
+    val resources = LocalResources.current
     var confirmDelete by rememberSaveable { mutableStateOf(false) }
 
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.refresh() }
@@ -85,7 +85,7 @@ fun DeckDetailRoute(
             when (event) {
                 is DeckDetailEvent.Deleted -> onDeleted(event.deckName, event.undo)
                 is DeckDetailEvent.ExportReady -> saveLauncher.launch(
-                    deckExportFileName(context.getString(R.string.export_deck_filename_prefix), event.deckName),
+                    deckExportFileName(resources.getString(R.string.export_deck_filename_prefix), event.deckName),
                 )
                 DeckDetailEvent.ExportNothing -> onMessage(R.string.export_deck_missing)
                 DeckDetailEvent.ExportSaved -> onMessage(R.string.export_saved)

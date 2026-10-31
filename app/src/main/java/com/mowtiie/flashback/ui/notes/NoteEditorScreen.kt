@@ -285,7 +285,7 @@ private fun NoteEditorNewPreview() {
     FlashbackTheme(dynamicColor = false) {
         NoteEditorScreen(
             state = NoteEditorUiState(ready = true, form = NoteEditorForm(reverseEnabled = true)),
-            frontFocus = FocusRequester(),
+            frontFocus = remember { FocusRequester() },
             onBack = {}, onDelete = {}, onFrontChange = {}, onBackChange = {},
             onReverseChange = {}, onSuspendedChange = {}, onSave = {}, onSaveAndAdd = {},
         )
@@ -303,7 +303,7 @@ private fun NoteEditorEditPreview() {
                 form = NoteEditorForm(front = "el bosque", back = "", suspended = true),
                 error = NoteEditorError.BackRequired,
             ),
-            frontFocus = FocusRequester(),
+            frontFocus = remember { FocusRequester() },
             onBack = {}, onDelete = {}, onFrontChange = {}, onBackChange = {},
             onReverseChange = {}, onSuspendedChange = {}, onSave = {}, onSaveAndAdd = {},
         )

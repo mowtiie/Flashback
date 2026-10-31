@@ -1,6 +1,6 @@
 package com.mowtiie.flashback.ui.settings
 
-import android.content.Context
+import android.content.res.Resources
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -190,19 +190,18 @@ private fun ImportPreviewDialog(counts: DeckArchive.Counts, onConfirm: () -> Uni
 }
 
 /** The snackbar text for an event; the export-ready hand-off has none. */
-internal fun DataTransferEvent.message(context: Context): String? = when (this) {
+internal fun DataTransferEvent.message(resources: Resources): String? = when (this) {
     DataTransferEvent.ExportReady -> null
-    DataTransferEvent.ExportNothing -> context.getString(R.string.export_nothing)
-    DataTransferEvent.ExportSaved -> context.getString(R.string.export_saved)
-    DataTransferEvent.ExportWriteFailed -> context.getString(R.string.export_write_failed)
+    DataTransferEvent.ExportNothing -> resources.getString(R.string.export_nothing)
+    DataTransferEvent.ExportSaved -> resources.getString(R.string.export_saved)
+    DataTransferEvent.ExportWriteFailed -> resources.getString(R.string.export_write_failed)
     is DataTransferEvent.ImportRejected -> message
-    is DataTransferEvent.ImportReadFailed -> message ?: context.getString(R.string.import_read_failed)
-    DataTransferEvent.ImportFailed -> context.getString(R.string.import_failed)
-    is DataTransferEvent.ImportDone -> importSummary(context, result)
+    is DataTransferEvent.ImportReadFailed -> message ?: resources.getString(R.string.import_read_failed)
+    DataTransferEvent.ImportFailed -> resources.getString(R.string.import_failed)
+    is DataTransferEvent.ImportDone -> importSummary(resources, result)
 }
 
-private fun importSummary(context: Context, result: ImportResult): String {
-    val res = context.resources
+private fun importSummary(res: Resources, result: ImportResult): String {
     val decks = res.getQuantityString(R.plurals.import_decks, result.decks, result.decks)
     val cards = res.getQuantityString(R.plurals.import_cards, result.notes, result.notes)
     if (result.tagsReused == 0) return res.getString(R.string.import_summary, decks, cards)

@@ -44,6 +44,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -85,7 +86,7 @@ fun StudyRoute(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
-    val context = LocalContext.current
+    val resources = LocalResources.current
 
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.onResumed() }
 
@@ -94,13 +95,13 @@ fun StudyRoute(
             when (event) {
                 // Launched, so a snackbar waiting to be dismissed never holds up the next event.
                 StudyEvent.Undone -> launch {
-                    snackbarHostState.showReplacing(context.getString(R.string.study_undone))
+                    snackbarHostState.showReplacing(resources.getString(R.string.study_undone))
                 }
 
                 StudyEvent.CardSuspended -> launch {
                     val result = snackbarHostState.showReplacing(
-                        message = context.getString(R.string.study_card_suspended),
-                        actionLabel = context.getString(R.string.study_undo),
+                        message = resources.getString(R.string.study_card_suspended),
+                        actionLabel = resources.getString(R.string.study_undo),
                         duration = SnackbarDuration.Long,
                     )
                     if (result == SnackbarResult.ActionPerformed) viewModel.undoSuspend()

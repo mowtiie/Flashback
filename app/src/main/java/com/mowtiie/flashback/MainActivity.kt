@@ -2,7 +2,6 @@ package com.mowtiie.flashback
 
 import android.content.res.Configuration
 import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
@@ -11,6 +10,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.core.graphics.drawable.toDrawable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mowtiie.flashback.theme.FlashbackTheme
 import com.mowtiie.flashback.theme.ThemeMode
@@ -58,7 +58,7 @@ class MainActivity : ComponentActivity() {
     /** The theme's window colour follows the system; a forced mode needs it set by hand to avoid a flash. */
     private fun paintWindow(dark: Boolean) {
         val color = getColor(if (dark) R.color.window_background_dark else R.color.window_background_light)
-        window.setBackgroundDrawable(ColorDrawable(color))
+        window.setBackgroundDrawable(color.toDrawable())
     }
 
     private companion object {

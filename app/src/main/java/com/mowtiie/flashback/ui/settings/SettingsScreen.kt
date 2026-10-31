@@ -22,10 +22,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mowtiie.flashback.R
 import com.mowtiie.flashback.data.io.ArchiveFiles
+import com.mowtiie.flashback.notifications.canPostNotifications
 import com.mowtiie.flashback.theme.ContrastLevel
 import com.mowtiie.flashback.theme.ThemeMode
 import com.mowtiie.flashback.ui.components.CenteredScrollColumn
@@ -49,6 +51,7 @@ fun SettingsRoute(viewModel: SettingsViewModel, transferViewModel: DataTransferV
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val transferState by transferViewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val resources = LocalResources.current
     val snackbarHostState = remember { SnackbarHostState() }
 
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -75,7 +78,7 @@ fun SettingsRoute(viewModel: SettingsViewModel, transferViewModel: DataTransferV
             when (event) {
                 SettingsEvent.NotificationsDenied -> launch {
                     snackbarHostState.showReplacing(
-                        message = context.getString(R.string.reminder_permission_denied),
+                        message = resources.getString(R.string.reminder_permission_denied),
                         duration = SnackbarDuration.Long,
                     )
                 }
@@ -85,9 +88,9 @@ fun SettingsRoute(viewModel: SettingsViewModel, transferViewModel: DataTransferV
 
     LaunchedEffect(transferViewModel) {
         transferViewModel.eventFlow.collect { event ->
-            val message = event.message(context)
+            val message = event.message(resources)
             if (message == null) {
-                saveLauncher.launch(context.getString(R.string.export_all_filename))
+                saveLauncher.launch(resources.getString(R.string.export_all_filename))
             } else {
                 launch {
                     snackbarHostState.showReplacing(
@@ -107,7 +110,7 @@ fun SettingsRoute(viewModel: SettingsViewModel, transferViewModel: DataTransferV
             onContrast = viewModel::setContrast,
             // Asked on opt-in rather than at first launch.
             onReminderEnabled = { enabled ->
-                if (enabled && !hasNotificationPermission(context)) {
+                if (enabled && !context.canPostNotifications()) {
                     permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                 } else {
                     viewModel.setReminderEnabled(enabled)

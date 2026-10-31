@@ -26,7 +26,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -136,13 +136,13 @@ private fun NavHostController.navigateTopLevel(destination: TopLevelDestination)
 /** Messages outlive the screen that raised them, e.g. "Deck deleted" after the detail screen pops. */
 @Composable
 private fun MessageEffect(messenger: AppMessenger, hostState: SnackbarHostState) {
-    val context = LocalContext.current
+    val resources = LocalResources.current
 
-    LaunchedEffect(messenger, context) {
+    LaunchedEffect(messenger, resources) {
         messenger.messages.collect { message ->
             val result = hostState.showSnackbar(
-                message = context.getString(message.text),
-                actionLabel = message.actionLabel?.let(context::getString),
+                message = resources.getString(message.text),
+                actionLabel = message.actionLabel?.let(resources::getString),
                 duration = if (message.onAction == null) {
                     SnackbarDuration.Short
                 } else {
