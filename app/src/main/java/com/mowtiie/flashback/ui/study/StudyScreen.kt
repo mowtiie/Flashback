@@ -40,6 +40,8 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.snapshotFlow
+import kotlinx.coroutines.flow.first
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -257,6 +259,19 @@ private fun StudyContent(state: StudyUiState, card: StudyCardUi, actions: StudyA
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val flip = remember { Animatable(0f) }
+    val paneScroll = rememberScrollState()
+
+    // In two panes the controls can be taller than the window: show the ratings once the answer is out,
+    // and start each new card from the top.
+    LaunchedEffect(card, state.revealed) {
+        if (!state.revealed) {
+            paneScroll.scrollTo(0)
+            return@LaunchedEffect
+        }
+        // The range is unknown until the pane has been measured, for instance right after a rotation.
+        val end = snapshotFlow { paneScroll.maxValue }.first { it != Int.MAX_VALUE }
+        if (animationsEnabled(context)) paneScroll.animateScrollTo(end) else paneScroll.scrollTo(end)
+    }
 
     val canFlipToReveal = !state.revealed &&
         (state.answerMode == AnswerMode.Flip || (state.answerMode == AnswerMode.Choice && !state.showChoices))
@@ -301,7 +316,7 @@ private fun StudyContent(state: StudyUiState, card: StudyCardUi, actions: StudyA
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight()
-                        .verticalScroll(rememberScrollState()),
+                        .verticalScroll(paneScroll),
                 ) {
                     StudyControls(state, actions, showAnswer)
                 }
