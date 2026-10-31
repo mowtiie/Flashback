@@ -27,6 +27,10 @@ data class DeckArchive(
         val front: String,
         val back: String,
         val reverseEnabled: Boolean = false,
+        /** An [com.mowtiie.flashback.ui.study.AnswerMode] value, or null to follow the study setting. */
+        val answerMode: Int? = null,
+        /** Wrong options for a multiple choice note. */
+        val choices: List<String> = emptyList(),
     )
 
     data class Counts(val decks: Int, val notes: Int, val tags: Int)
@@ -44,3 +48,12 @@ data class DeckArchive(
 
 /** The message is written for the user and shown as is. */
 class ArchiveException(message: String, cause: Throwable? = null) : Exception(message, cause)
+
+/** How a note's answer type is written in the file, so the JSON stays readable. */
+object AnswerTypeNames {
+    private val names = mapOf(0 to "flip", 1 to "type", 2 to "choice")
+
+    fun nameOf(value: Int): String? = names[value]
+
+    fun valueOf(name: String): Int? = names.entries.firstOrNull { it.value == name.trim().lowercase() }?.key
+}

@@ -106,4 +106,48 @@ class ArchiveRepositoryTest {
     fun exportingAMissingDeckGivesAnEmptyArchive() = runBlocking {
         assertTrue(repository.exportSingle(deckId = 999, now = 1L).decks.isEmpty())
     }
+
+    @Test
+    fun importKeepsEachNotesAnswerTypeAndWrongOptions() = runBlocking {
+        repository.importArchive(
+            DeckArchive(
+                decks = listOf(
+                    DeckArchive.Deck(
+                        name = "Mixed",
+                        notes = listOf(
+                            DeckArchive.Note("q1", "a1", answerMode = 2, choices = listOf("x", "y")),
+                            DeckArchive.Note("q2", "a2", answerMode = 1, choices = listOf("ignored")),
+                            DeckArchive.Note("q3", "a3"),
+                        ),
+                    ),
+                ),
+            ),
+        )
+
+        val notes = db.noteDao().getByDeck(db.deckDao().getAll().single().id)
+        assertEquals(2, notes[0].answerMode)
+        assertEquals("[\"x\",\"y\"]", notes[0].choices)
+        assertEquals(1, notes[1].answerMode)
+        assertEquals(null, notes[1].choices)
+        assertEquals(null, notes[2].answerMode)
+    }
+
+    @Test
+    fun exportAndReimportKeepsTheTypes() = runBlocking {
+        repository.importArchive(
+            DeckArchive(
+                decks = listOf(
+                    DeckArchive.Deck(
+                        name = "Mixed",
+                        notes = listOf(DeckArchive.Note("q1", "a1", answerMode = 2, choices = listOf("x"))),
+                    ),
+                ),
+            ),
+        )
+        val text = ArchiveSerializer().serialize(repository.exportAll(now = 0L))
+
+        val parsed = ArchiveParser().parse(text).decks.single().notes.single()
+        assertEquals(2, parsed.answerMode)
+        assertEquals(listOf("x"), parsed.choices)
+    }
 }

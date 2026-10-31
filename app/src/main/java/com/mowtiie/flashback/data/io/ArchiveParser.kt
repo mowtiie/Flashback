@@ -101,7 +101,22 @@ class ArchiveParser {
                     "(over $MAX_CARD_TEXT_LENGTH characters).",
             )
         }
-        return DeckArchive.Note(front, back, json.optBoolean("reverseEnabled", false))
+        return DeckArchive.Note(
+            front = front,
+            back = back,
+            reverseEnabled = json.optBoolean("reverseEnabled", false),
+            answerMode = json.text("answerMode").takeIf { it.isNotEmpty() }?.let(AnswerTypeNames::valueOf),
+            choices = parseChoices(json),
+        )
+    }
+
+    /** Lenient on purpose: an unknown type or a bad option never fails the import. */
+    private fun parseChoices(json: JSONObject): List<String> {
+        val array = json.optJSONArray("choices") ?: return emptyList()
+        return List(array.length()) { if (array.isNull(it)) "" else array.optString(it, "").trim() }
+            .filter { it.isNotEmpty() && it.length <= MAX_CHOICE_LENGTH }
+            .distinct()
+            .take(MAX_CHOICES)
     }
 
     private fun positiveOr(value: Int, fallback: Int) = if (value > 0) value else fallback
@@ -116,6 +131,8 @@ class ArchiveParser {
         const val MAX_TAG_NAME_LENGTH = 100
         const val MAX_DESCRIPTION_LENGTH = 1000
         const val MAX_CARD_TEXT_LENGTH = 10_000
+        const val MAX_CHOICES = 3
+        const val MAX_CHOICE_LENGTH = 120
         const val OPAQUE = 0xFF000000.toInt()
     }
 }

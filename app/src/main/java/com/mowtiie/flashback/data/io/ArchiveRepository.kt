@@ -7,6 +7,8 @@ import com.mowtiie.flashback.data.entity.Deck
 import com.mowtiie.flashback.data.entity.DeckTagCrossRef
 import com.mowtiie.flashback.data.entity.Note
 import com.mowtiie.flashback.data.entity.Tag
+import com.mowtiie.flashback.data.model.NoteChoices
+import com.mowtiie.flashback.ui.study.AnswerMode
 
 class ImportResult(
     val decks: Int,
@@ -33,7 +35,9 @@ class ArchiveRepository(private val db: FlashbackDatabase) {
         newPerDay = deck.newPerDay,
         reviewsPerDay = deck.reviewsPerDay,
         tags = db.tagDao().getTagsForDeck(deck.id).map { DeckArchive.Tag(it.name, it.description, it.color) },
-        notes = db.noteDao().getByDeck(deck.id).map { DeckArchive.Note(it.front, it.back, it.reverseEnabled) },
+        notes = db.noteDao().getByDeck(deck.id).map {
+            DeckArchive.Note(it.front, it.back, it.reverseEnabled, it.answerMode, NoteChoices.parse(it.choices))
+        },
     )
 
     /** Writes an archive in one transaction. Tags merge by name. */
@@ -73,7 +77,17 @@ class ArchiveRepository(private val db: FlashbackDatabase) {
     }
 
     private suspend fun insertNotesWithCards(deckId: Long, sources: List<DeckArchive.Note>) {
-        val notes = sources.map { Note(deckId = deckId, front = it.front, back = it.back, reverseEnabled = it.reverseEnabled) }
+        val notes = sources.map {
+            Note(
+                deckId = deckId,
+                front = it.front,
+                back = it.back,
+                reverseEnabled = it.reverseEnabled,
+                answerMode = it.answerMode,
+                // Wrong options only mean something on a multiple choice note.
+                choices = if (it.answerMode == AnswerMode.Choice.value) NoteChoices.encode(it.choices) else null,
+            )
+        }
         val noteIds = db.noteDao().insertAll(notes)
         val cards = buildList {
             notes.forEachIndexed { index, note ->

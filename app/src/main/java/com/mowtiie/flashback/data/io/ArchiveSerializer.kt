@@ -31,6 +31,8 @@ class ArchiveSerializer {
         put("front", note.front)
         put("back", note.back)
         put("reverseEnabled", note.reverseEnabled)
+        note.answerMode?.let { AnswerTypeNames.nameOf(it) }?.let { put("answerMode", it) }
+        if (note.choices.isNotEmpty()) put("choices", JSONArray(note.choices))
     }
 
     private fun JSONObject.putIfPresent(key: String, value: String?) {
