@@ -199,7 +199,8 @@ class StudyViewModel(
             queue.remove(entry.card)
             entry.card.card.applySchedulingState(entry.before)
 
-            current?.let(queue::restore)
+            // The undone card may itself be on screen already, pulled back in by learn-ahead.
+            current?.takeIf { it !== entry.card }?.let(queue::restore)
 
             answeredThisSession = maxOf(0, answeredThisSession - 1)
             show(entry.card)

@@ -46,6 +46,14 @@ class DeckEditorFormTest {
     }
 
     @Test
+    fun negativeLimitIsRejected() {
+        val e = errors(filled.copy(newPerDay = "-5", reviewsPerDay = "-1"))
+
+        assertEquals(LimitError.TooLarge, e.newPerDay)
+        assertEquals(LimitError.TooLarge, e.reviewsPerDay)
+    }
+
+    @Test
     fun limitAtMaximumAndZeroAreAccepted() {
         val result = valid(filled.copy(newPerDay = "9999", reviewsPerDay = "0"))
 

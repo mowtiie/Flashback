@@ -119,9 +119,8 @@ class Sm2Scheduler(
             Rating.AGAIN -> throw IllegalStateException("Unreachable rating: $rating")
         }
 
-        // Always move forward by at least a day, otherwise low-ease cards stall.
-        grown = maxOf(grown, previous + 1)
-        s.intervalDays = clampInterval(applyFuzz(grown))
+        // Fuzz first, then guarantee at least a day of growth, or low-ease cards can stall.
+        s.intervalDays = clampInterval(maxOf(applyFuzz(grown), previous + 1))
         s.state = CardState.REVIEW
         s.dueAt = dueAfterDays(now, s.intervalDays)
     }

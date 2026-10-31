@@ -12,7 +12,8 @@ object AnswerChecker {
         WRONG,
     }
 
-    private val marks = Regex("\\p{M}+")
+    // Latin-style accents only: other scripts use combining marks as part of the letter.
+    private val accents = Regex("[\\u0300-\\u036F]+")
     private val whitespace = Regex("\\s+")
     private val trailingPunctuation = Regex("[\\p{P}\\s]+$")
 
@@ -38,8 +39,7 @@ object AnswerChecker {
         if (text == null) {
             return ""
         }
-        return Normalizer.normalize(text, Normalizer.Form.NFD)
-            .replace(marks, "")
+        return Normalizer.normalize(Normalizer.normalize(text, Normalizer.Form.NFD).replace(accents, ""), Normalizer.Form.NFC)
             .lowercase(Locale.ROOT)
             .replace(whitespace, " ")
             .trim()

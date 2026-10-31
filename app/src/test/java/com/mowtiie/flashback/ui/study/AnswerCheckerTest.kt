@@ -23,6 +23,22 @@ class AnswerCheckerTest {
     }
 
     @Test
+    fun voicedKanaIsNotTheSameAsItsUnvoicedForm() {
+        assertEquals(Result.WRONG, AnswerChecker.check("か", "が"))
+    }
+
+    @Test
+    fun hangulSyllablesAreComparedWholeNotAsJamo() {
+        assertEquals(Result.CORRECT, AnswerChecker.check("한국어", "한국어"))
+        assertEquals(Result.WRONG, AnswerChecker.check("한", "핸"))
+    }
+
+    @Test
+    fun devanagariVowelSignsAreKept() {
+        assertEquals(Result.WRONG, AnswerChecker.check("कि", "का"))
+    }
+
+    @Test
     fun trailingPunctuationIsIgnored() {
         assertEquals(Result.CORRECT, AnswerChecker.check("the forest", "The forest."))
     }

@@ -136,6 +136,17 @@ class Sm2SchedulerTest {
     }
 
     @Test
+    fun fuzzNeverTakesTheIntervalBackBelowTheMinimumGrowth() {
+        val fuzzed = SchedulerConfig()
+        for (seed in 0L until 300L) {
+            val result = Sm2Scheduler(fuzzed, Random(seed), TimeZone.getTimeZone("UTC"))
+                .answer(reviewCard(2, 1.3), Rating.GOOD, NOW)
+
+            assertTrue("seed $seed gave ${result.intervalDays}", result.intervalDays >= 3)
+        }
+    }
+
+    @Test
     fun intervalIsCappedAtMaximum() {
         config.maximumIntervalDays = 365
 

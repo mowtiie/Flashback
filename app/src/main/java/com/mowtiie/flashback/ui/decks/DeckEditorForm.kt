@@ -91,7 +91,7 @@ private sealed interface LimitResult {
 private fun parseLimit(text: String): LimitResult {
     if (text.isEmpty()) return LimitResult.Invalid(LimitError.Required)
     val value = text.toIntOrNull()
-    return if (value == null || value > MAX_PER_DAY) {
+    return if (value == null || value < 0 || value > MAX_PER_DAY) {
         LimitResult.Invalid(LimitError.TooLarge)
     } else {
         LimitResult.Ok(value)

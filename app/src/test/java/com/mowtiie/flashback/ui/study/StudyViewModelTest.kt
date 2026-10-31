@@ -144,6 +144,19 @@ class StudyViewModelTest {
     }
 
     @Test
+    fun undoingACardThatCameStraightBackDoesNotQueueItTwice() {
+        val vm = viewModel(FakeData(cards = listOf(card(1))))
+
+        vm.reveal()
+        vm.answer(Rating.AGAIN) // inside the learn-ahead window, so it is shown again at once
+        vm.undo()
+        vm.reveal()
+        vm.answer(Rating.EASY)
+
+        assertEquals(StudyEnding.Finished(answered = 1), vm.uiState.value.ending)
+    }
+
+    @Test
     fun answerIsIgnoredUntilTheAnswerIsRevealed() {
         val data = FakeData(cards = listOf(card(1), card(2)))
         val vm = viewModel(data)
