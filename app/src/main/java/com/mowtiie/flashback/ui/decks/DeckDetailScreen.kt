@@ -15,7 +15,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -52,6 +51,7 @@ import com.mowtiie.flashback.data.entity.Deck
 import com.mowtiie.flashback.data.model.NotePreview
 import com.mowtiie.flashback.repository.FlashbackRepository
 import com.mowtiie.flashback.theme.FlashbackTheme
+import com.mowtiie.flashback.ui.components.DeleteDialog
 import com.mowtiie.flashback.ui.components.EmptyState
 import com.mowtiie.flashback.ui.components.LightDarkPreviews
 
@@ -90,23 +90,14 @@ fun DeckDetailRoute(
 
     val deckName = state.deck?.name
     if (confirmDelete && deckName != null) {
-        AlertDialog(
-            onDismissRequest = { confirmDelete = false },
-            title = { Text(stringResource(R.string.deck_delete_title)) },
-            text = { Text(stringResource(R.string.deck_delete_body, deckName)) },
-            dismissButton = {
-                TextButton(onClick = { confirmDelete = false }) {
-                    Text(stringResource(R.string.action_cancel))
-                }
+        DeleteDialog(
+            title = stringResource(R.string.deck_delete_title),
+            body = stringResource(R.string.deck_delete_body, deckName),
+            onDelete = {
+                confirmDelete = false
+                viewModel.deleteDeck()
             },
-            confirmButton = {
-                TextButton(onClick = {
-                    confirmDelete = false
-                    viewModel.deleteDeck()
-                }) {
-                    Text(stringResource(R.string.action_delete))
-                }
-            },
+            onDismiss = { confirmDelete = false },
         )
     }
 }

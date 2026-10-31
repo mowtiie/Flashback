@@ -144,9 +144,16 @@ class FlashbackRepository(
     }
 
     /** Toggling reverse off deletes that card and its scheduling history. */
-    suspend fun updateNote(note: Note, now: Long = System.currentTimeMillis()) = write {
+    suspend fun updateNote(
+        note: Note,
+        suspended: Boolean? = null,
+        now: Long = System.currentTimeMillis(),
+    ) = write {
         db.withTransaction {
             noteDao.update(note.copy(modifiedAt = now))
+            if (suspended != null) {
+                cardDao.setNoteSuspended(note.id, suspended)
+            }
             val hasReverse = cardDao.getByNote(note.id).any { it.ordinal == Card.ORDINAL_REVERSE }
             if (note.reverseEnabled && !hasReverse) {
                 cardDao.insert(Card(noteId = note.id, ordinal = Card.ORDINAL_REVERSE))

@@ -19,7 +19,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -54,6 +53,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mowtiie.flashback.R
 import com.mowtiie.flashback.data.entity.Tag
 import com.mowtiie.flashback.theme.FlashbackTheme
+import com.mowtiie.flashback.ui.components.DiscardChangesDialog
 import com.mowtiie.flashback.ui.components.LightDarkPreviews
 
 @Composable
@@ -93,23 +93,12 @@ fun DeckEditorRoute(
     )
 
     if (confirmDiscard) {
-        AlertDialog(
-            onDismissRequest = { confirmDiscard = false },
-            title = { Text(stringResource(R.string.unsaved_title)) },
-            text = { Text(stringResource(R.string.unsaved_body)) },
-            dismissButton = {
-                TextButton(onClick = { confirmDiscard = false }) {
-                    Text(stringResource(R.string.unsaved_keep))
-                }
+        DiscardChangesDialog(
+            onDiscard = {
+                confirmDiscard = false
+                onClose()
             },
-            confirmButton = {
-                TextButton(onClick = {
-                    confirmDiscard = false
-                    onClose()
-                }) {
-                    Text(stringResource(R.string.unsaved_discard))
-                }
-            },
+            onKeepEditing = { confirmDiscard = false },
         )
     }
 }

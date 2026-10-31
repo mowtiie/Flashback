@@ -1,5 +1,6 @@
 package com.mowtiie.flashback.ui.components
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -24,6 +25,7 @@ fun EmptyState(
     title: String,
     body: String,
     modifier: Modifier = Modifier,
+    @DrawableRes icon: Int = R.drawable.ic_school,
     actionLabel: String? = null,
     onAction: () -> Unit = {},
 ) {
@@ -35,7 +37,7 @@ fun EmptyState(
         verticalArrangement = Arrangement.Center,
     ) {
         Icon(
-            painter = painterResource(R.drawable.ic_school),
+            painter = painterResource(icon),
             contentDescription = null,
             modifier = Modifier.size(56.dp),
             tint = MaterialTheme.colorScheme.onSurfaceVariant,

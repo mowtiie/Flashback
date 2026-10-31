@@ -60,4 +60,67 @@
     <string name="note_add">Add card</string>
     <string name="note_has_reverse">Two-way</string>
     <string name="note_suspended_badge">Suspended</string>
+
+    <string name="nav_decks">Decks</string>
+    <string name="nav_tags">Tags</string>
+    <string name="nav_stats">Stats</string>
+    <string name="nav_settings">Settings</string>
+    <string name="stats_title">Statistics</string>
+    <string name="settings_title">Settings</string>
+
+    <string name="tags_title">Tags</string>
+    <string name="tags_empty_title">No tags yet</string>
+    <string name="tags_empty_body">Tags group decks across subjects, so you can pull up everything for one course at once.</string>
+    <string name="tag_new_title">New tag</string>
+    <string name="tag_edit_title">Edit tag</string>
+    <string name="tag_name">Name</string>
+    <string name="tag_description">Description</string>
+    <string name="tag_colour">Colour</string>
+    <string name="tag_preview">Preview</string>
+    <string name="tag_preview_placeholder">Tag name</string>
+    <string name="tag_save">Save tag</string>
+    <string name="tag_name_required">Enter a name for the tag</string>
+    <string name="tag_name_taken">A tag with this name already exists</string>
+    <string name="tag_delete">Delete tag</string>
+    <string name="tag_delete_title">Delete this tag?</string>
+    <string name="tag_delete_body">The tag is removed from every deck using it. The decks and their cards are untouched.</string>
+    <string name="tag_deleted">Tag deleted</string>
+    <string name="tag_unused">Not used yet</string>
+    <plurals name="tag_deck_count">
+        <item quantity="one">Used by %1$d deck</item>
+        <item quantity="other">Used by %1$d decks</item>
+    </plurals>
+    <string-array name="tag_palette_names">
+        <item>Red</item>
+        <item>Orange</item>
+        <item>Amber</item>
+        <item>Lime</item>
+        <item>Green</item>
+        <item>Teal</item>
+        <item>Cyan</item>
+        <item>Blue</item>
+        <item>Indigo</item>
+        <item>Purple</item>
+        <item>Pink</item>
+        <item>Slate</item>
+    </string-array>
+    <string name="swatch_selected">Selected</string>
+
+    <string name="note_editor_new_title">Add card</string>
+    <string name="note_editor_edit_title">Edit card</string>
+    <string name="note_front">Front</string>
+    <string name="note_back">Back</string>
+    <string name="note_reverse">Also ask back to front</string>
+    <string name="note_reverse_help">Schedules a second card that shows the back first. The two are scheduled independently.</string>
+    <string name="note_save">Save</string>
+    <string name="note_save_and_add">Save and add another</string>
+    <string name="note_front_required">Enter the front of the card</string>
+    <string name="note_back_required">Enter the back of the card</string>
+    <string name="note_saved">Card saved</string>
+    <string name="note_delete">Delete card</string>
+    <string name="note_delete_title">Delete this card?</string>
+    <string name="note_delete_body">The card and its review history are removed. This cannot be undone.</string>
+    <string name="note_deleted">Card deleted</string>
+    <string name="note_suspend">Suspend this card</string>
+    <string name="note_suspend_help">A suspended card is skipped when studying until you turn this off.</string>
 </resources>
