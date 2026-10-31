@@ -50,7 +50,7 @@ class FlashbackRepositoryTest {
     fun tearDown() = db.close()
 
     private suspend fun newDeck(newPerDay: Int, reviewsPerDay: Int): Long =
-        repository.insertDeck(Deck(name = "Deck", newPerDay = newPerDay, reviewsPerDay = reviewsPerDay))
+        repository.saveDeck(Deck(name = "Deck", newPerDay = newPerDay, reviewsPerDay = reviewsPerDay), emptyList())
 
     private suspend fun newNote(deckId: Long, front: String): Long =
         repository.addNote(Note(deckId = deckId, front = front, back = "back"))
@@ -203,7 +203,7 @@ class FlashbackRepositoryTest {
         val deckId = newDeck(20, 200)
         repeat(3) { newNote(deckId, "n$it") }
         val tagId = repository.saveTag(Tag(name = "Kept"))!!
-        repository.setDeckTags(deckId, listOf(tagId))
+        repository.saveDeck(db.deckDao().getById(deckId)!!, listOf(tagId))
         answer(db.cardDao().getByDeck(deckId).first(), Rating.GOOD)
 
         val undo = repository.deleteDeck(db.deckDao().getById(deckId)!!)
@@ -221,13 +221,48 @@ class FlashbackRepositoryTest {
     fun undoingATagDeleteRelinksItsDecks() = runBlocking {
         val deckId = newDeck(20, 200)
         val tagId = repository.saveTag(Tag(name = "Relink"))!!
-        repository.setDeckTags(deckId, listOf(tagId))
+        repository.saveDeck(db.deckDao().getById(deckId)!!, listOf(tagId))
 
         val undo = repository.deleteTag(db.tagDao().getById(tagId)!!)
         assertEquals(0, db.tagDao().getTagIdsForDeck(deckId).size)
 
         assertTrue(undo.undo())
         assertEquals(listOf(tagId), db.tagDao().getTagIdsForDeck(deckId))
+    }
+
+    @Test
+    fun undoingATagDeleteFailsWhenTheNameWasTakenMeanwhile() = runBlocking {
+        val id = repository.saveTag(Tag(name = "Spanish"))!!
+        val undo = repository.deleteTag(db.tagDao().getById(id)!!)
+        val replacement = repository.saveTag(Tag(name = "Spanish"))!!
+
+        assertFalse(undo.undo())
+        assertEquals(listOf(replacement), db.tagDao().observeAll().first().map { it.id })
+    }
+
+    @Test
+    fun savingADeckReplacesItsTags() = runBlocking {
+        val deckId = newDeck(20, 200)
+        val first = repository.saveTag(Tag(name = "First"))!!
+        val second = repository.saveTag(Tag(name = "Second"))!!
+        val deck = db.deckDao().getById(deckId)!!
+
+        repository.saveDeck(deck, listOf(first))
+        repository.saveDeck(deck, listOf(second))
+
+        assertEquals(listOf(second), db.tagDao().getTagIdsForDeck(deckId))
+    }
+
+    @Test
+    fun savingADeckSkipsATagDeletedWhileEditing() = runBlocking {
+        val deckId = newDeck(20, 200)
+        val kept = repository.saveTag(Tag(name = "Kept"))!!
+        val gone = repository.saveTag(Tag(name = "Gone"))!!
+        repository.deleteTag(db.tagDao().getById(gone)!!)
+
+        repository.saveDeck(db.deckDao().getById(deckId)!!, listOf(kept, gone))
+
+        assertEquals(listOf(kept), db.tagDao().getTagIdsForDeck(deckId))
     }
 
     @Test

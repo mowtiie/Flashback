@@ -20,7 +20,7 @@ class Sm2SchedulerTest {
         scheduler = Sm2Scheduler(config, Random(1), TimeZone.getTimeZone("UTC"))
     }
 
-    private fun newCard() = SchedulingState(state = CardState.NEW, easeFactor = config.startingEase)
+    private fun newCard() = SchedulingState(state = CardState.NEW, easeFactor = 2.5)
 
     private fun reviewCard(intervalDays: Int, ease: Double) = SchedulingState(
         state = CardState.REVIEW,

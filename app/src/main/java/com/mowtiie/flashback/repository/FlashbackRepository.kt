@@ -86,10 +86,6 @@ class FlashbackRepository(
 
     override suspend fun getDeckNotes(deckId: Long): List<Note> = io { noteDao.getByDeck(deckId) }
 
-    suspend fun insertDeck(deck: Deck): Long = write { deckDao.insert(deck) }
-
-    suspend fun updateDeck(deck: Deck) = write { deckDao.update(deck) }
-
     /** Inserts (id 0) or updates the deck and replaces its tags in one transaction. Returns the id. */
     suspend fun saveDeck(deck: Deck, tagIds: Collection<Long>): Long = write {
         db.withTransaction {
@@ -275,21 +271,13 @@ class FlashbackRepository(
         }
         return UndoAction {
             restore {
-                tagDao.insert(tag)
+                // IGNORE on conflict returns -1: a tag now holds the name, so there is nothing to restore.
+                if (tagDao.insert(tag) == -1L) throw SQLiteConstraintException("Tag name is taken")
                 for (deckId in deckIds) {
                     if (deckDao.getById(deckId) != null) {
                         tagDao.link(DeckTagCrossRef(deckId, tag.id))
                     }
                 }
-            }
-        }
-    }
-
-    suspend fun setDeckTags(deckId: Long, tagIds: List<Long>) = write {
-        db.withTransaction {
-            tagDao.clearTagsForDeck(deckId)
-            for (tagId in tagIds) {
-                tagDao.link(DeckTagCrossRef(deckId, tagId))
             }
         }
     }

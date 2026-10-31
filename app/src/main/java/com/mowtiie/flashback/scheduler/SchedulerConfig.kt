@@ -8,7 +8,6 @@ class SchedulerConfig {
     var lapseIntervalMultiplier: Double = 0.0
     var minimumIntervalDays: Int = 1
     var maximumIntervalDays: Int = 36500
-    var startingEase: Double = 2.5
     var minimumEase: Double = 1.3
     var hardIntervalMultiplier: Double = 1.2
     var easyBonus: Double = 1.3
