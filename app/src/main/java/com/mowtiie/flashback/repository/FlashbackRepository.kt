@@ -84,6 +84,26 @@ class FlashbackRepository(
 
     suspend fun updateDeck(deck: Deck) = write { deckDao.update(deck) }
 
+    /** Inserts (id 0) or updates the deck and replaces its tags in one transaction. Returns the id. */
+    suspend fun saveDeck(deck: Deck, tagIds: Collection<Long>): Long = write {
+        db.withTransaction {
+            val id = if (deck.id == 0L) {
+                deckDao.insert(deck)
+            } else {
+                deckDao.update(deck)
+                deck.id
+            }
+            tagDao.clearTagsForDeck(id)
+            for (tagId in tagIds) {
+                // A tag deleted while the editor was open is skipped rather than failing the save.
+                if (tagDao.getById(tagId) != null) {
+                    tagDao.link(DeckTagCrossRef(id, tagId))
+                }
+            }
+            id
+        }
+    }
+
     suspend fun deleteDeck(deck: Deck): UndoAction {
         // Snapshot first: the cascade removes all of it with the deck.
         val snapshot = write {

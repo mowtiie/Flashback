@@ -3,6 +3,7 @@ package com.mowtiie.flashback
 import android.content.Context
 import com.mowtiie.flashback.data.FlashbackDatabase
 import com.mowtiie.flashback.repository.FlashbackRepository
+import com.mowtiie.flashback.ui.AppMessenger
 
 /** Hand-wired dependencies, created once by [FlashbackApp]. */
 class AppContainer(context: Context) {
@@ -13,4 +14,6 @@ class AppContainer(context: Context) {
     val database: FlashbackDatabase by lazy { FlashbackDatabase.getInstance(appContext) }
 
     val repository: FlashbackRepository by lazy { FlashbackRepository(database, dispatchers) }
+
+    val messenger = AppMessenger()
 }
