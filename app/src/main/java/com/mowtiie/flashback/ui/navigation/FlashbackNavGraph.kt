@@ -60,6 +60,7 @@ fun NavGraphBuilder.flashbackGraph(container: AppContainer, navController: NavHo
                         themePrefs = container.themePreferences,
                         reminderPrefs = container.reminderPreferences,
                         scheduler = container.reminderScheduler,
+                        archive = container.repository,
                         ioDispatcher = container.dispatchers.io,
                         dynamicColorAvailable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
                     )
@@ -106,7 +107,9 @@ private fun NavGraphBuilder.deckDestinations(
         val deckId = entry.longArgument(Routes.DECK_ID)
         val viewModel: DeckDetailViewModel = viewModel(
             factory = viewModelFactory {
-                initializer { DeckDetailViewModel(container.repository, deckId) }
+                initializer {
+                    DeckDetailViewModel(container.repository, deckId, container.dispatchers.io)
+                }
             },
         )
         DeckDetailRoute(
@@ -122,6 +125,7 @@ private fun NavGraphBuilder.deckDestinations(
                     undo.undo()
                 }
             },
+            onMessage = container.messenger::show,
         )
     }
 

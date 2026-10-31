@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.mowtiie.flashback.data.entity.Deck
 import com.mowtiie.flashback.data.model.NotePreview
 import com.mowtiie.flashback.repository.FlashbackRepository
+import com.mowtiie.flashback.ui.export.ExportSession
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,17 +32,29 @@ data class DeckDetailUiState(
 sealed interface DeckDetailEvent {
     /** [undo] puts the deck, its cards and review history back. */
     class Deleted(val deckName: String, val undo: FlashbackRepository.UndoAction) : DeckDetailEvent
+
+    /** The export text is ready; the screen asks where to save it. */
+    class ExportReady(val deckName: String) : DeckDetailEvent
+
+    data object ExportNothing : DeckDetailEvent
+
+    data object ExportSaved : DeckDetailEvent
+
+    data object ExportWriteFailed : DeckDetailEvent
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class DeckDetailViewModel(
     private val repository: FlashbackRepository,
     private val deckId: Long,
+    ioDispatcher: CoroutineDispatcher,
     private val clock: () -> Long = System::currentTimeMillis,
 ) : ViewModel() {
 
     /** Reissued on resume so counts aren't stale after a session. */
     private val now = MutableStateFlow(clock())
+
+    private val export = ExportSession(ioDispatcher)
 
     private val events = Channel<DeckDetailEvent>(Channel.BUFFERED)
     val eventFlow = events.receiveAsFlow()
@@ -63,6 +77,30 @@ class DeckDetailViewModel(
     fun refresh() {
         now.value = clock()
     }
+
+    fun exportDeck() {
+        val deck = uiState.value.deck ?: return
+        viewModelScope.launch {
+            val text = repository.exportDeckText(deckId)
+            if (text == null) {
+                events.send(DeckDetailEvent.ExportNothing)
+            } else {
+                export.hold(text)
+                events.send(DeckDetailEvent.ExportReady(deck.name))
+            }
+        }
+    }
+
+    /** [writer] is blocking and runs off the main thread. */
+    fun saveExport(writer: (String) -> Unit) {
+        viewModelScope.launch {
+            val saved = export.write(writer)
+            events.send(if (saved) DeckDetailEvent.ExportSaved else DeckDetailEvent.ExportWriteFailed)
+        }
+    }
+
+    /** The user closed the save dialog without choosing a place. */
+    fun discardExport() = export.discard()
 
     fun deleteDeck() {
         val deck = uiState.value.deck ?: return

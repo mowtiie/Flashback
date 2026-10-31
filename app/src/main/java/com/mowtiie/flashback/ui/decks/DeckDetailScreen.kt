@@ -1,5 +1,7 @@
 package com.mowtiie.flashback.ui.decks
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -39,6 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -48,6 +51,8 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mowtiie.flashback.R
 import com.mowtiie.flashback.data.entity.Deck
+import com.mowtiie.flashback.data.io.ArchiveFiles
+import com.mowtiie.flashback.data.io.deckExportFileName
 import com.mowtiie.flashback.data.model.NotePreview
 import com.mowtiie.flashback.repository.FlashbackRepository
 import com.mowtiie.flashback.theme.FlashbackTheme
@@ -64,16 +69,34 @@ fun DeckDetailRoute(
     onOpenNote: (Long) -> Unit,
     onStudy: () -> Unit,
     onDeleted: (name: String, undo: FlashbackRepository.UndoAction) -> Unit,
+    onMessage: (Int) -> Unit,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
     var confirmDelete by rememberSaveable { mutableStateOf(false) }
 
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.refresh() }
+
+    val saveLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("application/json"),
+    ) { uri ->
+        if (uri == null) {
+            viewModel.discardExport()
+        } else {
+            viewModel.saveExport { text -> ArchiveFiles.write(context.contentResolver, uri, text) }
+        }
+    }
 
     LaunchedEffect(viewModel) {
         viewModel.eventFlow.collect { event ->
             when (event) {
                 is DeckDetailEvent.Deleted -> onDeleted(event.deckName, event.undo)
+                is DeckDetailEvent.ExportReady -> saveLauncher.launch(
+                    deckExportFileName(context.getString(R.string.export_deck_filename_prefix), event.deckName),
+                )
+                DeckDetailEvent.ExportNothing -> onMessage(R.string.export_deck_missing)
+                DeckDetailEvent.ExportSaved -> onMessage(R.string.export_saved)
+                DeckDetailEvent.ExportWriteFailed -> onMessage(R.string.export_write_failed)
             }
         }
     }
@@ -82,6 +105,7 @@ fun DeckDetailRoute(
         state = state,
         onBack = onBack,
         onEditDeck = onEditDeck,
+        onExportDeck = viewModel::exportDeck,
         onDeleteDeck = { confirmDelete = true },
         onAddNote = onAddNote,
         onOpenNote = onOpenNote,
@@ -108,6 +132,7 @@ fun DeckDetailScreen(
     state: DeckDetailUiState,
     onBack: () -> Unit,
     onEditDeck: () -> Unit,
+    onExportDeck: () -> Unit,
     onDeleteDeck: () -> Unit,
     onAddNote: () -> Unit,
     onOpenNote: (Long) -> Unit,
@@ -134,7 +159,7 @@ fun DeckDetailScreen(
                         )
                     }
                 },
-                actions = { DeckDetailActions(onAddNote, onEditDeck, onDeleteDeck) },
+                actions = { DeckDetailActions(onAddNote, onEditDeck, onExportDeck, onDeleteDeck) },
                 scrollBehavior = scrollBehavior,
             )
         },
@@ -182,7 +207,12 @@ fun DeckDetailScreen(
 }
 
 @Composable
-private fun DeckDetailActions(onAddNote: () -> Unit, onEditDeck: () -> Unit, onDeleteDeck: () -> Unit) {
+private fun DeckDetailActions(
+    onAddNote: () -> Unit,
+    onEditDeck: () -> Unit,
+    onExportDeck: () -> Unit,
+    onDeleteDeck: () -> Unit,
+) {
     var menuOpen by rememberSaveable { mutableStateOf(false) }
 
     IconButton(onClick = onAddNote) {
@@ -197,6 +227,13 @@ private fun DeckDetailActions(onAddNote: () -> Unit, onEditDeck: () -> Unit, onD
             onClick = {
                 menuOpen = false
                 onEditDeck()
+            },
+        )
+        DropdownMenuItem(
+            text = { Text(stringResource(R.string.deck_export)) },
+            onClick = {
+                menuOpen = false
+                onExportDeck()
             },
         )
         DropdownMenuItem(
@@ -293,7 +330,7 @@ private fun DeckDetailPreview() {
                 suspendedNoteIds = setOf(2L),
                 studyableCount = 14,
             ),
-            onBack = {}, onEditDeck = {}, onDeleteDeck = {}, onAddNote = {},
+            onBack = {}, onEditDeck = {}, onExportDeck = {}, onDeleteDeck = {}, onAddNote = {},
             onOpenNote = {}, onStudy = {},
         )
     }
@@ -305,7 +342,7 @@ private fun DeckDetailEmptyPreview() {
     FlashbackTheme(dynamicColor = false) {
         DeckDetailScreen(
             state = DeckDetailUiState(loaded = true, deck = Deck(id = 1, name = "Spanish vocabulary")),
-            onBack = {}, onEditDeck = {}, onDeleteDeck = {}, onAddNote = {},
+            onBack = {}, onEditDeck = {}, onExportDeck = {}, onDeleteDeck = {}, onAddNote = {},
             onOpenNote = {}, onStudy = {},
         )
     }
