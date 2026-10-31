@@ -19,7 +19,7 @@ class FlashbackApp : Application(), Configuration.Provider {
         // Off the main thread: reading prefs and touching WorkManager must not delay launch.
         CoroutineScope(SupervisorJob() + container.dispatchers.io).launch {
             ReminderNotifier.ensureChannel(this@FlashbackApp)
-            container.reminderScheduler.reschedule()
+            container.reminderScheduler.ensureScheduled()
         }
     }
 

@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit
 
 /** What the settings screen needs from scheduling, so it can be faked in tests. */
 fun interface ReminderScheduling {
-    /** Enqueues or cancels the reminder to match the saved preferences. */
+    /** Enqueues or cancels the reminder to match the saved preferences, replacing any pending run. */
     fun reschedule()
 }
 
@@ -24,7 +24,15 @@ class ReminderScheduler(
 ) : ReminderScheduling {
     private val appContext = context.applicationContext
 
-    override fun reschedule() {
+    override fun reschedule() = schedule(ExistingWorkPolicy.REPLACE)
+
+    /**
+     * For app start-up: leaves a pending run alone. WorkManager can start the process to run
+     * the reminder, and replacing the work then would cancel the run that started it.
+     */
+    fun ensureScheduled() = schedule(ExistingWorkPolicy.KEEP)
+
+    private fun schedule(policy: ExistingWorkPolicy) {
         val workManager = WorkManager.getInstance(appContext)
         if (!prefs.enabled) {
             workManager.cancelUniqueWork(WORK_NAME)
@@ -37,8 +45,7 @@ class ReminderScheduler(
             .addTag(WORK_NAME)
             .build()
 
-        // REPLACE, so a settings change or timezone shift moves the pending job.
-        workManager.enqueueUniqueWork(WORK_NAME, ExistingWorkPolicy.REPLACE, request)
+        workManager.enqueueUniqueWork(WORK_NAME, policy, request)
     }
 
     private companion object {
