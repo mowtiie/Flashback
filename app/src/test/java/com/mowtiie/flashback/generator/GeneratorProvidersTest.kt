@@ -71,12 +71,14 @@ class GeneratorProvidersTest {
 
     @Test
     fun geminiGeneratorSendsToGoogleWithItsOwnKeyAndNamesGoogleInErrors() = runTest {
-        var url: String? = null
-        var key: String? = null
-        val transport = HttpTransport { u, headers, _ ->
-            url = u
-            key = headers["x-goog-api-key"]
-            HttpResponse(403, "{}")
+        var seenUrl: String? = null
+        var seenKey: String? = null
+        val transport = object : HttpTransport {
+            override suspend fun post(url: String, headers: Map<String, String>, body: String): HttpResponse {
+                seenUrl = url
+                seenKey = headers["x-goog-api-key"]
+                return HttpResponse(403, "{}")
+            }
         }
         val generator = GeminiCardGenerator({ "g-key" }, UnconfinedTestDispatcher(), transport)
 
@@ -86,8 +88,8 @@ class GeneratorProvidersTest {
         } catch (e: GeneratorException) {
             assertTrue(e.message.orEmpty().contains("Google"))
         }
-        assertTrue(url.orEmpty().startsWith("https://generativelanguage.googleapis.com/"))
-        assertEquals("g-key", key)
+        assertTrue(seenUrl.orEmpty().startsWith("https://generativelanguage.googleapis.com/"))
+        assertEquals("g-key", seenKey)
     }
 
     @Test

@@ -50,6 +50,7 @@ import com.mowtiie.flashback.ui.components.CenteredScrollColumn
 import com.mowtiie.flashback.ui.components.EmptyState
 import com.mowtiie.flashback.ui.components.LightDarkPreviews
 import com.mowtiie.flashback.ui.components.showReplacing
+import java.text.NumberFormat
 
 class GeneratorActions(
     val onBack: () -> Unit = {},
@@ -170,12 +171,12 @@ private fun InputPage(state: GeneratorUiState, actions: GeneratorActions) {
             supportingText = {
                 Text(
                     if (state.sourceTooLong) {
-                        stringResource(R.string.generator_source_too_long, GeneratorLimits.MAX_SOURCE_CHARS)
+                        stringResource(R.string.generator_source_too_long, grouped(GeneratorLimits.MAX_SOURCE_CHARS))
                     } else {
                         stringResource(
                             R.string.generator_source_count,
-                            state.source.length,
-                            GeneratorLimits.MAX_SOURCE_CHARS,
+                            grouped(state.source.length),
+                            grouped(GeneratorLimits.MAX_SOURCE_CHARS),
                         )
                     },
                 )
@@ -321,3 +322,5 @@ private fun GeneratorProvider.privacyRes(): Int = when (this) {
     GeneratorProvider.Anthropic -> R.string.generator_privacy_anthropic
     GeneratorProvider.Gemini -> R.string.generator_privacy_gemini
 }
+
+private fun grouped(count: Int): String = NumberFormat.getIntegerInstance().format(count)

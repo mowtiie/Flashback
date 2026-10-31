@@ -1,7 +1,9 @@
 package com.mowtiie.flashback.ui.settings
 
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
@@ -16,6 +18,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -94,7 +97,8 @@ private fun ApiKeyDialog(
                 label = { Text(stringResource(R.string.settings_generator_key_hint)) },
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = { if (key.isNotBlank()) onSave(key) }),
                 modifier = Modifier.fillMaxWidth(),
             )
         },
@@ -104,9 +108,10 @@ private fun ApiKeyDialog(
             }
         },
         dismissButton = {
-            if (hasKey) {
-                TextButton(onClick = onRemove) { Text(stringResource(R.string.settings_generator_key_remove)) }
-            } else {
+            Row {
+                if (hasKey) {
+                    TextButton(onClick = onRemove) { Text(stringResource(R.string.settings_generator_key_remove)) }
+                }
                 TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
             }
         },

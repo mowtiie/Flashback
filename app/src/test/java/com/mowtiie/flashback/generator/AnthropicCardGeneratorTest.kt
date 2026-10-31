@@ -23,7 +23,7 @@ class AnthropicCardGeneratorTest {
         var headers: Map<String, String> = emptyMap()
         var body: String? = null
 
-        override fun post(url: String, headers: Map<String, String>, body: String): HttpResponse {
+        override suspend fun post(url: String, headers: Map<String, String>, body: String): HttpResponse {
             calls++
             this.url = url
             this.headers = headers

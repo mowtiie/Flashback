@@ -272,8 +272,8 @@
     <string name="generator_open">Generate cards with AI</string>
     <string name="generator_source_label">Study material</string>
     <string name="generator_source_hint">Paste notes, a chapter, or an exam reviewer</string>
-    <string name="generator_source_count">%1$d / %2$d characters</string>
-    <string name="generator_source_too_long">Too long. Use at most %1$d characters at a time.</string>
+    <string name="generator_source_count">%1$s / %2$s characters</string>
+    <string name="generator_source_too_long">Too long. Use at most %1$s characters at a time.</string>
     <string name="generator_action">Generate</string>
     <string name="generator_working">Making cards…</string>
     <string name="generator_no_key_title">Add your API key first</string>
