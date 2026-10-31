@@ -52,7 +52,7 @@
 
     <string name="deck_delete">Delete deck</string>
     <string name="deck_delete_title">Delete this deck?</string>
-    <string name="deck_delete_body">Deleting %1$s removes its cards and their review history. This cannot be undone.</string>
+    <string name="deck_delete_body">Deleting %1$s removes its cards and their review history. You can undo it from the message that appears straight after.</string>
     <string name="deck_deleted">Deck deleted</string>
     <string name="deck_detail_empty_title">This deck is empty</string>
     <string name="deck_detail_empty_body">Add your first card to start studying.</string>
@@ -219,7 +219,7 @@
     <string name="note_saved">Card saved</string>
     <string name="note_delete">Delete card</string>
     <string name="note_delete_title">Delete this card?</string>
-    <string name="note_delete_body">The card and its review history are removed. This cannot be undone.</string>
+    <string name="note_delete_body">The card and its review history are removed. You can undo it from the message that appears straight after.</string>
     <string name="note_deleted">Card deleted</string>
     <string name="note_suspend">Suspend this card</string>
     <string name="note_suspend_help">A suspended card is skipped when studying until you turn this off.</string>
