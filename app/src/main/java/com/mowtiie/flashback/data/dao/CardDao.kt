@@ -38,7 +38,7 @@ interface CardDao {
     suspend fun deleteByNoteAndOrdinal(noteId: Long, ordinal: Int)
 
     @Query(
-        "SELECT c.*, n.front AS front, n.back AS back FROM cards c " +
+        "SELECT c.*, n.front AS front, n.back AS back, n.answerMode AS answerMode, n.choices AS choices FROM cards c " +
             "JOIN notes n ON c.noteId = n.id " +
             "WHERE n.deckId = :deckId AND c.suspended = 0 " +
             "AND c.state IN (1, 3) AND c.dueAt <= :now " +
@@ -47,7 +47,7 @@ interface CardDao {
     suspend fun findDueLearning(deckId: Long, now: Long, limit: Int): List<StudyCard>
 
     @Query(
-        "SELECT c.*, n.front AS front, n.back AS back FROM cards c " +
+        "SELECT c.*, n.front AS front, n.back AS back, n.answerMode AS answerMode, n.choices AS choices FROM cards c " +
             "JOIN notes n ON c.noteId = n.id " +
             "WHERE n.deckId = :deckId AND c.suspended = 0 " +
             "AND c.state = 2 AND c.dueAt <= :now " +
@@ -56,7 +56,7 @@ interface CardDao {
     suspend fun findDueReviews(deckId: Long, now: Long, limit: Int): List<StudyCard>
 
     @Query(
-        "SELECT c.*, n.front AS front, n.back AS back FROM cards c " +
+        "SELECT c.*, n.front AS front, n.back AS back, n.answerMode AS answerMode, n.choices AS choices FROM cards c " +
             "JOIN notes n ON c.noteId = n.id " +
             "WHERE n.deckId = :deckId AND c.suspended = 0 AND c.state = 0 " +
             "ORDER BY c.noteId, c.ordinal LIMIT :limit",

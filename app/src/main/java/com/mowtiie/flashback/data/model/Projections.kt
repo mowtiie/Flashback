@@ -69,6 +69,8 @@ class StudyCard(
     @Embedded val card: Card,
     var front: String,
     var back: String,
+    var answerMode: Int? = null,
+    var choices: String? = null,
 ) {
     fun question(): String = if (card.ordinal == Card.ORDINAL_REVERSE) back else front
 

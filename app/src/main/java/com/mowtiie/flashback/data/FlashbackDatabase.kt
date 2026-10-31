@@ -25,7 +25,7 @@ import com.mowtiie.flashback.data.entity.Tag
         DeckTagCrossRef::class,
         ReviewLog::class,
     ],
-    version = 1,
+    version = 2,
     exportSchema = true,
 )
 abstract class FlashbackDatabase : RoomDatabase() {
@@ -53,6 +53,7 @@ abstract class FlashbackDatabase : RoomDatabase() {
                     FlashbackDatabase::class.java,
                     DB_NAME,
                 )
+                    .addMigrations(MIGRATION_1_2)
                     // Lets the study screen read while a write is in flight.
                     .setJournalMode(JournalMode.WRITE_AHEAD_LOGGING)
                     .build()

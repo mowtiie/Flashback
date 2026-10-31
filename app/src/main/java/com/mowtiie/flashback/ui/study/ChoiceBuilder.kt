@@ -13,7 +13,12 @@ object ChoiceBuilder {
     )
 
     /** Returns null when the card can't make a fair question, so the caller falls back to flip. */
-    fun build(correct: String?, candidates: List<String?>, random: Random): Choices? {
+    fun build(
+        correct: String?,
+        candidates: List<String?>,
+        random: Random,
+        preferred: List<String> = emptyList(),
+    ): Choices? {
         if (correct == null || AnswerChecker.normalize(correct).isEmpty() ||
             correct.length > MAX_LENGTH
         ) {
@@ -22,24 +27,27 @@ object ChoiceBuilder {
 
         val seen = hashSetOf(AnswerChecker.normalize(correct))
 
-        val distractors = mutableListOf<String>()
-        for (candidate in candidates) {
-            if (candidate == null || candidate.length > MAX_LENGTH) {
-                continue
-            }
-            val key = AnswerChecker.normalize(candidate)
-            if (key.isNotEmpty() && seen.add(key)) {
-                distractors.add(candidate)
-            }
-        }
-        if (distractors.isEmpty()) {
+        // Wrong options the author wrote come first; borrowed answers only fill what is left.
+        val authored = unseen(preferred, seen)
+        val borrowed = unseen(candidates, seen)
+        if (authored.isEmpty() && borrowed.isEmpty()) {
             return null
         }
 
-        distractors.shuffle(random)
-        val options = distractors.subList(0, minOf(MAX_OPTIONS - 1, distractors.size)).toMutableList()
+        borrowed.shuffle(random)
+        val options = (authored + borrowed).take(MAX_OPTIONS - 1).toMutableList()
         options.add(correct)
         options.shuffle(random)
         return Choices(options, options.indexOf(correct))
+    }
+
+    private fun unseen(options: List<String?>, seen: MutableSet<String>): MutableList<String> {
+        val result = mutableListOf<String>()
+        for (option in options) {
+            if (option == null || option.length > MAX_LENGTH) continue
+            val key = AnswerChecker.normalize(option)
+            if (key.isNotEmpty() && seen.add(key)) result.add(option)
+        }
+        return result
     }
 }

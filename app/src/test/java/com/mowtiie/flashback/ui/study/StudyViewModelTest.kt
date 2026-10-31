@@ -94,10 +94,18 @@ class StudyViewModelTest {
         front: String = "front$id",
         back: String = "back$id",
         ordinal: Int = Card.ORDINAL_FORWARD,
-    ) = StudyCard(Card(id = id, noteId = noteId, ordinal = ordinal, state = state, dueAt = dueAt), front, back)
+        answerMode: Int? = null,
+        choices: String? = null,
+    ) = StudyCard(
+        Card(id = id, noteId = noteId, ordinal = ordinal, state = state, dueAt = dueAt),
+        front,
+        back,
+        answerMode,
+        choices,
+    )
 
     private fun viewModel(data: FakeData, mode: AnswerMode = AnswerMode.Flip) =
-        StudyViewModel(data, deckId = 1, answerMode = mode, clock = { now }, random = Random(7))
+        StudyViewModel(data, deckId = 1, defaultMode = mode, clock = { now }, random = Random(7))
 
     @Test
     fun emptyQueueEndsWithNothingDue() {
@@ -461,5 +469,90 @@ class StudyViewModelTest {
     private companion object {
         const val NOW = 1_700_000_000_000L
         const val MIN = 60_000L
+    }
+
+    @Test
+    fun eachCardUsesItsOwnAnswerTypeInOneDeck() {
+        val vm = viewModel(
+            FakeData(
+                cards = listOf(
+                    card(1, answerMode = AnswerMode.Type.value),
+                    card(2, answerMode = AnswerMode.Flip.value),
+                    card(3),
+                ),
+            ),
+            mode = AnswerMode.Flip,
+        )
+
+        assertEquals(AnswerMode.Type, vm.uiState.value.answerMode)
+        vm.onTypedChange("back1")
+        vm.check()
+        vm.answer(Rating.GOOD)
+
+        assertEquals(AnswerMode.Flip, vm.uiState.value.answerMode)
+    }
+
+    @Test
+    fun aNoteWithoutATypeFollowsTheStudySetting() {
+        val vm = viewModel(FakeData(cards = listOf(card(1))), mode = AnswerMode.Type)
+        assertEquals(AnswerMode.Type, vm.uiState.value.answerMode)
+    }
+
+    @Test
+    fun aChoiceNoteUsesItsOwnWrongOptions() {
+        val vm = viewModel(
+            FakeData(
+                cards = listOf(
+                    card(1, back = "Paris", answerMode = AnswerMode.Choice.value, choices = """["Rome","Madrid","Berlin"]"""),
+                ),
+                notes = listOf(Note(id = 2, deckId = 1, front = "q", back = "Tokyo")),
+            ),
+        )
+
+        val choices = vm.uiState.value.choices
+        assertNotNull(choices)
+        assertEquals(setOf("Paris", "Rome", "Madrid", "Berlin"), choices!!.options.toSet())
+    }
+
+    @Test
+    fun aChoiceNoteWithoutOptionsBorrowsFromTheDeck() {
+        val vm = viewModel(
+            FakeData(
+                cards = listOf(card(1, back = "Paris", answerMode = AnswerMode.Choice.value)),
+                notes = listOf(
+                    Note(id = 1, deckId = 1, front = "a", back = "Paris"),
+                    Note(id = 2, deckId = 1, front = "b", back = "Rome"),
+                ),
+            ),
+        )
+
+        assertEquals(setOf("Paris", "Rome"), vm.uiState.value.choices!!.options.toSet())
+    }
+
+    @Test
+    fun aChoiceNoteWithNothingToOfferFallsBackToFlip() {
+        val vm = viewModel(FakeData(cards = listOf(card(1, answerMode = AnswerMode.Choice.value))))
+
+        val state = vm.uiState.value
+        assertEquals(AnswerMode.Choice, state.answerMode)
+        assertFalse(state.showChoices)
+    }
+
+    @Test
+    fun theReverseCardOfAChoiceNoteDoesNotUseTheForwardWrongOptions() {
+        val vm = viewModel(
+            FakeData(
+                cards = listOf(
+                    card(
+                        1, front = "Paris", back = "France", ordinal = Card.ORDINAL_REVERSE,
+                        answerMode = AnswerMode.Choice.value, choices = """["Italy","Spain"]""",
+                    ),
+                ),
+                notes = listOf(Note(id = 2, deckId = 1, front = "Rome", back = "Italy")),
+            ),
+        )
+
+        val options = vm.uiState.value.choices!!.options.toSet()
+        assertEquals(setOf("Paris", "Rome"), options)
     }
 }

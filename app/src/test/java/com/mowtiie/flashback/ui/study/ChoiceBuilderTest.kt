@@ -77,4 +77,36 @@ class ChoiceBuilderTest {
         val b = build("house", "dog", "cat", "tree")
         assertEquals(a!!.options, b!!.options)
     }
+
+    @Test
+    fun authoredWrongOptionsAreAlwaysUsedAheadOfBorrowedOnes() {
+        repeat(20) { seed ->
+            val choices = ChoiceBuilder.build(
+                "Paris",
+                listOf("Tokyo", "Oslo", "Lima", "Cairo", "Bern"),
+                Random(seed.toLong()),
+                preferred = listOf("Rome", "Madrid", "Berlin"),
+            )!!
+            assertEquals(setOf("Paris", "Rome", "Madrid", "Berlin"), choices.options.toSet())
+        }
+    }
+
+    @Test
+    fun borrowedOptionsFillWhatTheAuthorLeftOut() {
+        val choices = ChoiceBuilder.build("Paris", listOf("Tokyo", "Oslo"), Random(1), preferred = listOf("Rome"))!!
+        assertEquals(4, choices.options.size)
+        assertTrue(choices.options.containsAll(listOf("Paris", "Rome")))
+    }
+
+    @Test
+    fun authoredOptionsAloneAreEnough() {
+        val choices = ChoiceBuilder.build("Paris", emptyList(), Random(1), preferred = listOf("Rome"))
+        assertEquals(setOf("Paris", "Rome"), choices!!.options.toSet())
+    }
+
+    @Test
+    fun anAuthoredOptionEqualToTheAnswerIsDropped() {
+        val choices = ChoiceBuilder.build("Paris", emptyList(), Random(1), preferred = listOf("paris", "Rome"))
+        assertEquals(setOf("Paris", "Rome"), choices!!.options.toSet())
+    }
 }

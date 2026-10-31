@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mowtiie.flashback.data.entity.Card
 import com.mowtiie.flashback.data.entity.Note
+import com.mowtiie.flashback.data.model.NoteChoices
 import com.mowtiie.flashback.data.model.StudyCard
 import com.mowtiie.flashback.repository.StudyDataSource
 import com.mowtiie.flashback.scheduler.CardState
@@ -71,7 +72,8 @@ sealed interface StudyEvent {
 class StudyViewModel(
     private val data: StudyDataSource,
     private val deckId: Long,
-    private val answerMode: AnswerMode,
+    /** Used for notes that do not set their own answer type. */
+    private val defaultMode: AnswerMode,
     private val clock: () -> Long = System::currentTimeMillis,
     private val random: Random = Random(),
 ) : ViewModel() {
@@ -101,7 +103,7 @@ class StudyViewModel(
     private var busy = false
     private var awaitingEdit = false
 
-    private val _uiState = MutableStateFlow(StudyUiState(answerMode = answerMode))
+    private val _uiState = MutableStateFlow(StudyUiState(answerMode = defaultMode))
     val uiState: StateFlow<StudyUiState> = _uiState.asStateFlow()
 
     private val events = Channel<StudyEvent>(Channel.BUFFERED)
@@ -111,15 +113,14 @@ class StudyViewModel(
         viewModelScope.launch {
             deckName = data.getDeck(deckId)?.name
             emit()
-            if (answerMode == AnswerMode.Choice) {
-                pool = data.getDeckNotes(deckId)
-            }
             loadSession()
         }
     }
 
     private suspend fun loadSession() {
-        queue.seed(data.buildStudyQueue(deckId, clock()))
+        val cards = data.buildStudyQueue(deckId, clock())
+        if (cards.any(::needsPool)) pool = data.getDeckNotes(deckId)
+        queue.seed(cards)
         loading = false
         if (queue.isEmpty()) {
             ending = StudyEnding.NothingDue
@@ -252,6 +253,9 @@ class StudyViewModel(
             }
             card.front = note.front
             card.back = note.back
+            card.answerMode = note.answerMode
+            card.choices = note.choices
+            if (needsPool(card) && pool.isEmpty()) pool = data.getDeckNotes(deckId)
             if (!revealed) choices = buildChoices(card)
             emit()
         }
@@ -291,13 +295,25 @@ class StudyViewModel(
         emit()
     }
 
+    /** The card's own type wins; a note without one follows the study setting. */
+    private fun modeOf(card: StudyCard): AnswerMode =
+        card.answerMode?.let(AnswerMode::fromValue) ?: defaultMode
+
+    /** Wrong options a note wrote apply to its forward card only; a reverse card answers with the front. */
+    private fun authoredChoices(card: StudyCard): List<String> =
+        if (card.card.ordinal == Card.ORDINAL_REVERSE) emptyList() else NoteChoices.parse(card.choices)
+
+    /** Borrowing other answers needs the deck's notes, which are only read when a card will use them. */
+    private fun needsPool(card: StudyCard): Boolean =
+        modeOf(card) == AnswerMode.Choice && authoredChoices(card).size < NoteChoices.MAX
+
     private fun buildChoices(card: StudyCard): ChoiceBuilder.Choices? {
-        if (answerMode != AnswerMode.Choice) return null
+        if (modeOf(card) != AnswerMode.Choice) return null
         val reverse = card.card.ordinal == Card.ORDINAL_REVERSE
         val candidates = pool
             .filter { it.id != card.card.noteId }
             .map { if (reverse) it.front else it.back }
-        return ChoiceBuilder.build(card.answer(), candidates, random)
+        return ChoiceBuilder.build(card.answer(), candidates, random, preferred = authoredChoices(card))
     }
 
     /** Previews use no fuzz, so the stored interval may differ slightly. */
@@ -329,7 +345,7 @@ class StudyViewModel(
     private fun emit() {
         val card = current
         _uiState.value = StudyUiState(
-            answerMode = answerMode,
+            answerMode = card?.let(::modeOf) ?: defaultMode,
             loading = loading,
             deckName = deckName,
             card = card?.let { StudyCardUi(it.question(), it.answer()) },

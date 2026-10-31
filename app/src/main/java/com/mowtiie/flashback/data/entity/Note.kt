@@ -23,6 +23,10 @@ data class Note(
     val front: String = "",
     val back: String = "",
     val reverseEnabled: Boolean = false,
+    /** An [com.mowtiie.flashback.ui.study.AnswerMode] value, or null to follow the study setting. */
+    val answerMode: Int? = null,
+    /** Wrong options for a multiple choice card, as a JSON array; null borrows other cards' answers. */
+    val choices: String? = null,
     val createdAt: Long = System.currentTimeMillis(),
     val modifiedAt: Long = createdAt,
 )
