@@ -65,7 +65,7 @@ fun FlashbackNavHost(
                         NavigationRailItem(
                             selected = destination == topLevel,
                             onClick = { navController.navigateTopLevel(destination) },
-                            icon = { Icon(painterResource(destination.icon), null) },
+                            icon = { DestinationIcon(destination, selected = destination == topLevel) },
                             label = { Text(stringResource(destination.label)) },
                         )
                     }
@@ -93,7 +93,7 @@ fun FlashbackNavHost(
                                 NavigationBarItem(
                                     selected = destination == topLevel,
                                     onClick = { navController.navigateTopLevel(destination) },
-                                    icon = { Icon(painterResource(destination.icon), null) },
+                                    icon = { DestinationIcon(destination, selected = destination == topLevel) },
                                     label = { Text(stringResource(destination.label)) },
                                 )
                             }
@@ -154,4 +154,10 @@ private fun MessageEffect(messenger: AppMessenger, hostState: SnackbarHostState)
             }
         }
     }
+}
+
+/** Outlined while idle, filled once selected. */
+@Composable
+private fun DestinationIcon(destination: TopLevelDestination, selected: Boolean) {
+    Icon(painterResource(if (selected) destination.selectedIcon else destination.icon), contentDescription = null)
 }
