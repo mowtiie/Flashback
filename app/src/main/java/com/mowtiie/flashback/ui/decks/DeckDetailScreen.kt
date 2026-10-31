@@ -48,6 +48,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mowtiie.flashback.R
+import com.mowtiie.flashback.ui.components.isShortWindow
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.material3.MediumTopAppBar
 import com.mowtiie.flashback.ui.components.TagChip
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -135,31 +138,42 @@ fun DeckDetailScreen(
     onAddNote: () -> Unit,
     onOpenNote: (Long) -> Unit,
     onStudy: () -> Unit,
+    shortWindow: Boolean = isShortWindow(),
 ) {
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    // A long deck name wraps in the medium bar; a short window keeps the one-line bar to save height.
+    val scrollBehavior = if (shortWindow) {
+        TopAppBarDefaults.pinnedScrollBehavior()
+    } else {
+        TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    }
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = state.deck?.name.orEmpty(),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
+            val title: @Composable () -> Unit = {
+                Text(
+                    text = state.deck?.name.orEmpty(),
+                    fontFamily = FontFamily.Serif,
+                    maxLines = if (shortWindow) 1 else 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            val navigationIcon: @Composable () -> Unit = {
+                IconButton(onClick = onBack) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = stringResource(R.string.navigate_up),
                     )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.navigate_up),
-                        )
-                    }
-                },
-                actions = { DeckDetailActions(onAddNote, onEditDeck, onExportDeck, onDeleteDeck) },
-                scrollBehavior = scrollBehavior,
-            )
+                }
+            }
+            val actions: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit = {
+                DeckDetailActions(onAddNote, onEditDeck, onExportDeck, onDeleteDeck)
+            }
+            if (shortWindow) {
+                TopAppBar(title = title, navigationIcon = navigationIcon, actions = actions, scrollBehavior = scrollBehavior)
+            } else {
+                MediumTopAppBar(title = title, navigationIcon = navigationIcon, actions = actions, scrollBehavior = scrollBehavior)
+            }
         },
         floatingActionButton = {
             if (state.studyableCount > 0) {
