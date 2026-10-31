@@ -286,12 +286,18 @@
     <string name="generator_start_over">Start over</string>
     <string name="generator_save_failed">The deck could not be saved. Nothing was added.</string>
     <string name="generator_all_removed">Every card was removed. Start over to try again.</string>
-    <string name="generator_privacy_anthropic">This text is sent to Anthropic to make the cards. Review them before saving, since they can contain mistakes.</string>
-    <string name="generator_privacy_gemini">This text is sent to Google to make the cards. On the free tier Google may use it to improve its products, so do not paste anything private. Review the cards before saving, since they can contain mistakes.</string>
     <string name="generator_no_key_body">Card generation uses your own API key from the provider you choose. Add it in Settings.</string>
     <string name="settings_generator_provider">Provider</string>
     <string name="settings_generator_key_title">%1$s API key</string>
     <string name="settings_generator_key_hint">API key</string>
-    <string name="settings_generator_note_anthropic">Optional. Text you generate cards from is sent to Anthropic using your own key, which is paid. Nothing else leaves the app. The key stays on this device and is left out of backups.</string>
-    <string name="settings_generator_note_gemini">Optional. Text you generate cards from is sent to Google using your own key. Google offers a free tier, but on it Google may use what you send to improve its products. Nothing else leaves the app. The key stays on this device and is left out of backups.</string>
+    <string name="generator_privacy_anthropic">What you add here, text or a whole PDF, is sent to Anthropic to make the cards. Review them before saving, since they can contain mistakes.</string>
+    <string name="generator_privacy_gemini">What you add here, text or a whole PDF, is sent to Google to make the cards. On the free tier Google may use it to improve its products, so do not add anything private. Review the cards before saving, since they can contain mistakes.</string>
+    <string name="settings_generator_note_anthropic">Optional. Text or PDFs you generate cards from are sent to Anthropic using your own key, which is paid. Nothing else leaves the app. The key stays on this device and is left out of backups.</string>
+    <string name="settings_generator_note_gemini">Optional. Text or PDFs you generate cards from are sent to Google using your own key. Google offers a free tier, but on it Google may use what you send to improve its products. Nothing else leaves the app. The key stays on this device and is left out of backups.</string>
+    <string name="generator_pdf_choose">Choose a PDF instead</string>
+    <string name="generator_pdf_remove">Remove %1$s</string>
+    <string name="generator_count_title">Most cards to make</string>
+    <string name="generator_count_few">Few (%1$d)</string>
+    <string name="generator_count_normal">Normal (%1$d)</string>
+    <string name="generator_count_many">Many (%1$d)</string>
 </resources>

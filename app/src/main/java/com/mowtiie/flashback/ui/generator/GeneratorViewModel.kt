@@ -4,11 +4,15 @@ import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mowtiie.flashback.data.io.DeckArchive
+import com.mowtiie.flashback.generator.CardCount
 import com.mowtiie.flashback.generator.CardGenerator
 import com.mowtiie.flashback.generator.GeneratorException
+import com.mowtiie.flashback.generator.GeneratorInput
 import com.mowtiie.flashback.generator.GeneratorLimits
 import com.mowtiie.flashback.generator.GeneratorProvider
+import com.mowtiie.flashback.generator.GeneratorRequest
 import com.mowtiie.flashback.repository.ArchiveDataSource
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,6 +31,9 @@ data class GeneratorUiState(
     val provider: GeneratorProvider = GeneratorProvider.Anthropic,
     val stage: GeneratorStage = GeneratorStage.Input,
     val source: String = "",
+    val pdfName: String? = null,
+    val pdfSize: Int = 0,
+    val cardCount: CardCount = CardCount.Normal,
     /** Shown on the input page after a failed attempt. */
     val error: String? = null,
     val deckName: String = "",
@@ -34,8 +41,10 @@ data class GeneratorUiState(
 ) {
     val sourceTooLong: Boolean get() = source.length > GeneratorLimits.MAX_SOURCE_CHARS
 
+    val hasPdf: Boolean get() = pdfName != null
+
     val canGenerate: Boolean
-        get() = hasApiKey && stage == GeneratorStage.Input && source.isNotBlank() && !sourceTooLong
+        get() = hasApiKey && stage == GeneratorStage.Input && (hasPdf || (source.isNotBlank() && !sourceTooLong))
 
     val canSave: Boolean
         get() = stage == GeneratorStage.Review && deckName.isNotBlank() && cards.isNotEmpty()
@@ -53,6 +62,7 @@ class GeneratorViewModel(
     private val archive: ArchiveDataSource,
     private val hasApiKey: () -> Boolean,
     private val provider: () -> GeneratorProvider,
+    private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(GeneratorUiState(hasApiKey = hasApiKey(), provider = provider()))
@@ -70,13 +80,38 @@ class GeneratorViewModel(
         _uiState.update { it.copy(source = text, error = null) }
     }
 
+    /** Held here, not in the state, since it can be megabytes. [reader] is blocking and runs off the main thread. */
+    private var pdf: GeneratorInput.Pdf? = null
+
+    fun attachPdf(reader: () -> GeneratorInput.Pdf) {
+        viewModelScope.launch {
+            try {
+                val picked = withContext(ioDispatcher) { reader() }
+                pdf = picked
+                _uiState.update { it.copy(pdfName = picked.name, pdfSize = picked.bytes.size, error = null) }
+            } catch (e: GeneratorException) {
+                _uiState.update { it.copy(error = e.message) }
+            }
+        }
+    }
+
+    fun removePdf() {
+        pdf = null
+        _uiState.update { it.copy(pdfName = null, pdfSize = 0, error = null) }
+    }
+
+    fun setCardCount(count: CardCount) {
+        _uiState.update { it.copy(cardCount = count) }
+    }
+
     fun generate() {
         val state = _uiState.value
         if (!state.canGenerate) return
         _uiState.update { it.copy(stage = GeneratorStage.Generating, error = null) }
         viewModelScope.launch {
             try {
-                val deck = generator.generate(state.source.trim())
+                val input = pdf ?: GeneratorInput.Text(state.source.trim())
+                val deck = generator.generate(GeneratorRequest(input, state.cardCount))
                 _uiState.update {
                     it.copy(stage = GeneratorStage.Review, deckName = deck.name, cards = deck.notes)
                 }

@@ -3,7 +3,11 @@ package com.mowtiie.flashback.ui.generator
 import com.mowtiie.flashback.data.io.DeckArchive
 import com.mowtiie.flashback.generator.CardGenerator
 import com.mowtiie.flashback.generator.GeneratorException
+import com.mowtiie.flashback.generator.CardCount
+import com.mowtiie.flashback.generator.GeneratorInput
 import com.mowtiie.flashback.generator.GeneratorLimits
+import com.mowtiie.flashback.generator.GeneratorRequest
+import com.mowtiie.flashback.generator.pdfRequest
 import com.mowtiie.flashback.generator.GeneratorProvider
 import com.mowtiie.flashback.ui.settings.FakeArchive
 import kotlinx.coroutines.CompletableDeferred
@@ -35,8 +39,10 @@ class GeneratorViewModelTest {
     private var failure: GeneratorException? = null
     private val sources = mutableListOf<String>()
 
-    private val generator = CardGenerator { source ->
-        sources += source
+    private fun textOf(request: GeneratorRequest) = (request.input as? GeneratorInput.Text)?.text ?: "<pdf>"
+
+    private val generator = CardGenerator { request ->
+        sources += textOf(request)
         failure?.let { throw it }
         generated!!
     }
@@ -47,7 +53,7 @@ class GeneratorViewModelTest {
     @After
     fun tearDown() = Dispatchers.resetMain()
 
-    private fun viewModel() = GeneratorViewModel(generator, archive, { hasKey }, { provider })
+    private fun viewModel() = GeneratorViewModel(generator, archive, { hasKey }, { provider }, UnconfinedTestDispatcher())
 
     @Test
     fun cannotGenerateWithoutAKeyOrText() {
@@ -105,7 +111,7 @@ class GeneratorViewModelTest {
     @Test
     fun aSecondTapWhileGeneratingDoesNotSendAgain() = runTest {
         val gate = CompletableDeferred<DeckArchive.Deck>()
-        val slow = GeneratorViewModel({ source -> sources += source; gate.await() }, archive, { true }, { provider })
+        val slow = GeneratorViewModel({ request -> sources += textOf(request); gate.await() }, archive, { true }, { provider }, UnconfinedTestDispatcher())
         slow.setSource("notes")
         slow.generate()
         slow.generate()
@@ -171,5 +177,71 @@ class GeneratorViewModelTest {
         assertEquals(GeneratorStage.Input, state.stage)
         assertEquals("notes", state.source)
         assertTrue(state.cards.isEmpty())
+    }
+
+    private val pdf = com.mowtiie.flashback.generator.GeneratorInput.Pdf("handout.pdf", com.mowtiie.flashback.generator.FAKE_PDF)
+
+    @Test
+    fun aPickedPdfCanBeGeneratedWithoutAnyText() {
+        val viewModel = viewModel()
+        viewModel.attachPdf { pdf }
+
+        val state = viewModel.uiState.value
+        assertEquals("handout.pdf", state.pdfName)
+        assertEquals(com.mowtiie.flashback.generator.FAKE_PDF.size, state.pdfSize)
+        assertTrue(state.canGenerate)
+
+        viewModel.generate()
+        assertEquals(GeneratorStage.Review, viewModel.uiState.value.stage)
+        assertEquals(listOf("<pdf>"), sources)
+    }
+
+    @Test
+    fun theCardCountReachesTheGenerator() {
+        var asked: CardCount? = null
+        val viewModel = GeneratorViewModel(
+            { request -> asked = request.cardCount; generated!! },
+            archive,
+            { true },
+            { provider },
+            UnconfinedTestDispatcher(),
+        )
+        viewModel.setSource("notes")
+        viewModel.setCardCount(CardCount.Many)
+        viewModel.generate()
+        assertEquals(CardCount.Many, asked)
+    }
+
+    @Test
+    fun aBadFileShowsAMessageAndKeepsAnyEarlierPdf() {
+        val viewModel = viewModel()
+        viewModel.attachPdf { pdf }
+        viewModel.attachPdf { throw GeneratorException("That file does not look like a PDF.") }
+
+        val state = viewModel.uiState.value
+        assertEquals("That file does not look like a PDF.", state.error)
+        assertEquals("handout.pdf", state.pdfName)
+    }
+
+    @Test
+    fun removingThePdfGoesBackToText() {
+        val viewModel = viewModel()
+        viewModel.attachPdf { pdf }
+        viewModel.removePdf()
+
+        assertFalse(viewModel.uiState.value.hasPdf)
+        assertFalse(viewModel.uiState.value.canGenerate)
+        viewModel.setSource("notes")
+        viewModel.generate()
+        assertEquals(listOf("notes"), sources)
+    }
+
+    @Test
+    fun anAttachedPdfWinsOverTypedText() {
+        val viewModel = viewModel()
+        viewModel.setSource("notes")
+        viewModel.attachPdf { pdf }
+        viewModel.generate()
+        assertEquals(listOf("<pdf>"), sources)
     }
 }

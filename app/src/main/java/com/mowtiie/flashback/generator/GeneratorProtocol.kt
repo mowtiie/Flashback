@@ -44,10 +44,10 @@ object GeneratorProtocol {
         """.trimIndent(),
     )
 
-    fun requestBody(source: String): String = JSONObject()
+    fun requestBody(request: GeneratorRequest): String = JSONObject()
         .put("model", MODEL)
         .put("max_tokens", MAX_OUTPUT_TOKENS)
-        .put("system", CardPrompt.SYSTEM)
+        .put("system", CardPrompt.system(request.cardCount.max))
         .put(
             "output_config",
             JSONObject()
@@ -57,14 +57,32 @@ object GeneratorProtocol {
         .put(
             "messages",
             JSONArray().put(
-                JSONObject().put("role", "user").put("content", CardPrompt.material(source)),
+                JSONObject().put("role", "user").put("content", userContent(request.input)),
             ),
         )
         .toString()
 
+    /** Text goes in as a string; a PDF as a document block ahead of the instruction. */
+    private fun userContent(input: GeneratorInput): Any = when (input) {
+        is GeneratorInput.Text -> CardPrompt.material(input.text)
+        is GeneratorInput.Pdf -> JSONArray()
+            .put(
+                JSONObject()
+                    .put("type", "document")
+                    .put(
+                        "source",
+                        JSONObject()
+                            .put("type", "base64")
+                            .put("media_type", "application/pdf")
+                            .put("data", CardPrompt.base64(input.bytes)),
+                    ),
+            )
+            .put(JSONObject().put("type", "text").put("text", CardPrompt.PDF_INSTRUCTION))
+    }
+
     /** The model's output goes through [deckFromModelText], so it is validated like any import. */
     @Throws(GeneratorException::class)
-    fun parseResponse(status: Int, body: String): DeckArchive.Deck {
+    fun parseResponse(status: Int, body: String, maxCards: Int): DeckArchive.Deck {
         if (status !in 200..299) throw GeneratorException(errorMessage(status, body))
 
         val root = try {
@@ -81,7 +99,7 @@ object GeneratorProtocol {
         val text = textOf(root.optJSONArray("content"))
         if (text.isEmpty()) throw GeneratorException("The model returned no cards.")
 
-        return deckFromModelText(text)
+        return deckFromModelText(text, maxCards)
     }
 
     private fun textOf(content: JSONArray?): String {

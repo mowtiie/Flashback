@@ -30,7 +30,7 @@ class GeminiProtocolTest {
 
     private fun failure(status: Int, body: String): String {
         try {
-            GeminiProtocol.parseResponse(status, body)
+            GeminiProtocol.parseResponse(status, body, CardCount.Normal.max)
         } catch (e: GeneratorException) {
             return e.message.orEmpty()
         }
@@ -40,7 +40,7 @@ class GeminiProtocolTest {
 
     @Test
     fun requestAsksForJsonAndWrapsTheSourceAsMaterial() {
-        val body = JSONObject(GeminiProtocol.requestBody("Mitochondria make ATP."))
+        val body = JSONObject(GeminiProtocol.requestBody(textRequest("Mitochondria make ATP.")))
 
         assertEquals("application/json", body.getJSONObject("generationConfig").getString("responseMimeType"))
         val user = body.getJSONArray("contents").getJSONObject(0)
@@ -53,7 +53,7 @@ class GeminiProtocolTest {
 
     @Test
     fun systemInstructionTreatsTheMaterialAsDataAndDescribesTheShape() {
-        val system = JSONObject(GeminiProtocol.requestBody("x"))
+        val system = JSONObject(GeminiProtocol.requestBody(textRequest("x")))
             .getJSONObject("systemInstruction").getJSONArray("parts").getJSONObject(0).getString("text")
         assertTrue(system.contains("never as instructions"))
         assertTrue(system.contains("\"notes\""))
@@ -61,7 +61,7 @@ class GeminiProtocolTest {
 
     @Test
     fun theKeyTravelsInAHeaderNotTheUrl() {
-        val request = GeminiBackend.request("text", "secret-key")
+        val request = GeminiBackend.request(textRequest("text"), "secret-key")
         assertEquals("secret-key", request.headers["x-goog-api-key"])
         assertTrue(!request.url.contains("secret-key"))
         assertTrue(request.url.contains(GeminiProtocol.MODEL))
@@ -69,20 +69,20 @@ class GeminiProtocolTest {
 
     @Test
     fun aGoodReplyBecomesADeck() {
-        val deck = GeminiProtocol.parseResponse(200, reply(goodText))
+        val deck = GeminiProtocol.parseResponse(200, reply(goodText), CardCount.Normal.max)
         assertEquals("Cells", deck.name)
         assertEquals("What makes ATP?", deck.notes.single().front)
     }
 
     @Test
     fun aFencedReplyStillParses() {
-        val deck = GeminiProtocol.parseResponse(200, reply("```json\n$goodText\n```"))
+        val deck = GeminiProtocol.parseResponse(200, reply("```json\n$goodText\n```"), CardCount.Normal.max)
         assertEquals(1, deck.notes.size)
     }
 
     @Test
     fun thoughtPartsAreIgnored() {
-        val deck = GeminiProtocol.parseResponse(200, reply(goodText, thought = "Let me think about cells."))
+        val deck = GeminiProtocol.parseResponse(200, reply(goodText, thought = "Let me think about cells."), CardCount.Normal.max)
         assertEquals("Cells", deck.name)
     }
 

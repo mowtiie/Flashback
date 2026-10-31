@@ -11,10 +11,10 @@ class HttpRequest(val url: String, val headers: Map<String, String>, val body: S
 interface GeneratorBackend {
     val provider: GeneratorProvider
 
-    fun request(source: String, apiKey: String): HttpRequest
+    fun request(request: GeneratorRequest, apiKey: String): HttpRequest
 
     @Throws(GeneratorException::class)
-    fun parse(status: Int, body: String): DeckArchive.Deck
+    fun parse(status: Int, body: String, maxCards: Int): DeckArchive.Deck
 }
 
 /** Sends one request to a [GeneratorBackend] with the user's own key. */
@@ -25,16 +25,16 @@ class RemoteCardGenerator(
     private val transport: HttpTransport = UrlConnectionTransport(),
 ) : CardGenerator {
 
-    override suspend fun generate(source: String): DeckArchive.Deck = withContext(ioDispatcher) {
+    override suspend fun generate(request: GeneratorRequest): DeckArchive.Deck = withContext(ioDispatcher) {
         val name = backend.provider.displayName
         val key = apiKey() ?: throw GeneratorException("Add your $name API key in Settings first.")
-        val request = backend.request(source, key)
+        val http = backend.request(request, key)
         val response = try {
-            transport.post(request.url, request.headers, request.body)
+            transport.post(http.url, http.headers, http.body)
         } catch (e: IOException) {
             throw GeneratorException("Could not reach $name. Check your connection and try again.", e)
         }
-        backend.parse(response.status, response.body)
+        backend.parse(response.status, response.body, request.cardCount.max)
     }
 }
 
@@ -43,6 +43,6 @@ class SelectedCardGenerator(
     private val preferences: GeneratorPreferences,
     private val generators: Map<GeneratorProvider, CardGenerator>,
 ) : CardGenerator {
-    override suspend fun generate(source: String): DeckArchive.Deck =
-        generators.getValue(preferences.provider).generate(source)
+    override suspend fun generate(request: GeneratorRequest): DeckArchive.Deck =
+        generators.getValue(preferences.provider).generate(request)
 }

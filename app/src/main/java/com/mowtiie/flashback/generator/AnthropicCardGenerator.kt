@@ -68,17 +68,18 @@ internal object AnthropicBackend : GeneratorBackend {
 
     override val provider = GeneratorProvider.Anthropic
 
-    override fun request(source: String, apiKey: String) = HttpRequest(
+    override fun request(request: GeneratorRequest, apiKey: String) = HttpRequest(
         url = ENDPOINT,
         headers = mapOf(
             "content-type" to "application/json",
             "x-api-key" to apiKey,
             "anthropic-version" to API_VERSION,
         ),
-        body = GeneratorProtocol.requestBody(source),
+        body = GeneratorProtocol.requestBody(request),
     )
 
-    override fun parse(status: Int, body: String): DeckArchive.Deck = GeneratorProtocol.parseResponse(status, body)
+    override fun parse(status: Int, body: String, maxCards: Int): DeckArchive.Deck =
+        GeneratorProtocol.parseResponse(status, body, maxCards)
 }
 
 /** Calls the Anthropic Messages API; plain HTTP, since no library is needed. */

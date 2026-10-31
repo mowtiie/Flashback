@@ -62,9 +62,9 @@ class GeneratorProvidersTest {
             GeneratorProvider.entries.associateWith { provider -> CardGenerator { used += provider; deck } },
         )
 
-        generator.generate("one")
+        generator.generate(textRequest("one"))
         prefs.provider = GeneratorProvider.Gemini
-        generator.generate("two")
+        generator.generate(textRequest("two"))
 
         assertEquals(listOf(GeneratorProvider.Anthropic, GeneratorProvider.Gemini), used)
     }
@@ -83,7 +83,7 @@ class GeneratorProvidersTest {
         val generator = GeminiCardGenerator({ "g-key" }, UnconfinedTestDispatcher(), transport)
 
         try {
-            generator.generate("text")
+            generator.generate(textRequest("text"))
             org.junit.Assert.fail("Expected a GeneratorException")
         } catch (e: GeneratorException) {
             assertTrue(e.message.orEmpty().contains("Google"))
@@ -96,7 +96,7 @@ class GeneratorProvidersTest {
     fun missingKeyMessageNamesTheProvider() = runTest {
         val generator = GeminiCardGenerator({ null }, UnconfinedTestDispatcher())
         try {
-            generator.generate("text")
+            generator.generate(textRequest("text"))
             org.junit.Assert.fail("Expected a GeneratorException")
         } catch (e: GeneratorException) {
             assertTrue(e.message.orEmpty().contains("Google Gemini API key"))

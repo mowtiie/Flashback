@@ -51,7 +51,7 @@ class AnthropicCardGeneratorTest {
     @Test
     fun sendsTheKeyAndSourceToTheMessagesEndpoint() = runTest {
         val transport = RecordingTransport { HttpResponse(200, okBody) }
-        val deck = generator("sk-ant-test", transport).generate("Cells have a nucleus.")
+        val deck = generator("sk-ant-test", transport).generate(textRequest("Cells have a nucleus."))
 
         assertEquals("https://api.anthropic.com/v1/messages", transport.url)
         assertEquals("sk-ant-test", transport.headers["x-api-key"])
@@ -63,7 +63,7 @@ class AnthropicCardGeneratorTest {
     fun withoutAKeyNothingIsSent() = runTest {
         val transport = RecordingTransport { HttpResponse(200, okBody) }
         try {
-            generator(null, transport).generate("text")
+            generator(null, transport).generate(textRequest("text"))
             fail("Expected a GeneratorException")
         } catch (e: GeneratorException) {
             assertTrue(e.message.orEmpty().contains("API key"))
@@ -75,7 +75,7 @@ class AnthropicCardGeneratorTest {
     fun aNetworkFailureBecomesAFriendlyError() = runTest {
         val transport = RecordingTransport { throw IOException("timeout") }
         try {
-            generator("k", transport).generate("text")
+            generator("k", transport).generate(textRequest("text"))
             fail("Expected a GeneratorException")
         } catch (e: GeneratorException) {
             assertTrue(e.message.orEmpty().contains("Could not reach"))
@@ -86,7 +86,7 @@ class AnthropicCardGeneratorTest {
     fun anHttpErrorIsMapped() = runTest {
         val transport = RecordingTransport { HttpResponse(401, "{}") }
         try {
-            generator("k", transport).generate("text")
+            generator("k", transport).generate(textRequest("text"))
             fail("Expected a GeneratorException")
         } catch (e: GeneratorException) {
             assertTrue(e.message.orEmpty().contains("rejected"))

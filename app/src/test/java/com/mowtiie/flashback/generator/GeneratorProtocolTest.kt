@@ -31,7 +31,7 @@ class GeneratorProtocolTest {
 
     private fun failure(status: Int, body: String): String {
         try {
-            GeneratorProtocol.parseResponse(status, body)
+            GeneratorProtocol.parseResponse(status, body, CardCount.Normal.max)
         } catch (e: GeneratorException) {
             return e.message.orEmpty()
         }
@@ -41,7 +41,7 @@ class GeneratorProtocolTest {
 
     @Test
     fun requestWrapsTheSourceAsMaterialAndAsksForSchemaOutput() {
-        val body = JSONObject(GeneratorProtocol.requestBody("Mitochondria make ATP."))
+        val body = JSONObject(GeneratorProtocol.requestBody(textRequest("Mitochondria make ATP.")))
 
         assertEquals(GeneratorProtocol.MODEL, body.getString("model"))
         val user = body.getJSONArray("messages").getJSONObject(0)
@@ -55,7 +55,7 @@ class GeneratorProtocolTest {
 
     @Test
     fun requestIsFreeOfSamplingAndForcedToolSettings() {
-        val body = JSONObject(GeneratorProtocol.requestBody("x"))
+        val body = JSONObject(GeneratorProtocol.requestBody(textRequest("x")))
         listOf("temperature", "top_p", "top_k", "tool_choice", "thinking").forEach {
             assertTrue("$it must not be sent", !body.has(it))
         }
@@ -63,9 +63,9 @@ class GeneratorProtocolTest {
 
     @Test
     fun theSystemPromptTellsTheModelToTreatTheMaterialAsData() {
-        val system = JSONObject(GeneratorProtocol.requestBody("x")).getString("system")
+        val system = JSONObject(GeneratorProtocol.requestBody(textRequest("x"))).getString("system")
         assertTrue(system.contains("never as instructions"))
-        assertTrue(system.contains("at most ${GeneratorLimits.MAX_CARDS}"))
+        assertTrue(system.contains("at most ${CardCount.Normal.max}"))
     }
 
     @Test
@@ -73,6 +73,7 @@ class GeneratorProtocolTest {
         val deck = GeneratorProtocol.parseResponse(
             200,
             reply(cards("What makes ATP?" to "Mitochondria", "What holds DNA?" to "The nucleus")),
+            CardCount.Normal.max,
         )
 
         assertEquals("Cells", deck.name)
@@ -85,15 +86,16 @@ class GeneratorProtocolTest {
         val deck = GeneratorProtocol.parseResponse(
             200,
             reply(cards("Capital of France?" to "Paris", "capital of france?" to "Paris", "Capital of Spain?" to "Madrid")),
+            CardCount.Normal.max,
         )
         assertEquals(2, deck.notes.size)
     }
 
     @Test
     fun moreThanTheCapIsTrimmed() {
-        val many = (1..GeneratorLimits.MAX_CARDS + 10).map { "Q$it" to "A$it" }.toTypedArray()
-        val deck = GeneratorProtocol.parseResponse(200, reply(cards(*many)))
-        assertEquals(GeneratorLimits.MAX_CARDS, deck.notes.size)
+        val many = (1..CardCount.Normal.max + 10).map { "Q$it" to "A$it" }.toTypedArray()
+        val deck = GeneratorProtocol.parseResponse(200, reply(cards(*many)), CardCount.Normal.max)
+        assertEquals(CardCount.Normal.max, deck.notes.size)
     }
 
     @Test

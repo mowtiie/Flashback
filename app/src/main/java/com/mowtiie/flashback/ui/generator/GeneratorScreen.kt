@@ -1,5 +1,7 @@
 package com.mowtiie.flashback.ui.generator
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,6 +36,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -43,6 +46,7 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mowtiie.flashback.R
 import com.mowtiie.flashback.data.io.DeckArchive
+import com.mowtiie.flashback.generator.CardCount
 import com.mowtiie.flashback.generator.GeneratorLimits
 import com.mowtiie.flashback.generator.GeneratorProvider
 import com.mowtiie.flashback.theme.FlashbackTheme
@@ -50,12 +54,17 @@ import com.mowtiie.flashback.ui.components.CenteredScrollColumn
 import com.mowtiie.flashback.ui.components.EmptyState
 import com.mowtiie.flashback.ui.components.LightDarkPreviews
 import com.mowtiie.flashback.ui.components.showReplacing
+import com.mowtiie.flashback.ui.settings.ChoiceRow
+import android.text.format.Formatter
 import java.text.NumberFormat
 
 class GeneratorActions(
     val onBack: () -> Unit = {},
     val onOpenSettings: () -> Unit = {},
     val onSourceChange: (String) -> Unit = {},
+    val onChoosePdf: () -> Unit = {},
+    val onRemovePdf: () -> Unit = {},
+    val onCardCount: (CardCount) -> Unit = {},
     val onGenerate: () -> Unit = {},
     val onDeckNameChange: (String) -> Unit = {},
     val onRemoveCard: (Int) -> Unit = {},
@@ -73,6 +82,11 @@ fun GeneratorRoute(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val resources = LocalResources.current
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
+
+    val pdfLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) viewModel.attachPdf { PdfFiles.read(context.contentResolver, uri) }
+    }
 
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.refreshKey() }
 
@@ -88,11 +102,14 @@ fun GeneratorRoute(
         }
     }
 
-    val actions = remember(viewModel, onBack, onOpenSettings) {
+    val actions = remember(viewModel, onBack, onOpenSettings, pdfLauncher) {
         GeneratorActions(
             onBack = onBack,
             onOpenSettings = onOpenSettings,
             onSourceChange = viewModel::setSource,
+            onChoosePdf = { pdfLauncher.launch(arrayOf("application/pdf")) },
+            onRemovePdf = viewModel::removePdf,
+            onCardCount = viewModel::setCardCount,
             onGenerate = viewModel::generate,
             onDeckNameChange = viewModel::setDeckName,
             onRemoveCard = viewModel::removeCard,
@@ -162,28 +179,43 @@ private fun Working(messageRes: Int) {
 @Composable
 private fun InputPage(state: GeneratorUiState, actions: GeneratorActions) {
     CenteredScrollColumn {
-        OutlinedTextField(
-            value = state.source,
-            onValueChange = actions.onSourceChange,
-            label = { Text(stringResource(R.string.generator_source_label)) },
-            placeholder = { Text(stringResource(R.string.generator_source_hint)) },
-            isError = state.sourceTooLong,
-            supportingText = {
-                Text(
-                    if (state.sourceTooLong) {
-                        stringResource(R.string.generator_source_too_long, grouped(GeneratorLimits.MAX_SOURCE_CHARS))
-                    } else {
-                        stringResource(
-                            R.string.generator_source_count,
-                            grouped(state.source.length),
-                            grouped(GeneratorLimits.MAX_SOURCE_CHARS),
-                        )
-                    },
-                )
-            },
-            minLines = 8,
-            maxLines = 16,
-            modifier = Modifier.fillMaxWidth(),
+        if (state.hasPdf) {
+            PdfCard(state, actions.onRemovePdf)
+        } else {
+            OutlinedTextField(
+                value = state.source,
+                onValueChange = actions.onSourceChange,
+                label = { Text(stringResource(R.string.generator_source_label)) },
+                placeholder = { Text(stringResource(R.string.generator_source_hint)) },
+                isError = state.sourceTooLong,
+                supportingText = {
+                    Text(
+                        if (state.sourceTooLong) {
+                            stringResource(R.string.generator_source_too_long, grouped(GeneratorLimits.MAX_SOURCE_CHARS))
+                        } else {
+                            stringResource(
+                                R.string.generator_source_count,
+                                grouped(state.source.length),
+                                grouped(GeneratorLimits.MAX_SOURCE_CHARS),
+                            )
+                        },
+                    )
+                },
+                minLines = 8,
+                maxLines = 16,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            OutlinedButton(onClick = actions.onChoosePdf, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.generator_pdf_choose))
+            }
+        }
+        ChoiceRow(
+            title = stringResource(R.string.generator_count_title),
+            options = CardCount.entries,
+            selected = state.cardCount,
+            label = { stringResource(it.labelRes(), it.max) },
+            onSelect = actions.onCardCount,
+            modifier = Modifier.padding(horizontal = 0.dp),
         )
         state.error?.let {
             Text(it, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error)
@@ -324,3 +356,34 @@ private fun GeneratorProvider.privacyRes(): Int = when (this) {
 }
 
 private fun grouped(count: Int): String = NumberFormat.getIntegerInstance().format(count)
+
+@Composable
+private fun PdfCard(state: GeneratorUiState, onRemove: () -> Unit) {
+    OutlinedCard(Modifier.fillMaxWidth()) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 8.dp),
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text(state.pdfName.orEmpty(), style = MaterialTheme.typography.titleSmall)
+                Text(
+                    text = Formatter.formatShortFileSize(LocalContext.current, state.pdfSize.toLong()),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            IconButton(onClick = onRemove) {
+                Icon(
+                    Icons.Default.Close,
+                    contentDescription = stringResource(R.string.generator_pdf_remove, state.pdfName.orEmpty()),
+                )
+            }
+        }
+    }
+}
+
+private fun CardCount.labelRes(): Int = when (this) {
+    CardCount.Few -> R.string.generator_count_few
+    CardCount.Normal -> R.string.generator_count_normal
+    CardCount.Many -> R.string.generator_count_many
+}
