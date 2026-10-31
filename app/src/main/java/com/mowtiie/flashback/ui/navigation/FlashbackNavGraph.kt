@@ -27,6 +27,8 @@ import com.mowtiie.flashback.ui.generator.GeneratorRoute
 import com.mowtiie.flashback.ui.generator.GeneratorViewModel
 import com.mowtiie.flashback.ui.notes.NoteEditorRoute
 import com.mowtiie.flashback.ui.notes.NoteEditorViewModel
+import com.mowtiie.flashback.ui.prompt.PromptBuilderRoute
+import com.mowtiie.flashback.ui.prompt.PromptBuilderViewModel
 import com.mowtiie.flashback.ui.settings.DataTransferViewModel
 import com.mowtiie.flashback.ui.settings.SettingsRoute
 import com.mowtiie.flashback.ui.settings.SettingsViewModel
@@ -97,6 +99,7 @@ private fun NavGraphBuilder.deckDestinations(
             onStudyDeck = { navController.navigate(Routes.study(it)) },
             onAddDeck = { navController.navigate(Routes.deckEditor()) },
             onGenerate = { navController.navigate(Routes.GENERATOR) },
+            onPromptHelper = { navController.navigate(Routes.PROMPT) },
         )
     }
 
@@ -205,6 +208,14 @@ private fun NavBackStackEntry.longArgument(key: String): Long =
     requireNotNull(arguments) { "Missing arguments for $key" }.getLong(key)
 
 private fun NavGraphBuilder.generatorDestination(container: AppContainer, navController: NavHostController) {
+    composable(Routes.PROMPT) {
+        PromptBuilderRoute(
+            viewModel = destinationViewModel { PromptBuilderViewModel() },
+            onBack = { navController.popBackStack() },
+            onImport = { navController.navigateTopLevel(Routes.SETTINGS) },
+        )
+    }
+
     composable(Routes.GENERATOR) {
         GeneratorRoute(
             viewModel = destinationViewModel {

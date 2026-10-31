@@ -415,7 +415,7 @@ private fun CardCount.labelRes(): Int = when (this) {
 
 /** Nothing is preselected: the user decides how the cards will be studied. */
 @Composable
-private fun CardTypesChoice(selected: CardTypes?, onSelect: (CardTypes) -> Unit) {
+internal fun CardTypesChoice(selected: CardTypes?, onSelect: (CardTypes) -> Unit) {
     Column(Modifier.selectableGroup()) {
         Text(
             text = stringResource(R.string.generator_types_title),

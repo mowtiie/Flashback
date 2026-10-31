@@ -43,7 +43,7 @@ class ScreenReaderSemanticsTest {
         show {
             DeckListScreen(
                 state = previewDeckListState(),
-                onSelectTag = {}, onOpenDeck = {}, onStudyDeck = {}, onAddDeck = {}, onGenerate = {},
+                onSelectTag = {}, onOpenDeck = {}, onStudyDeck = {}, onAddDeck = {}, onGenerate = {}, onPromptHelper = {},
             )
         }
         rule.onNode(namedButton("New deck")).assertExists()
@@ -82,7 +82,7 @@ class ScreenReaderSemanticsTest {
         show {
             DeckListScreen(
                 state = previewDeckListState(),
-                onSelectTag = {}, onOpenDeck = {}, onStudyDeck = {}, onAddDeck = {}, onGenerate = {},
+                onSelectTag = {}, onOpenDeck = {}, onStudyDeck = {}, onAddDeck = {}, onGenerate = {}, onPromptHelper = {},
             )
         }
         rule.onNodeWithText("New deck", useUnmergedTree = true).assertExists()

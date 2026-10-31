@@ -13,6 +13,7 @@ object Routes {
     const val STATS = "stats"
     const val SETTINGS = "settings"
     const val GENERATOR = "generator"
+    const val PROMPT = "prompt"
     const val DECK_DETAIL = "decks/{$DECK_ID}"
     const val DECK_EDITOR = "deck-editor?$DECK_ID={$DECK_ID}"
     const val NOTE_EDITOR = "note-editor/{$DECK_ID}?$NOTE_ID={$NOTE_ID}"

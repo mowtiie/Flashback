@@ -321,4 +321,30 @@
     <string name="generator_types_choice">Multiple choice only</string>
     <string name="generator_types_choice_help">Every card comes with three wrong answers.</string>
     <string name="generator_wrong_answers">Wrong answers: %1$s</string>
+
+    <string name="new_deck_title">New deck</string>
+    <string name="new_deck_manual">Make it myself</string>
+    <string name="new_deck_manual_body">Start an empty deck and add your own cards.</string>
+    <string name="new_deck_ai">Generate with AI</string>
+    <string name="new_deck_ai_body">Paste notes or a PDF. Uses your own API key.</string>
+    <string name="new_deck_hybrid">Use an AI website</string>
+    <string name="new_deck_hybrid_body">Copy a prompt for ChatGPT, Claude or Gemini, then import the file it makes.</string>
+
+    <string name="prompt_title">Prompt for an AI website</string>
+    <string name="prompt_intro">Copy the prompt, paste it into an AI website together with your notes or PDF, then download the JSON file it makes and import it here. No account or key is needed in this app.</string>
+    <string name="prompt_coverage_title">How much to cover</string>
+    <string name="prompt_coverage_everything">Everything</string>
+    <string name="prompt_coverage_key">Key points</string>
+    <string name="prompt_coverage_hint_everything">A card for every fact, so nothing is missed.</string>
+    <string name="prompt_coverage_hint_key">Only the main ideas, for a short deck.</string>
+    <string name="prompt_language_label">Language (optional)</string>
+    <string name="prompt_language_hint">Leave empty to use the language of your material.</string>
+    <string name="prompt_name_label">Deck name (optional)</string>
+    <string name="prompt_preview_title">Prompt preview</string>
+    <string name="prompt_copy">Copy prompt</string>
+    <string name="prompt_copied">Prompt copied</string>
+    <string name="prompt_share">Share prompt</string>
+    <string name="prompt_share_chooser">Share prompt</string>
+    <string name="prompt_import">I have the file, import it</string>
+    <string name="prompt_import_hint">In Settings, choose Import decks, then From a file. If the website only shows the JSON, copy it and choose Paste text.</string>
 </resources>

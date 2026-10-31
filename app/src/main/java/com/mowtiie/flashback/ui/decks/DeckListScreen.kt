@@ -18,15 +18,16 @@ import com.mowtiie.flashback.ui.components.ActionFab
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -44,6 +45,7 @@ fun DeckListRoute(
     onStudyDeck: (Long) -> Unit,
     onAddDeck: () -> Unit,
     onGenerate: () -> Unit,
+    onPromptHelper: () -> Unit,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -56,6 +58,7 @@ fun DeckListRoute(
         onStudyDeck = onStudyDeck,
         onAddDeck = onAddDeck,
         onGenerate = onGenerate,
+        onPromptHelper = onPromptHelper,
     )
 }
 
@@ -68,7 +71,9 @@ fun DeckListScreen(
     onStudyDeck: (Long) -> Unit,
     onAddDeck: () -> Unit,
     onGenerate: () -> Unit,
+    onPromptHelper: () -> Unit,
 ) {
+    var choosing by rememberSaveable { mutableStateOf(false) }
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val empty = state.loaded && state.items.isEmpty()
 
@@ -77,14 +82,6 @@ fun DeckListScreen(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.decks_title)) },
-                actions = {
-                    IconButton(onClick = onGenerate) {
-                        Icon(
-                            painterResource(R.drawable.ic_generate),
-                            contentDescription = stringResource(R.string.generator_open),
-                        )
-                    }
-                },
                 scrollBehavior = scrollBehavior,
             )
         },
@@ -92,7 +89,7 @@ fun DeckListScreen(
             if (state.items.isNotEmpty()) {
                 ActionFab(
                     label = stringResource(R.string.deck_add),
-                    onClick = onAddDeck,
+                    onClick = { choosing = true },
                     icon = { Icon(Icons.Default.Add, contentDescription = null) },
                 )
             }
@@ -103,7 +100,7 @@ fun DeckListScreen(
                 TagFilterRow(state, onSelectTag)
             }
             if (empty) {
-                DeckListEmpty(state.isFiltered, onAddDeck)
+                DeckListEmpty(state.isFiltered) { choosing = true }
             } else {
                 LazyColumn(
                     contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 96.dp),
@@ -119,6 +116,15 @@ fun DeckListScreen(
                 }
             }
         }
+    }
+
+    if (choosing) {
+        NewDeckSheet(
+            onManual = onAddDeck,
+            onGenerate = onGenerate,
+            onPromptHelper = onPromptHelper,
+            onDismiss = { choosing = false },
+        )
     }
 }
 
@@ -193,6 +199,7 @@ private fun DeckListPreview() {
             onStudyDeck = {},
             onAddDeck = {},
             onGenerate = {},
+            onPromptHelper = {},
         )
     }
 }
@@ -208,6 +215,7 @@ private fun DeckListEmptyPreview() {
             onStudyDeck = {},
             onAddDeck = {},
             onGenerate = {},
+            onPromptHelper = {},
         )
     }
 }
@@ -224,6 +232,7 @@ private fun DeckListFilteredEmptyPreview() {
             onStudyDeck = {},
             onAddDeck = {},
             onGenerate = {},
+            onPromptHelper = {},
         )
     }
 }
