@@ -30,7 +30,7 @@ class FlashbackRepository(
     private val db: FlashbackDatabase,
     private val dispatchers: AppDispatchers,
     private val scheduler: Sm2Scheduler = Sm2Scheduler(),
-) {
+) : StudyDataSource {
     private val deckDao = db.deckDao()
     private val noteDao = db.noteDao()
     private val cardDao = db.cardDao()
@@ -69,16 +69,16 @@ class FlashbackRepository(
 
     fun observeTagsForDeck(deckId: Long): Flow<List<Tag>> = tagDao.observeTagsForDeck(deckId)
 
-    suspend fun getDeck(deckId: Long): Deck? = write { deckDao.getById(deckId) }
+    override suspend fun getDeck(deckId: Long): Deck? = write { deckDao.getById(deckId) }
 
-    suspend fun getNote(noteId: Long): Note? = write { noteDao.getById(noteId) }
+    override suspend fun getNote(noteId: Long): Note? = write { noteDao.getById(noteId) }
 
     suspend fun getTag(tagId: Long): Tag? = write { tagDao.getById(tagId) }
 
     suspend fun isNoteSuspended(noteId: Long): Boolean =
         write { cardDao.countSuspendedForNote(noteId) > 0 }
 
-    suspend fun getDeckNotes(deckId: Long): List<Note> = io { noteDao.getByDeck(deckId) }
+    override suspend fun getDeckNotes(deckId: Long): List<Note> = io { noteDao.getByDeck(deckId) }
 
     suspend fun insertDeck(deck: Deck): Long = write { deckDao.insert(deck) }
 
@@ -181,11 +181,11 @@ class FlashbackRepository(
         }
     }
 
-    suspend fun setNoteSuspended(noteId: Long, suspended: Boolean) =
+    override suspend fun setNoteSuspended(noteId: Long, suspended: Boolean) =
         write { cardDao.setNoteSuspended(noteId, suspended) }
 
     /** Learning cards come first because their intervals are minutes. */
-    suspend fun buildStudyQueue(deckId: Long, now: Long): List<StudyCard> = write {
+    override suspend fun buildStudyQueue(deckId: Long, now: Long): List<StudyCard> = write {
         db.withTransaction {
             val deck = deckDao.getById(deckId) ?: return@withTransaction emptyList<StudyCard>()
 
@@ -209,7 +209,7 @@ class FlashbackRepository(
     }
 
     /** The card update and log row are one transaction, so undo never sees a half-written review. */
-    suspend fun answerCard(
+    override suspend fun answerCard(
         cardId: Long,
         rating: Rating,
         elapsedMs: Long,
@@ -229,7 +229,7 @@ class FlashbackRepository(
     }
 
     /** Restores the logged snapshot and drops the log row. Returns the card id, or -1. */
-    suspend fun undoLastReview(): Long = write {
+    override suspend fun undoLastReview(): Long = write {
         db.withTransaction {
             val log = reviewLogDao.findMostRecent() ?: return@withTransaction -1L
             val card = cardDao.getById(log.cardId)

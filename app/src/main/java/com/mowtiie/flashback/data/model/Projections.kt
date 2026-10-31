@@ -67,8 +67,8 @@ data class NotePreview(
 /** Identity equality on purpose: the study queue tracks the same instance across state changes. */
 class StudyCard(
     @Embedded val card: Card,
-    val front: String,
-    val back: String,
+    var front: String,
+    var back: String,
 ) {
     fun question(): String = if (card.ordinal == Card.ORDINAL_REVERSE) back else front
 
