@@ -120,6 +120,48 @@
     <string name="answer_mode_flip">Flip</string>
     <string name="answer_mode_type">Type</string>
     <string name="answer_mode_choice">Choice</string>
+    <string name="settings_data_header">Your data</string>
+    <string name="settings_export_title">Export decks</string>
+    <string name="settings_export_body">Save every deck to a JSON file you can back up or share.</string>
+    <string name="settings_import_title">Import decks</string>
+    <string name="settings_import_body">Add decks from a JSON file or pasted text.</string>
+    <string name="settings_format_note">Exports contain your decks, tags, and cards, but not review progress. Imported cards start fresh.</string>
+    <string name="export_all_filename">flashback-decks.json</string>
+    <string name="export_deck_filename_prefix">flashback-</string>
+    <string name="import_source_title">Import from</string>
+    <string name="import_source_file">A file</string>
+    <string name="import_source_paste">Pasted text</string>
+    <string name="import_paste_title">Paste JSON</string>
+    <string name="import_paste_hint">Paste your exported JSON here</string>
+    <string name="import_paste_action">Preview</string>
+    <string name="import_preview_title">Import these decks?</string>
+    <string name="import_preview_body">Found %1$s and %2$s%3$s. This adds to your collection; nothing is overwritten.</string>
+    <string name="import_confirm">Import</string>
+    <string name="import_failed">The import failed and nothing was added.</string>
+    <string name="import_read_failed">Could not read the file.</string>
+    <string name="export_nothing">There are no decks to export yet.</string>
+    <string name="export_deck_missing">That deck could not be found.</string>
+    <string name="export_saved">Export saved.</string>
+    <string name="export_write_failed">Could not save the file.</string>
+    <string name="import_summary">Imported %1$s and %2$s.</string>
+    <string name="import_summary_merged">Imported %1$s and %2$s. %3$s.</string>
+    <plurals name="import_decks">
+        <item quantity="one">%1$d deck</item>
+        <item quantity="other">%1$d decks</item>
+    </plurals>
+    <plurals name="import_cards">
+        <item quantity="one">%1$d card</item>
+        <item quantity="other">%1$d cards</item>
+    </plurals>
+    <plurals name="import_tags_merged">
+        <item quantity="one">%1$d tag was merged with an existing one</item>
+        <item quantity="other">%1$d tags were merged with existing ones</item>
+    </plurals>
+    <plurals name="import_preview_tags">
+        <item quantity="one">, %1$d tag</item>
+        <item quantity="other">, %1$d tags</item>
+    </plurals>
+    <string name="deck_export">Export deck</string>
 
     <string name="tags_title">Tags</string>
     <string name="tags_empty_title">No tags yet</string>

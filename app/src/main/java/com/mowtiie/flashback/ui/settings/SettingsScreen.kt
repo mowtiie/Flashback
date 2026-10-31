@@ -23,7 +23,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -50,11 +52,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.mowtiie.flashback.data.io.ArchiveFiles
+import com.mowtiie.flashback.data.io.DeckArchive
+import com.mowtiie.flashback.data.io.ImportResult
+import kotlinx.coroutines.launch
 import com.mowtiie.flashback.R
 import com.mowtiie.flashback.theme.ContrastLevel
 import com.mowtiie.flashback.theme.ThemeMode
@@ -62,13 +69,13 @@ import com.mowtiie.flashback.ui.study.AnswerMode
 import java.util.Calendar
 
 private val CONTENT_MAX_WIDTH = 720.dp
+private const val JSON_MIME = "application/json"
 
 @Composable
 fun SettingsRoute(viewModel: SettingsViewModel) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
-    val deniedMessage = stringResource(R.string.reminder_permission_denied)
 
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
@@ -76,11 +83,37 @@ fun SettingsRoute(viewModel: SettingsViewModel) {
         if (granted) viewModel.setReminderEnabled(true) else viewModel.onNotificationsDenied()
     }
 
+    val saveLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument(JSON_MIME),
+    ) { uri ->
+        if (uri == null) {
+            viewModel.discardExport()
+        } else {
+            viewModel.saveExport { text -> ArchiveFiles.write(context.contentResolver, uri, text) }
+        }
+    }
+
+    val openLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument(),
+    ) { uri ->
+        if (uri != null) {
+            viewModel.previewImportFromFile { ArchiveFiles.read(context.contentResolver, uri) }
+        }
+    }
+
     LaunchedEffect(viewModel) {
         viewModel.eventFlow.collect { event ->
-            when (event) {
-                SettingsEvent.NotificationsDenied ->
-                    snackbarHostState.showSnackbar(deniedMessage, duration = SnackbarDuration.Long)
+            if (event is SettingsEvent.ExportReady) {
+                saveLauncher.launch(context.getString(R.string.export_all_filename))
+            } else {
+                // Launched, so a snackbar waiting to be dismissed never holds up the next event.
+                launch {
+                    snackbarHostState.currentSnackbarData?.dismiss()
+                    snackbarHostState.showSnackbar(
+                        message = event.message(context),
+                        duration = if (event is SettingsEvent.ExportSaved) SnackbarDuration.Short else SnackbarDuration.Long,
+                    )
+                }
             }
         }
     }
@@ -100,6 +133,13 @@ fun SettingsRoute(viewModel: SettingsViewModel) {
                 }
             },
             onReminderTime = viewModel::setReminderTime,
+            onExport = viewModel::prepareExportAll,
+            // A broad filter, because many exporters mislabel JSON as text or octet-stream.
+            onImportFile = { openLauncher.launch(arrayOf(JSON_MIME, "text/plain", "*/*")) },
+            onPreviewPaste = viewModel::previewImportFromText,
+            onPasteEdited = viewModel::clearPasteError,
+            onConfirmImport = viewModel::confirmImport,
+            onCancelImport = viewModel::clearPendingImport,
         )
     }
 
@@ -118,6 +158,12 @@ class SettingsActions(
     val onContrast: (ContrastLevel) -> Unit = {},
     val onReminderEnabled: (Boolean) -> Unit = {},
     val onReminderTime: (hour: Int, minute: Int) -> Unit = { _, _ -> },
+    val onExport: () -> Unit = {},
+    val onImportFile: () -> Unit = {},
+    val onPreviewPaste: (String) -> Unit = {},
+    val onPasteEdited: () -> Unit = {},
+    val onConfirmImport: () -> Unit = {},
+    val onCancelImport: () -> Unit = {},
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -132,10 +178,13 @@ fun SettingsScreen(
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.settings_title)) },
-                scrollBehavior = scrollBehavior,
-            )
+            Column {
+                TopAppBar(
+                    title = { Text(stringResource(R.string.settings_title)) },
+                    scrollBehavior = scrollBehavior,
+                )
+                if (state.working) LinearProgressIndicator(Modifier.fillMaxWidth())
+            }
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
@@ -155,6 +204,7 @@ fun SettingsScreen(
                 StudySection(state, actions)
                 AppearanceSection(state, actions)
                 RemindersSection(state, actions)
+                DataSection(state, actions)
             }
         }
     }
@@ -392,4 +442,199 @@ private fun formatTime(context: Context, hour: Int, minute: Int): String {
         set(Calendar.MINUTE, minute)
     }
     return DateFormat.getTimeFormat(context).format(cal.time)
+}
+
+@Composable
+private fun DataSection(state: SettingsUiState, actions: SettingsActions) {
+    var chooseSource by rememberSaveable { mutableStateOf(false) }
+    var pasting by rememberSaveable { mutableStateOf(false) }
+    var pasted by rememberSaveable { mutableStateOf("") }
+
+    // A parsed paste moves on to the preview, so the paste dialog gets out of the way.
+    LaunchedEffect(state.pendingImport) {
+        if (state.pendingImport != null) {
+            pasting = false
+            pasted = ""
+        }
+    }
+
+    SectionHeader(R.string.settings_data_header)
+    SettingsCard {
+        ActionRow(
+            title = stringResource(R.string.settings_export_title),
+            body = stringResource(R.string.settings_export_body),
+            enabled = !state.working,
+            onClick = actions.onExport,
+        )
+        ActionRow(
+            title = stringResource(R.string.settings_import_title),
+            body = stringResource(R.string.settings_import_body),
+            enabled = !state.working,
+            onClick = { chooseSource = true },
+        )
+        Text(
+            text = stringResource(R.string.settings_format_note),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+        )
+    }
+
+    if (chooseSource) {
+        ImportSourceDialog(
+            onFile = {
+                chooseSource = false
+                actions.onImportFile()
+            },
+            onPaste = {
+                chooseSource = false
+                pasting = true
+            },
+            onDismiss = { chooseSource = false },
+        )
+    }
+
+    if (pasting) {
+        PasteDialog(
+            text = pasted,
+            error = state.pasteError,
+            working = state.working,
+            onTextChange = {
+                pasted = it
+                actions.onPasteEdited()
+            },
+            onPreview = { actions.onPreviewPaste(pasted) },
+            onDismiss = {
+                pasting = false
+                pasted = ""
+                actions.onPasteEdited()
+            },
+        )
+    }
+
+    state.pendingImport?.let { pending ->
+        ImportPreviewDialog(pending.counts, actions.onConfirmImport, actions.onCancelImport)
+    }
+}
+
+@Composable
+private fun ActionRow(title: String, body: String, enabled: Boolean, onClick: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .alpha(if (enabled) 1f else DISABLED_ALPHA)
+            .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
+            .heightIn(min = 56.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Text(title, style = MaterialTheme.typography.bodyLarge)
+        Text(
+            text = body,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+private fun ImportSourceDialog(onFile: () -> Unit, onPaste: () -> Unit, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.import_source_title)) },
+        text = {
+            Column {
+                SourceOption(stringResource(R.string.import_source_file), onFile)
+                SourceOption(stringResource(R.string.import_source_paste), onPaste)
+            }
+        },
+        confirmButton = {},
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) } },
+    )
+}
+
+@Composable
+private fun SourceOption(label: String, onClick: () -> Unit) {
+    Text(
+        text = label,
+        style = MaterialTheme.typography.bodyLarge,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(role = Role.Button, onClick = onClick)
+            .heightIn(min = 48.dp)
+            .padding(vertical = 12.dp),
+    )
+}
+
+@Composable
+private fun PasteDialog(
+    text: String,
+    error: String?,
+    working: Boolean,
+    onTextChange: (String) -> Unit,
+    onPreview: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.import_paste_title)) },
+        text = {
+            OutlinedTextField(
+                value = text,
+                onValueChange = onTextChange,
+                label = { Text(stringResource(R.string.import_paste_hint)) },
+                isError = error != null,
+                supportingText = error?.let { { Text(it) } },
+                minLines = 5,
+                maxLines = 8,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = onPreview, enabled = !working) {
+                Text(stringResource(R.string.import_paste_action))
+            }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) } },
+    )
+}
+
+@Composable
+private fun ImportPreviewDialog(counts: DeckArchive.Counts, onConfirm: () -> Unit, onCancel: () -> Unit) {
+    val decks = pluralStringResource(R.plurals.import_decks, counts.decks, counts.decks)
+    val cards = pluralStringResource(R.plurals.import_cards, counts.notes, counts.notes)
+    val tags = if (counts.tags > 0) {
+        pluralStringResource(R.plurals.import_preview_tags, counts.tags, counts.tags)
+    } else {
+        ""
+    }
+
+    AlertDialog(
+        onDismissRequest = onCancel,
+        title = { Text(stringResource(R.string.import_preview_title)) },
+        text = { Text(stringResource(R.string.import_preview_body, decks, cards, tags)) },
+        confirmButton = { TextButton(onClick = onConfirm) { Text(stringResource(R.string.import_confirm)) } },
+        dismissButton = { TextButton(onClick = onCancel) { Text(stringResource(R.string.action_cancel)) } },
+    )
+}
+
+private fun SettingsEvent.message(context: Context): String = when (this) {
+    SettingsEvent.NotificationsDenied -> context.getString(R.string.reminder_permission_denied)
+    SettingsEvent.ExportReady -> ""
+    SettingsEvent.ExportNothing -> context.getString(R.string.export_nothing)
+    SettingsEvent.ExportSaved -> context.getString(R.string.export_saved)
+    SettingsEvent.ExportWriteFailed -> context.getString(R.string.export_write_failed)
+    is SettingsEvent.ImportRejected -> message
+    is SettingsEvent.ImportReadFailed -> message ?: context.getString(R.string.import_read_failed)
+    SettingsEvent.ImportFailed -> context.getString(R.string.import_failed)
+    is SettingsEvent.ImportDone -> importSummary(context, result)
+}
+
+private fun importSummary(context: Context, result: ImportResult): String {
+    val res = context.resources
+    val decks = res.getQuantityString(R.plurals.import_decks, result.decks, result.decks)
+    val cards = res.getQuantityString(R.plurals.import_cards, result.notes, result.notes)
+    if (result.tagsReused == 0) return res.getString(R.string.import_summary, decks, cards)
+    val merged = res.getQuantityString(R.plurals.import_tags_merged, result.tagsReused, result.tagsReused)
+    return res.getString(R.string.import_summary_merged, decks, cards, merged)
 }
