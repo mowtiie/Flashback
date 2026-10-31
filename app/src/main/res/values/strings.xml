@@ -66,6 +66,31 @@
     <string name="nav_stats">Stats</string>
     <string name="nav_settings">Settings</string>
     <string name="stats_title">Statistics</string>
+    <string name="stats_reviews_today">Reviews today</string>
+    <string name="stats_streak">Day streak</string>
+    <string name="stats_retention">Retention (30d)</string>
+    <string name="stats_time_today">Time today</string>
+    <string name="stats_activity_title">Activity</string>
+    <string name="stats_breakdown_title">Card breakdown</string>
+    <string name="stats_young">Young</string>
+    <string name="stats_mature">Mature</string>
+    <string name="stats_no_value">—</string>
+    <string name="stats_percent">%1$d%%</string>
+    <string name="stats_minutes">%1$d min</string>
+    <string name="stats_hours">%1$s h</string>
+    <string name="stats_legend_entry">%1$s %2$d</string>
+    <string name="stats_empty_title">No progress yet</string>
+    <string name="stats_empty_body">Study some cards and your review history, streak, and retention will show up here.</string>
+    <string name="stats_chart_desc">Reviews per day over the last %1$d days, oldest first: %2$s</string>
+    <string name="stats_breakdown_desc">Card breakdown: %1$s</string>
+    <plurals name="stats_streak_value">
+        <item quantity="one">%1$d</item>
+        <item quantity="other">%1$d</item>
+    </plurals>
+    <plurals name="stats_total_cards">
+        <item quantity="one">%1$d scheduled card</item>
+        <item quantity="other">%1$d scheduled cards</item>
+    </plurals>
     <string name="settings_title">Settings</string>
 
     <string name="tags_title">Tags</string>

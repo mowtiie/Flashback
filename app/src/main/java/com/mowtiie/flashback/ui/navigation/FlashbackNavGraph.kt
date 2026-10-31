@@ -21,6 +21,8 @@ import com.mowtiie.flashback.ui.decks.DeckListRoute
 import com.mowtiie.flashback.ui.decks.DeckListViewModel
 import com.mowtiie.flashback.ui.notes.NoteEditorRoute
 import com.mowtiie.flashback.ui.notes.NoteEditorViewModel
+import com.mowtiie.flashback.ui.stats.StatisticsRoute
+import com.mowtiie.flashback.ui.stats.StatisticsViewModel
 import com.mowtiie.flashback.ui.study.StudyRoute
 import com.mowtiie.flashback.ui.study.StudyViewModel
 import com.mowtiie.flashback.ui.tags.TagEditorRoute
@@ -40,8 +42,14 @@ fun NavGraphBuilder.flashbackGraph(container: AppContainer, navController: NavHo
     noteDestinations(container, navController)
     tagDestinations(container, navController)
 
-    // Placeholders until each screen is ported.
-    composable(Routes.STATS) { PlaceholderScreen(stringResource(R.string.stats_title)) }
+    composable(Routes.STATS) {
+        val viewModel: StatisticsViewModel = viewModel(
+            factory = viewModelFactory { initializer { StatisticsViewModel(container.repository) } },
+        )
+        StatisticsRoute(viewModel)
+    }
+
+    // Placeholder until the screen is ported.
     composable(Routes.SETTINGS) { PlaceholderScreen(stringResource(R.string.settings_title)) }
 }
 
