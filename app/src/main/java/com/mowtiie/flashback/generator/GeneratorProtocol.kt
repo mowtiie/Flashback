@@ -27,7 +27,12 @@ object GeneratorProtocol {
                     "type": "array",
                     "items": {
                       "type": "object",
-                      "properties": {"front": {"type": "string"}, "back": {"type": "string"}},
+                      "properties": {
+                        "front": {"type": "string"},
+                        "back": {"type": "string"},
+                        "answerMode": {"type": "string", "enum": ["flip", "type", "choice"]},
+                        "choices": {"type": "array", "items": {"type": "string"}}
+                      },
                       "required": ["front", "back"],
                       "additionalProperties": false
                     }
@@ -47,7 +52,7 @@ object GeneratorProtocol {
     fun requestBody(request: GeneratorRequest): String = JSONObject()
         .put("model", MODEL)
         .put("max_tokens", MAX_OUTPUT_TOKENS)
-        .put("system", CardPrompt.system(request.cardCount.max))
+        .put("system", CardPrompt.system(request.cardCount.max, request.cardTypes))
         .put(
             "output_config",
             JSONObject()
@@ -82,7 +87,12 @@ object GeneratorProtocol {
 
     /** The model's output goes through [deckFromModelText], so it is validated like any import. */
     @Throws(GeneratorException::class)
-    fun parseResponse(status: Int, body: String, maxCards: Int): DeckArchive.Deck {
+    fun parseResponse(
+        status: Int,
+        body: String,
+        maxCards: Int,
+        types: CardTypes = CardTypes.Setting,
+    ): DeckArchive.Deck {
         if (status !in 200..299) throw GeneratorException(errorMessage(status, body))
 
         val root = try {
@@ -99,7 +109,7 @@ object GeneratorProtocol {
         val text = textOf(root.optJSONArray("content"))
         if (text.isEmpty()) throw GeneratorException("The model returned no cards.")
 
-        return deckFromModelText(text, maxCards)
+        return deckFromModelText(text, maxCards, types)
     }
 
     private fun textOf(content: JSONArray?): String {

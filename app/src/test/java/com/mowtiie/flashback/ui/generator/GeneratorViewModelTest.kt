@@ -4,6 +4,7 @@ import com.mowtiie.flashback.data.io.DeckArchive
 import com.mowtiie.flashback.generator.CardGenerator
 import com.mowtiie.flashback.generator.GeneratorException
 import com.mowtiie.flashback.generator.CardCount
+import com.mowtiie.flashback.generator.CardTypes
 import com.mowtiie.flashback.generator.GeneratorInput
 import com.mowtiie.flashback.generator.GeneratorLimits
 import com.mowtiie.flashback.generator.GeneratorRequest
@@ -53,7 +54,10 @@ class GeneratorViewModelTest {
     @After
     fun tearDown() = Dispatchers.resetMain()
 
-    private fun viewModel() = GeneratorViewModel(generator, archive, { hasKey }, { provider }, UnconfinedTestDispatcher())
+    private fun rawViewModel() = GeneratorViewModel(generator, archive, { hasKey }, { provider }, UnconfinedTestDispatcher())
+
+    /** Most tests are not about the types choice, so it is made for them. */
+    private fun viewModel() = rawViewModel().also { it.setCardTypes(CardTypes.Setting) }
 
     @Test
     fun cannotGenerateWithoutAKeyOrText() {
@@ -113,6 +117,7 @@ class GeneratorViewModelTest {
         val gate = CompletableDeferred<DeckArchive.Deck>()
         val slow = GeneratorViewModel({ request -> sources += textOf(request); gate.await() }, archive, { true }, { provider }, UnconfinedTestDispatcher())
         slow.setSource("notes")
+        slow.setCardTypes(CardTypes.Setting)
         slow.generate()
         slow.generate()
 
@@ -208,6 +213,7 @@ class GeneratorViewModelTest {
         )
         viewModel.setSource("notes")
         viewModel.setCardCount(CardCount.Many)
+        viewModel.setCardTypes(CardTypes.Setting)
         viewModel.generate()
         assertEquals(CardCount.Many, asked)
     }
@@ -243,5 +249,52 @@ class GeneratorViewModelTest {
         viewModel.attachPdf { pdf }
         viewModel.generate()
         assertEquals(listOf("<pdf>"), sources)
+    }
+
+    @Test
+    fun cannotGenerateUntilTheUserHasChosenTheCardTypes() {
+        val viewModel = rawViewModel()
+        viewModel.setSource("notes")
+        assertNull(viewModel.uiState.value.cardTypes)
+        assertFalse(viewModel.uiState.value.canGenerate)
+
+        viewModel.generate()
+        assertTrue(sources.isEmpty())
+
+        viewModel.setCardTypes(CardTypes.Mixed)
+        assertTrue(viewModel.uiState.value.canGenerate)
+    }
+
+    @Test
+    fun theChosenTypesReachTheGenerator() {
+        var asked: CardTypes? = null
+        val viewModel = GeneratorViewModel(
+            { request -> asked = request.cardTypes; generated!! },
+            archive, { true }, { provider }, UnconfinedTestDispatcher(),
+        )
+        viewModel.setSource("notes")
+        viewModel.setCardTypes(CardTypes.Choice)
+        viewModel.generate()
+        assertEquals(CardTypes.Choice, asked)
+    }
+
+    @Test
+    fun theTypesOfGeneratedCardsAreSavedWithTheDeck() = runTest {
+        generated = DeckArchive.Deck(
+            name = "Cells",
+            notes = listOf(
+                DeckArchive.Note("Q1", "A1", answerMode = 2, choices = listOf("x", "y", "z")),
+                DeckArchive.Note("Q2", "A2", answerMode = 1),
+            ),
+        )
+        val viewModel = viewModel()
+        viewModel.setSource("notes")
+        viewModel.generate()
+        viewModel.save()
+
+        assertEquals(GeneratorEvent.Saved, viewModel.eventFlow.first())
+        val saved = archive.imported.single().decks.single().notes
+        assertEquals(listOf(2, 1), saved.map { it.answerMode })
+        assertEquals(listOf("x", "y", "z"), saved.first().choices)
     }
 }

@@ -3,6 +3,12 @@ package com.mowtiie.flashback.ui.generator
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.material3.RadioButton
+import androidx.compose.ui.semantics.Role
+import com.mowtiie.flashback.ui.study.AnswerMode
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -47,6 +53,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mowtiie.flashback.R
 import com.mowtiie.flashback.data.io.DeckArchive
 import com.mowtiie.flashback.generator.CardCount
+import com.mowtiie.flashback.generator.CardTypes
 import com.mowtiie.flashback.generator.GeneratorLimits
 import com.mowtiie.flashback.generator.GeneratorProvider
 import com.mowtiie.flashback.theme.FlashbackTheme
@@ -65,6 +72,7 @@ class GeneratorActions(
     val onChoosePdf: () -> Unit = {},
     val onRemovePdf: () -> Unit = {},
     val onCardCount: (CardCount) -> Unit = {},
+    val onCardTypes: (CardTypes) -> Unit = {},
     val onGenerate: () -> Unit = {},
     val onDeckNameChange: (String) -> Unit = {},
     val onRemoveCard: (Int) -> Unit = {},
@@ -110,6 +118,7 @@ fun GeneratorRoute(
             onChoosePdf = { pdfLauncher.launch(arrayOf("application/pdf")) },
             onRemovePdf = viewModel::removePdf,
             onCardCount = viewModel::setCardCount,
+            onCardTypes = viewModel::setCardTypes,
             onGenerate = viewModel::generate,
             onDeckNameChange = viewModel::setDeckName,
             onRemoveCard = viewModel::removeCard,
@@ -217,6 +226,7 @@ private fun InputPage(state: GeneratorUiState, actions: GeneratorActions) {
             onSelect = actions.onCardCount,
             modifier = Modifier.padding(horizontal = 0.dp),
         )
+        CardTypesChoice(state.cardTypes, actions.onCardTypes)
         state.error?.let {
             Text(it, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error)
         }
@@ -291,6 +301,13 @@ private fun DraftCard(note: DeckArchive.Note, enabled: Boolean, onRemove: () -> 
             modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 8.dp),
         ) {
             Column(Modifier.weight(1f).padding(top = 8.dp)) {
+                note.answerMode?.let {
+                    Text(
+                        text = stringResource(AnswerMode.fromValue(it).labelRes()),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
                 Text(note.front, style = MaterialTheme.typography.titleSmall)
                 Text(
                     text = note.back,
@@ -298,6 +315,14 @@ private fun DraftCard(note: DeckArchive.Note, enabled: Boolean, onRemove: () -> 
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 4.dp),
                 )
+                if (note.choices.isNotEmpty()) {
+                    Text(
+                        text = stringResource(R.string.generator_wrong_answers, note.choices.joinToString(" · ")),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 4.dp),
+                    )
+                }
             }
             IconButton(onClick = onRemove, enabled = enabled) {
                 Icon(
@@ -386,4 +411,64 @@ private fun CardCount.labelRes(): Int = when (this) {
     CardCount.Few -> R.string.generator_count_few
     CardCount.Normal -> R.string.generator_count_normal
     CardCount.Many -> R.string.generator_count_many
+}
+
+/** Nothing is preselected: the user decides how the cards will be studied. */
+@Composable
+private fun CardTypesChoice(selected: CardTypes?, onSelect: (CardTypes) -> Unit) {
+    Column(Modifier.selectableGroup()) {
+        Text(
+            text = stringResource(R.string.generator_types_title),
+            style = MaterialTheme.typography.titleSmall,
+            modifier = Modifier.padding(top = 8.dp, bottom = 4.dp),
+        )
+        if (selected == null) {
+            Text(
+                text = stringResource(R.string.generator_types_required),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        CardTypes.entries.forEach { types ->
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 56.dp)
+                    .selectable(selected = types == selected, role = Role.RadioButton, onClick = { onSelect(types) }),
+            ) {
+                RadioButton(selected = types == selected, onClick = null)
+                Column(Modifier.padding(start = 16.dp, top = 8.dp, bottom = 8.dp)) {
+                    Text(stringResource(types.labelRes()), style = MaterialTheme.typography.bodyLarge)
+                    Text(
+                        text = stringResource(types.helpRes()),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+        }
+    }
+}
+
+private fun CardTypes.labelRes(): Int = when (this) {
+    CardTypes.Setting -> R.string.generator_types_setting
+    CardTypes.Mixed -> R.string.generator_types_mixed
+    CardTypes.Flip -> R.string.generator_types_flip
+    CardTypes.Type -> R.string.generator_types_type
+    CardTypes.Choice -> R.string.generator_types_choice
+}
+
+private fun CardTypes.helpRes(): Int = when (this) {
+    CardTypes.Setting -> R.string.generator_types_setting_help
+    CardTypes.Mixed -> R.string.generator_types_mixed_help
+    CardTypes.Flip -> R.string.generator_types_flip_help
+    CardTypes.Type -> R.string.generator_types_type_help
+    CardTypes.Choice -> R.string.generator_types_choice_help
+}
+
+private fun AnswerMode.labelRes(): Int = when (this) {
+    AnswerMode.Flip -> R.string.answer_mode_flip
+    AnswerMode.Type -> R.string.answer_mode_type
+    AnswerMode.Choice -> R.string.answer_mode_choice
 }

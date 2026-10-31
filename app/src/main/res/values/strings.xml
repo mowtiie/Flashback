@@ -307,4 +307,17 @@
     <string name="note_answer_type_type_help">Type the answer. It is checked ignoring case, accents, and small typos.</string>
     <string name="note_answer_type_choice_help">Pick the answer from options. Leave the wrong answers blank to borrow answers from other cards in the deck.</string>
     <string name="note_wrong_option">Wrong answer %1$d</string>
+    <string name="generator_types_title">How should the cards be studied?</string>
+    <string name="generator_types_required">Choose one to continue.</string>
+    <string name="generator_types_setting">Follow my study setting</string>
+    <string name="generator_types_setting_help">Plain cards that use the answer mode in Settings.</string>
+    <string name="generator_types_mixed">A mix</string>
+    <string name="generator_types_mixed_help">The model picks flip, type, or multiple choice for each card.</string>
+    <string name="generator_types_flip">Flip only</string>
+    <string name="generator_types_flip_help">Every card is flipped and rated.</string>
+    <string name="generator_types_type">Type the answer only</string>
+    <string name="generator_types_type_help">Every card has a short answer to type.</string>
+    <string name="generator_types_choice">Multiple choice only</string>
+    <string name="generator_types_choice_help">Every card comes with three wrong answers.</string>
+    <string name="generator_wrong_answers">Wrong answers: %1$s</string>
 </resources>

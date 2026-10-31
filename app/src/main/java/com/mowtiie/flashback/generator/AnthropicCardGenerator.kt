@@ -78,8 +78,8 @@ internal object AnthropicBackend : GeneratorBackend {
         body = GeneratorProtocol.requestBody(request),
     )
 
-    override fun parse(status: Int, body: String, maxCards: Int): DeckArchive.Deck =
-        GeneratorProtocol.parseResponse(status, body, maxCards)
+    override fun parse(status: Int, body: String, request: GeneratorRequest): DeckArchive.Deck =
+        GeneratorProtocol.parseResponse(status, body, request.cardCount.max, request.cardTypes)
 }
 
 /** Calls the Anthropic Messages API; plain HTTP, since no library is needed. */

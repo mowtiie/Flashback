@@ -14,7 +14,7 @@ interface GeneratorBackend {
     fun request(request: GeneratorRequest, apiKey: String): HttpRequest
 
     @Throws(GeneratorException::class)
-    fun parse(status: Int, body: String, maxCards: Int): DeckArchive.Deck
+    fun parse(status: Int, body: String, request: GeneratorRequest): DeckArchive.Deck
 }
 
 /** Sends one request to a [GeneratorBackend] with the user's own key. */
@@ -34,7 +34,7 @@ class RemoteCardGenerator(
         } catch (e: IOException) {
             throw GeneratorException("Could not reach $name. Check your connection and try again.", e)
         }
-        backend.parse(response.status, response.body, request.cardCount.max)
+        backend.parse(response.status, response.body, request)
     }
 }
 

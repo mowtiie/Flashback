@@ -15,7 +15,9 @@ object GeminiProtocol {
     fun requestBody(request: GeneratorRequest): String = JSONObject()
         .put(
             "systemInstruction",
-            textParts("${CardPrompt.system(request.cardCount.max)}\n${CardPrompt.JSON_SHAPE}"),
+            textParts(
+                "${CardPrompt.system(request.cardCount.max, request.cardTypes)}\n${CardPrompt.jsonShape(request.cardTypes)}",
+            ),
         )
         .put("contents", JSONArray().put(userContent(request.input)))
         .put(
@@ -47,7 +49,12 @@ object GeminiProtocol {
         JSONObject().put("parts", JSONArray().put(JSONObject().put("text", text)))
 
     @Throws(GeneratorException::class)
-    fun parseResponse(status: Int, body: String, maxCards: Int): DeckArchive.Deck {
+    fun parseResponse(
+        status: Int,
+        body: String,
+        maxCards: Int,
+        types: CardTypes = CardTypes.Setting,
+    ): DeckArchive.Deck {
         if (status !in 200..299) throw GeneratorException(errorMessage(status, body))
 
         val root = try {
@@ -72,7 +79,7 @@ object GeminiProtocol {
         val text = textOf(candidate.optJSONObject("content")?.optJSONArray("parts"))
         if (text.isEmpty()) throw GeneratorException("The model returned no cards.")
 
-        return deckFromModelText(text, maxCards)
+        return deckFromModelText(text, maxCards, types)
     }
 
     /** Skips "thought" parts, which hold the model's reasoning, not the answer. */
@@ -121,8 +128,8 @@ internal object GeminiBackend : GeneratorBackend {
         body = GeminiProtocol.requestBody(request),
     )
 
-    override fun parse(status: Int, body: String, maxCards: Int): DeckArchive.Deck =
-        GeminiProtocol.parseResponse(status, body, maxCards)
+    override fun parse(status: Int, body: String, request: GeneratorRequest): DeckArchive.Deck =
+        GeminiProtocol.parseResponse(status, body, request.cardCount.max, request.cardTypes)
 }
 
 /** Calls the Gemini API, which has a free tier. */

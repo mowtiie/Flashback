@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.mowtiie.flashback.data.io.DeckArchive
 import com.mowtiie.flashback.generator.CardCount
 import com.mowtiie.flashback.generator.CardGenerator
+import com.mowtiie.flashback.generator.CardTypes
 import com.mowtiie.flashback.generator.GeneratorException
 import com.mowtiie.flashback.generator.GeneratorInput
 import com.mowtiie.flashback.generator.GeneratorLimits
@@ -34,6 +35,8 @@ data class GeneratorUiState(
     val pdfName: String? = null,
     val pdfSize: Int = 0,
     val cardCount: CardCount = CardCount.Normal,
+    /** Null until the user picks; the screen has no default so the choice is deliberate. */
+    val cardTypes: CardTypes? = null,
     /** Shown on the input page after a failed attempt. */
     val error: String? = null,
     val deckName: String = "",
@@ -44,7 +47,8 @@ data class GeneratorUiState(
     val hasPdf: Boolean get() = pdfName != null
 
     val canGenerate: Boolean
-        get() = hasApiKey && stage == GeneratorStage.Input && (hasPdf || (source.isNotBlank() && !sourceTooLong))
+        get() = hasApiKey && stage == GeneratorStage.Input && cardTypes != null &&
+            (hasPdf || (source.isNotBlank() && !sourceTooLong))
 
     val canSave: Boolean
         get() = stage == GeneratorStage.Review && deckName.isNotBlank() && cards.isNotEmpty()
@@ -100,6 +104,10 @@ class GeneratorViewModel(
         _uiState.update { it.copy(pdfName = null, pdfSize = 0, error = null) }
     }
 
+    fun setCardTypes(types: CardTypes) {
+        _uiState.update { it.copy(cardTypes = types) }
+    }
+
     fun setCardCount(count: CardCount) {
         _uiState.update { it.copy(cardCount = count) }
     }
@@ -107,11 +115,12 @@ class GeneratorViewModel(
     fun generate() {
         val state = _uiState.value
         if (!state.canGenerate) return
+        val types = state.cardTypes ?: return
         _uiState.update { it.copy(stage = GeneratorStage.Generating, error = null) }
         viewModelScope.launch {
             try {
                 val input = pdf ?: GeneratorInput.Text(state.source.trim())
-                val deck = generator.generate(GeneratorRequest(input, state.cardCount))
+                val deck = generator.generate(GeneratorRequest(input, state.cardCount, types))
                 _uiState.update {
                     it.copy(stage = GeneratorStage.Review, deckName = deck.name, cards = deck.notes)
                 }

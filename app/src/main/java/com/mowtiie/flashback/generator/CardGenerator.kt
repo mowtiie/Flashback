@@ -25,7 +25,23 @@ enum class CardCount(val max: Int) {
     Many(60),
 }
 
-class GeneratorRequest(val input: GeneratorInput, val cardCount: CardCount = CardCount.Normal)
+/** How the generated cards should be studied. The user picks one; there is no default in the screen. */
+enum class CardTypes {
+    /** Plain cards that follow the study setting. */
+    Setting,
+
+    /** The model picks flip, type or choice for each card. */
+    Mixed,
+    Flip,
+    Type,
+    Choice,
+}
+
+class GeneratorRequest(
+    val input: GeneratorInput,
+    val cardCount: CardCount = CardCount.Normal,
+    val cardTypes: CardTypes = CardTypes.Setting,
+)
 
 object GeneratorLimits {
     const val MAX_SOURCE_CHARS = 30_000
