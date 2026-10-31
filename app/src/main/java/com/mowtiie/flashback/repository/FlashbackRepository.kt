@@ -11,6 +11,10 @@ import com.mowtiie.flashback.data.entity.DeckTagCrossRef
 import com.mowtiie.flashback.data.entity.Note
 import com.mowtiie.flashback.data.entity.ReviewLog
 import com.mowtiie.flashback.data.entity.Tag
+import com.mowtiie.flashback.data.io.ArchiveRepository
+import com.mowtiie.flashback.data.io.ArchiveSerializer
+import com.mowtiie.flashback.data.io.DeckArchive
+import com.mowtiie.flashback.data.io.ImportResult
 import com.mowtiie.flashback.data.model.CardStateBreakdown
 import com.mowtiie.flashback.data.model.DailyCount
 import com.mowtiie.flashback.data.model.DeckSummary
@@ -30,12 +34,14 @@ class FlashbackRepository(
     private val db: FlashbackDatabase,
     private val dispatchers: AppDispatchers,
     private val scheduler: Sm2Scheduler = Sm2Scheduler(),
-) : StudyDataSource, StatisticsSource {
+) : StudyDataSource, StatisticsSource, ArchiveDataSource {
     private val deckDao = db.deckDao()
     private val noteDao = db.noteDao()
     private val cardDao = db.cardDao()
     private val tagDao = db.tagDao()
     private val reviewLogDao = db.reviewLogDao()
+    private val archives = ArchiveRepository(db)
+    private val archiveSerializer = ArchiveSerializer()
 
     class AnswerResult(
         val reviewLogId: Long,
@@ -305,6 +311,25 @@ class FlashbackRepository(
         io { reviewLogDao.dailyCountsSince(since) }
 
     override suspend fun cardStateBreakdown(): CardStateBreakdown = io { cardDao.stateBreakdown() }
+
+    override suspend fun exportAllText(): String? = io {
+        archiveText(archives.exportAll(System.currentTimeMillis()))
+    }
+
+    override suspend fun exportDeckText(deckId: Long): String? = io {
+        archiveText(archives.exportSingle(deckId, System.currentTimeMillis()))
+    }
+
+    private fun archiveText(archive: DeckArchive): String? =
+        if (archive.decks.isEmpty()) null else archiveSerializer.serialize(archive)
+
+    override suspend fun importArchive(archive: DeckArchive): ImportResult? = write {
+        try {
+            archives.importArchive(archive)
+        } catch (e: SQLiteException) {
+            null
+        }
+    }
 
     private suspend fun <T> write(block: suspend () -> T): T =
         withContext(dispatchers.write) { block() }
