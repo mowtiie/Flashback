@@ -21,6 +21,8 @@ import com.mowtiie.flashback.ui.decks.DeckListRoute
 import com.mowtiie.flashback.ui.decks.DeckListViewModel
 import com.mowtiie.flashback.ui.notes.NoteEditorRoute
 import com.mowtiie.flashback.ui.notes.NoteEditorViewModel
+import com.mowtiie.flashback.ui.study.StudyRoute
+import com.mowtiie.flashback.ui.study.StudyViewModel
 import com.mowtiie.flashback.ui.tags.TagEditorRoute
 import com.mowtiie.flashback.ui.tags.TagEditorViewModel
 import com.mowtiie.flashback.ui.tags.TagsRoute
@@ -41,9 +43,6 @@ fun NavGraphBuilder.flashbackGraph(container: AppContainer, navController: NavHo
     // Placeholders until each screen is ported.
     composable(Routes.STATS) { PlaceholderScreen(stringResource(R.string.stats_title)) }
     composable(Routes.SETTINGS) { PlaceholderScreen(stringResource(R.string.settings_title)) }
-    composable(Routes.STUDY, arguments = listOf(deckIdArgument)) {
-        PlaceholderScreen(Routes.STUDY, onBack = navController::popBackStack)
-    }
 }
 
 private fun NavGraphBuilder.deckDestinations(
@@ -59,6 +58,22 @@ private fun NavGraphBuilder.deckDestinations(
             onOpenDeck = { navController.navigate(Routes.deckDetail(it)) },
             onStudyDeck = { navController.navigate(Routes.study(it)) },
             onAddDeck = { navController.navigate(Routes.deckEditor()) },
+        )
+    }
+
+    composable(Routes.STUDY, arguments = listOf(deckIdArgument)) { entry ->
+        val deckId = entry.longArgument(Routes.DECK_ID)
+        val viewModel: StudyViewModel = viewModel(
+            factory = viewModelFactory {
+                initializer {
+                    StudyViewModel(container.repository, deckId, container.studyPreferences.answerMode)
+                }
+            },
+        )
+        StudyRoute(
+            viewModel = viewModel,
+            onBack = { navController.popBackStack() },
+            onEditCard = { navController.navigate(Routes.noteEditor(deckId, it)) },
         )
     }
 
