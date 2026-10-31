@@ -123,4 +123,43 @@
     <string name="note_deleted">Card deleted</string>
     <string name="note_suspend">Suspend this card</string>
     <string name="note_suspend_help">A suspended card is skipped when studying until you turn this off.</string>
+
+    <string name="study_title">Study</string>
+    <string name="study_show_answer">Show answer</string>
+    <string name="study_check_answer">Check</string>
+    <string name="study_type_hint">Type your answer</string>
+    <string name="study_result_correct">Correct</string>
+    <string name="study_result_close">Close</string>
+    <string name="study_result_wrong">Not quite</string>
+    <string name="choice_correct_desc">%1$s, correct answer</string>
+    <string name="choice_wrong_desc">%1$s, your answer, incorrect</string>
+    <string name="rating_suggested_desc">%1$s, suggested</string>
+    <string name="rating_with_interval">%1$s, next review in %2$s</string>
+    <string name="study_undone">Last answer undone</string>
+    <string name="rating_again">Again</string>
+    <string name="rating_hard">Hard</string>
+    <string name="rating_good">Good</string>
+    <string name="rating_easy">Easy</string>
+    <string name="study_count_desc">%1$s: %2$d</string>
+    <string name="study_edit_card">Edit card</string>
+    <string name="study_suspend_card">Suspend card</string>
+    <string name="study_card_suspended">Card suspended</string>
+
+    <string name="study_nothing_due_title">Nothing due right now</string>
+    <string name="study_nothing_due_body">This deck has no cards waiting. New cards are limited per day, so more may appear tomorrow.</string>
+    <string name="study_finished_title">Deck finished</string>
+    <plurals name="study_finished_body">
+        <item quantity="one">You answered %1$d card. Come back when the next one is due.</item>
+        <item quantity="other">You answered %1$d cards. Come back when the next one is due.</item>
+    </plurals>
+    <string name="study_waiting_title">Caught up for now</string>
+    <string name="study_waiting_body">The next card is ready in about %1$s. Learning cards come back quickly, so it is worth waiting.</string>
+    <string name="study_back_to_deck">Back to deck</string>
+
+    <string name="interval_minutes">%1$dm</string>
+    <string name="interval_hours">%1$dh</string>
+    <string name="interval_days">%1$dd</string>
+    <string name="interval_months">%1$smo</string>
+    <string name="interval_years">%1$sy</string>
+    <string name="minutes_short">%1$d min</string>
 </resources>
