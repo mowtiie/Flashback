@@ -50,6 +50,8 @@ internal fun StudyCardFace(
     rotationY: Float,
     onReveal: (() -> Unit)?,
     modifier: Modifier = Modifier,
+    /** Less padding and smaller text, for when the keyboard leaves little room. */
+    compact: Boolean = false,
 ) {
     val density = LocalDensity.current.density
     // A new card starts at the top, not wherever the last long one was scrolled to.
@@ -82,13 +84,13 @@ internal fun StudyCardFace(
                             Modifier
                         },
                     )
-                    .padding(24.dp),
+                    .padding(if (compact) 12.dp else 24.dp),
             ) {
                 Text(
                     text = card.question,
                     style = MaterialTheme.typography.headlineSmall.copy(
-                        fontSize = cardTextSize(card.question),
-                        lineHeight = cardTextSize(card.question) * 1.25f,
+                        fontSize = cardTextSize(card.question).capped(compact),
+                        lineHeight = cardTextSize(card.question).capped(compact) * 1.25f,
                     ),
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth(),
@@ -105,8 +107,8 @@ internal fun StudyCardFace(
                     Text(
                         text = card.answer,
                         style = MaterialTheme.typography.headlineSmall.copy(
-                            fontSize = cardTextSize(card.answer),
-                            lineHeight = cardTextSize(card.answer) * 1.25f,
+                            fontSize = cardTextSize(card.answer).capped(compact),
+                            lineHeight = cardTextSize(card.answer).capped(compact) * 1.25f,
                         ),
                         color = MaterialTheme.colorScheme.primary,
                         textAlign = TextAlign.Center,
@@ -117,3 +119,7 @@ internal fun StudyCardFace(
         }
     }
 }
+
+private fun TextUnit.capped(compact: Boolean): TextUnit = if (compact && value > COMPACT_MAX_SP) COMPACT_MAX_SP.sp else this
+
+private const val COMPACT_MAX_SP = 22f

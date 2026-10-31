@@ -9,6 +9,11 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.isImeVisible
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -44,6 +49,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
@@ -129,21 +136,31 @@ fun StudyRoute(
     StudyScreen(state = state, actions = actions, snackbarHostState = snackbarHostState)
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun StudyScreen(
     state: StudyUiState,
     actions: StudyActions,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
+    val windowHeightDp = with(LocalDensity.current) { LocalWindowInfo.current.containerSize.height.toDp().value }
+    // Typing on a short window: the top bar and counters give way so the question and the field both fit.
+    val compact = isCompactForKeyboard(windowHeightDp, WindowInsets.isImeVisible)
+
     Scaffold(
-        topBar = { StudyTopBar(state, actions) },
+        topBar = { if (!compact) StudyTopBar(state, actions) },
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
-        Column(Modifier.padding(padding).fillMaxSize()) {
+        Column(
+            Modifier
+                .padding(padding)
+                .then(if (compact) Modifier.windowInsetsPadding(WindowInsets.statusBars) else Modifier)
+                .fillMaxSize(),
+        ) {
             val ending = state.ending
             when {
                 ending != null -> StudyEndingContent(ending, actions.onBack)
-                state.card != null -> StudyContent(state, state.card, actions)
+                state.card != null -> StudyContent(state, state.card, actions, compact)
             }
         }
     }
@@ -236,7 +253,7 @@ private fun Count(value: Int, labelRes: Int, color: androidx.compose.ui.graphics
 }
 
 @Composable
-private fun StudyContent(state: StudyUiState, card: StudyCardUi, actions: StudyActions) {
+private fun StudyContent(state: StudyUiState, card: StudyCardUi, actions: StudyActions, compact: Boolean) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val flip = remember { Animatable(0f) }
@@ -267,12 +284,13 @@ private fun StudyContent(state: StudyUiState, card: StudyCardUi, actions: StudyA
                 modifier = Modifier
                     .fillMaxSize()
                     .imePadding()
-                    .padding(16.dp),
+                    .padding(if (compact) 8.dp else 16.dp),
             ) {
                 StudyCardFace(
                     card = card,
                     revealed = state.revealed,
                     rotationY = flip.value,
+                    compact = compact,
                     onReveal = if (canFlipToReveal) showAnswer else null,
                     modifier = Modifier
                         .weight(1f)
@@ -293,12 +311,13 @@ private fun StudyContent(state: StudyUiState, card: StudyCardUi, actions: StudyA
                 modifier = Modifier
                     .fillMaxSize()
                     .imePadding()
-                    .padding(16.dp),
+                    .padding(if (compact) 8.dp else 16.dp),
             ) {
                 StudyCardFace(
                     card = card,
                     revealed = state.revealed,
                     rotationY = flip.value,
+                    compact = compact,
                     onReveal = if (canFlipToReveal) showAnswer else null,
                     modifier = Modifier
                         .weight(1f)
