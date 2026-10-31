@@ -12,11 +12,16 @@ interface PreferenceStore {
     fun getBoolean(key: String, default: Boolean): Boolean
 
     fun putBoolean(key: String, value: Boolean)
+
+    fun getString(key: String): String?
+
+    /** A null value removes the entry. */
+    fun putString(key: String, value: String?)
 }
 
 /** The Java app's preferences file, shared so existing settings carry over. */
-class SharedPreferenceStore(context: Context) : PreferenceStore {
-    private val prefs = context.applicationContext.getSharedPreferences(FILE, Context.MODE_PRIVATE)
+class SharedPreferenceStore(context: Context, file: String = FILE) : PreferenceStore {
+    private val prefs = context.applicationContext.getSharedPreferences(file, Context.MODE_PRIVATE)
 
     override fun getInt(key: String, default: Int): Int = prefs.getInt(key, default)
 
@@ -26,7 +31,16 @@ class SharedPreferenceStore(context: Context) : PreferenceStore {
 
     override fun putBoolean(key: String, value: Boolean) = prefs.edit { putBoolean(key, value) }
 
-    private companion object {
+    override fun getString(key: String): String? = prefs.getString(key, null)
+
+    override fun putString(key: String, value: String?) = prefs.edit {
+        if (value == null) remove(key) else putString(key, value)
+    }
+
+    companion object {
         const val FILE = "flashback_prefs"
+
+        /** Excluded from backups, unlike the main file. */
+        const val SECRETS_FILE = "flashback_secrets"
     }
 }

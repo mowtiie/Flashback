@@ -14,4 +14,10 @@ class FakePreferenceStore : PreferenceStore {
     override fun putBoolean(key: String, value: Boolean) {
         values[key] = value
     }
+
+    override fun getString(key: String) = values[key] as String?
+
+    override fun putString(key: String, value: String?) {
+        if (value == null) values.remove(key) else values[key] = value
+    }
 }
