@@ -1,4 +1,4 @@
-package com.mowtiie.flashback.ui.theme
+package com.mowtiie.flashback.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
