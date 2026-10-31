@@ -108,12 +108,43 @@ class DataTransferViewModelTest {
     }
 
     @Test
+    fun pastedTextLivesInTheViewModelAndIsClearedOnceParsed() {
+        val viewModel = viewModel()
+        viewModel.setPasteText(validJson)
+        assertEquals(validJson, viewModel.uiState.value.pasteText)
+
+        viewModel.previewImportFromText(viewModel.uiState.value.pasteText)
+        assertEquals("", viewModel.uiState.value.pasteText)
+    }
+
+    @Test
+    fun aFailedPasteKeepsItsTextForCorrection() {
+        val viewModel = viewModel()
+        viewModel.setPasteText("not json")
+        viewModel.previewImportFromText("not json")
+
+        assertEquals("not json", viewModel.uiState.value.pasteText)
+        assertNotNull(viewModel.uiState.value.pasteError)
+    }
+
+    @Test
+    fun dismissingThePasteDialogClearsTextAndError() {
+        val viewModel = viewModel()
+        viewModel.setPasteText("abc")
+        viewModel.previewImportFromText("abc")
+
+        viewModel.clearPaste()
+        assertEquals("", viewModel.uiState.value.pasteText)
+        assertNull(viewModel.uiState.value.pasteError)
+    }
+
+    @Test
     fun editingThePastedTextClearsItsError() {
         val viewModel = viewModel()
         viewModel.previewImportFromText("")
         assertNotNull(viewModel.uiState.value.pasteError)
 
-        viewModel.clearPasteError()
+        viewModel.setPasteText("edited")
         assertNull(viewModel.uiState.value.pasteError)
     }
 

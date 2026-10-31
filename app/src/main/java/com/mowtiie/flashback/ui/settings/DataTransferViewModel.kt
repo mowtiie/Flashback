@@ -32,6 +32,8 @@ data class DataTransferUiState(
     /** An export or import is running. */
     val working: Boolean = false,
     val pendingImport: PendingImport? = null,
+    /** The text in the paste dialog. Kept here, not in saved state, since it can be megabytes. */
+    val pasteText: String = "",
     /** Shown inside the paste dialog, which stays open on a parse error. */
     val pasteError: String? = null,
 )
@@ -125,7 +127,7 @@ class DataTransferViewModel(
     private suspend fun stagePreview(raw: String, inline: Boolean) {
         try {
             val parsed = withContext(ioDispatcher) { parser.parse(raw) }
-            _uiState.update { it.copy(pendingImport = PendingImport(parsed), pasteError = null) }
+            _uiState.update { it.copy(pendingImport = PendingImport(parsed), pasteText = if (inline) "" else it.pasteText, pasteError = null) }
         } catch (e: ArchiveException) {
             val message = e.message.orEmpty()
             if (inline) {
@@ -136,8 +138,12 @@ class DataTransferViewModel(
         }
     }
 
-    fun clearPasteError() {
-        _uiState.update { it.copy(pasteError = null) }
+    fun setPasteText(text: String) {
+        _uiState.update { it.copy(pasteText = text, pasteError = null) }
+    }
+
+    fun clearPaste() {
+        _uiState.update { it.copy(pasteText = "", pasteError = null) }
     }
 
     fun clearPendingImport() {

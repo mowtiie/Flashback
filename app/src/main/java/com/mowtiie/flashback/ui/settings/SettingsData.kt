@@ -30,7 +30,8 @@ class DataTransferActions(
     val onExport: () -> Unit = {},
     val onImportFile: () -> Unit = {},
     val onPreviewPaste: (String) -> Unit = {},
-    val onPasteEdited: () -> Unit = {},
+    val onPasteTextChange: (String) -> Unit = {},
+    val onPasteDismissed: () -> Unit = {},
     val onConfirmImport: () -> Unit = {},
     val onCancelImport: () -> Unit = {},
 )
@@ -39,14 +40,10 @@ class DataTransferActions(
 internal fun DataSection(state: DataTransferUiState, actions: DataTransferActions) {
     var chooseSource by rememberSaveable { mutableStateOf(false) }
     var pasting by rememberSaveable { mutableStateOf(false) }
-    var pasted by rememberSaveable { mutableStateOf("") }
 
     // A parsed paste moves on to the preview, so the paste dialog gets out of the way.
     LaunchedEffect(state.pendingImport) {
-        if (state.pendingImport != null) {
-            pasting = false
-            pasted = ""
-        }
+        if (state.pendingImport != null) pasting = false
     }
 
     SectionHeader(R.string.settings_data_header)
@@ -87,18 +84,14 @@ internal fun DataSection(state: DataTransferUiState, actions: DataTransferAction
 
     if (pasting) {
         PasteDialog(
-            text = pasted,
+            text = state.pasteText,
             error = state.pasteError,
             working = state.working,
-            onTextChange = {
-                pasted = it
-                actions.onPasteEdited()
-            },
-            onPreview = { actions.onPreviewPaste(pasted) },
+            onTextChange = actions.onPasteTextChange,
+            onPreview = { actions.onPreviewPaste(state.pasteText) },
             onDismiss = {
                 pasting = false
-                pasted = ""
-                actions.onPasteEdited()
+                actions.onPasteDismissed()
             },
         )
     }

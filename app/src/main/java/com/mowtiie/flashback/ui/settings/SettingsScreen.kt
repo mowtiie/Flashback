@@ -126,7 +126,8 @@ fun SettingsRoute(viewModel: SettingsViewModel, transferViewModel: DataTransferV
             // A broad filter, because many exporters mislabel JSON as text or octet-stream.
             onImportFile = { openLauncher.launch(arrayOf(JSON_MIME_TYPE, "text/plain", "*/*")) },
             onPreviewPaste = transferViewModel::previewImportFromText,
-            onPasteEdited = transferViewModel::clearPasteError,
+            onPasteTextChange = transferViewModel::setPasteText,
+            onPasteDismissed = transferViewModel::clearPaste,
             onConfirmImport = transferViewModel::confirmImport,
             onCancelImport = transferViewModel::clearPendingImport,
         )
