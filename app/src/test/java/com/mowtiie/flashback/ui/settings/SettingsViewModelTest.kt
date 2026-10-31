@@ -130,6 +130,23 @@ class SettingsViewModelTest {
     }
 
     @Test
+    fun revokedPermissionTurnsAnEnabledReminderOff() {
+        val viewModel = viewModel()
+        viewModel.setReminderEnabled(true)
+        viewModel.onNotificationPermissionRevoked()
+        assertFalse(viewModel.uiState.value.reminderEnabled)
+        assertFalse(ReminderPreferences(store).enabled)
+        assertEquals(2, reschedules)
+    }
+
+    @Test
+    fun revokedPermissionDoesNothingWhileTheReminderIsOff() {
+        val viewModel = viewModel()
+        viewModel.onNotificationPermissionRevoked()
+        assertEquals(0, reschedules)
+    }
+
+    @Test
     fun deniedPermissionLeavesTheReminderOffAndTellsTheScreen() = runTest {
         val viewModel = viewModel()
         viewModel.onNotificationsDenied()

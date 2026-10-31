@@ -24,6 +24,8 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mowtiie.flashback.R
 import com.mowtiie.flashback.data.io.ArchiveFiles
@@ -58,6 +60,10 @@ fun SettingsRoute(viewModel: SettingsViewModel, transferViewModel: DataTransferV
         ActivityResultContracts.RequestPermission(),
     ) { granted ->
         if (granted) viewModel.setReminderEnabled(true) else viewModel.onNotificationsDenied()
+    }
+
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        if (!context.canPostNotifications()) viewModel.onNotificationPermissionRevoked()
     }
 
     val saveLauncher = rememberSaveDocumentLauncher(

@@ -105,6 +105,11 @@ class SettingsViewModel(
         events.trySend(SettingsEvent.NotificationsDenied)
     }
 
+    /** The permission was withdrawn in system settings, so the switch must not claim reminders are on. */
+    fun onNotificationPermissionRevoked() {
+        if (_uiState.value.reminderEnabled) setReminderEnabled(false)
+    }
+
     private fun reschedule() {
         viewModelScope.launch { withContext(ioDispatcher + NonCancellable) { scheduler.reschedule() } }
     }
