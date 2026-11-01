@@ -165,7 +165,7 @@ class GeneratorViewModel(
                 return@launch
             }
             sections = withContext(ioDispatcher) { MaterialSplitter.split(state.source, GeneratorLimits.SECTION_CHARS) }
-            if (GeneratorPlan.needsConfirmation(sections.size)) {
+            if (provider().usesNetwork && GeneratorPlan.needsConfirmation(sections.size)) {
                 _uiState.update { it.copy(stage = GeneratorStage.Input, confirming = true, sectionTotal = sections.size) }
             } else {
                 runSections(sections.indices.toList(), types)

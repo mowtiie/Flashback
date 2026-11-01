@@ -12,7 +12,13 @@ You can export your decks to a JSON file and import them again. Where that file 
 
 ## The optional AI card generator
 
-The generator is off until you add your own API key in Settings. If you never add one, the app does not connect to the internet.
+The generator is off until you add your own API key or choose a model file in Settings. If you never add a key, the app does not connect to the internet.
+
+### On-device model
+
+Instead of a provider you can choose "On-device model" and pick a model file (for example a Gemma model in the .litertlm format) from your phone. The app copies it into its private storage, and the cards are made on the phone. Nothing you add is sent anywhere, and the app downloads nothing. The model file is left out of Android backups and device transfers. Removing the model in Settings deletes the copy.
+
+### Online providers
 
 When you use it:
 

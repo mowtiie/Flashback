@@ -2,9 +2,11 @@ package com.mowtiie.flashback.ui.settings
 
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
+import android.net.Uri
 import androidx.lifecycle.viewModelScope
 import com.mowtiie.flashback.generator.GeneratorPreferences
 import com.mowtiie.flashback.generator.GeneratorProvider
+import com.mowtiie.flashback.generator.LocalModels
 import com.mowtiie.flashback.generator.keyHint
 import com.mowtiie.flashback.notifications.ReminderPreferences
 import com.mowtiie.flashback.notifications.ReminderScheduling
@@ -14,6 +16,7 @@ import com.mowtiie.flashback.theme.ThemePreferences
 import com.mowtiie.flashback.ui.study.AnswerMode
 import com.mowtiie.flashback.ui.study.StudyPreferences
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,12 +40,14 @@ data class SettingsUiState(
     /** The end of the saved API key, or null when none is set. */
     val generatorProvider: GeneratorProvider = GeneratorProvider.Anthropic,
     val generatorKeyHint: String? = null,
+    val localModelName: String? = null,
+    val localModelBusy: Boolean = false,
 ) {
     /** Dynamic colour brings its own palette, so the contrast choice is ignored while it is on. */
     val contrastEnabled: Boolean get() = !dynamicColor
 }
 
-enum class SettingsEvent { NotificationsDenied }
+enum class SettingsEvent { NotificationsDenied, ModelFailed }
 
 /** Study, appearance and reminder preferences. Import and export live in [DataTransferViewModel]. */
 class SettingsViewModel(
@@ -53,6 +58,7 @@ class SettingsViewModel(
     private val scheduler: ReminderScheduling,
     private val ioDispatcher: CoroutineDispatcher,
     dynamicColorAvailable: Boolean,
+    private val localModels: LocalModels? = null,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(
@@ -68,6 +74,7 @@ class SettingsViewModel(
                 reminderMinute = reminderPrefs.minute,
                 generatorProvider = generatorPrefs.provider,
                 generatorKeyHint = generatorPrefs.apiKey?.keyHint(),
+                localModelName = generatorPrefs.localModelName,
             )
         },
     )
@@ -125,6 +132,29 @@ class SettingsViewModel(
     fun clearGeneratorKey() {
         generatorPrefs.apiKey = null
         _uiState.update { it.copy(generatorKeyHint = null) }
+    }
+
+    fun setLocalModel(uri: Uri) {
+        val models = localModels ?: return
+        if (_uiState.value.localModelBusy) return
+        _uiState.update { it.copy(localModelBusy = true) }
+        viewModelScope.launch {
+            val name = try {
+                models.install(uri)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                null
+            }
+            if (name != null) generatorPrefs.localModelName = name else events.trySend(SettingsEvent.ModelFailed)
+            _uiState.update { it.copy(localModelBusy = false, localModelName = generatorPrefs.localModelName) }
+        }
+    }
+
+    fun clearLocalModel() {
+        localModels?.remove()
+        generatorPrefs.localModelName = null
+        _uiState.update { it.copy(localModelName = null) }
     }
 
     fun onNotificationsDenied() {

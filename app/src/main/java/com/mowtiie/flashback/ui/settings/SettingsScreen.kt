@@ -53,6 +53,8 @@ class SettingsActions(
     val onGeneratorProvider: (GeneratorProvider) -> Unit = {},
     val onGeneratorKey: (String) -> Unit = {},
     val onClearGeneratorKey: () -> Unit = {},
+    val onChooseModel: () -> Unit = {},
+    val onClearModel: () -> Unit = {},
     val onOpenPrivacyPolicy: () -> Unit = {},
 )
 
@@ -87,12 +89,22 @@ fun SettingsRoute(viewModel: SettingsViewModel, transferViewModel: DataTransferV
         }
     }
 
+    val modelLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument(),
+    ) { uri -> if (uri != null) viewModel.setLocalModel(uri) }
+
     LaunchedEffect(viewModel) {
         viewModel.eventFlow.collect { event ->
             when (event) {
                 SettingsEvent.NotificationsDenied -> launch {
                     snackbarHostState.showReplacing(
                         message = resources.getString(R.string.reminder_permission_denied),
+                        duration = SnackbarDuration.Long,
+                    )
+                }
+                SettingsEvent.ModelFailed -> launch {
+                    snackbarHostState.showReplacing(
+                        message = resources.getString(R.string.settings_generator_model_failed),
                         duration = SnackbarDuration.Long,
                     )
                 }
@@ -134,6 +146,8 @@ fun SettingsRoute(viewModel: SettingsViewModel, transferViewModel: DataTransferV
             onGeneratorProvider = viewModel::setGeneratorProvider,
             onGeneratorKey = viewModel::setGeneratorKey,
             onClearGeneratorKey = viewModel::clearGeneratorKey,
+            onChooseModel = { modelLauncher.launch(arrayOf("*/*")) },
+            onClearModel = viewModel::clearLocalModel,
             onOpenPrivacyPolicy = {
                 try {
                     context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(AppLinks.PRIVACY_POLICY)))

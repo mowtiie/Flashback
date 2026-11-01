@@ -76,6 +76,7 @@ private fun NavGraphBuilder.settingsDestination(container: AppContainer) {
                 themePrefs = container.themePreferences,
                 reminderPrefs = container.reminderPreferences,
                 generatorPrefs = container.generatorPreferences,
+                localModels = container.localModelStore,
                 scheduler = container.reminderScheduler,
                 ioDispatcher = container.dispatchers.io,
                 dynamicColorAvailable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,

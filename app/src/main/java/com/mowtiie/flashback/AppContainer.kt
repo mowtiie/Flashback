@@ -8,6 +8,9 @@ import com.mowtiie.flashback.generator.GeminiCardGenerator
 import com.mowtiie.flashback.generator.GeneratorPreferences
 import com.mowtiie.flashback.generator.GeneratorProvider
 import com.mowtiie.flashback.generator.KeystoreSecretCipher
+import com.mowtiie.flashback.generator.LiteRtTextModel
+import com.mowtiie.flashback.generator.LocalCardGenerator
+import com.mowtiie.flashback.generator.LocalModelStore
 import com.mowtiie.flashback.generator.SelectedCardGenerator
 import com.mowtiie.flashback.notifications.ReminderPreferences
 import com.mowtiie.flashback.notifications.ReminderScheduler
@@ -43,6 +46,12 @@ class AppContainer(context: Context) {
         )
     }
 
+    val localModelStore: LocalModelStore by lazy { LocalModelStore(appContext, dispatchers.io) }
+
+    private val localTextModel: LiteRtTextModel by lazy {
+        LiteRtTextModel(appContext, localModelStore, dispatchers.io)
+    }
+
     val cardGenerator: CardGenerator by lazy {
         SelectedCardGenerator(
             generatorPreferences,
@@ -55,6 +64,7 @@ class AppContainer(context: Context) {
                     apiKey = { generatorPreferences.apiKey(GeneratorProvider.Gemini) },
                     ioDispatcher = dispatchers.io,
                 ),
+                GeneratorProvider.OnDevice to LocalCardGenerator(localTextModel),
             ),
         )
     }

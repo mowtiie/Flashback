@@ -86,8 +86,9 @@ object GeneratorLimits {
     const val MAX_PDF_BYTES = 10 * 1024 * 1024
 }
 
-/** Each provider needs its own key, which the user supplies. */
-enum class GeneratorProvider(val displayName: String) {
+/** Anthropic and Gemini need the user's own key. On-device needs a model file and sends nothing. */
+enum class GeneratorProvider(val displayName: String, val usesNetwork: Boolean = true) {
     Anthropic("Anthropic"),
     Gemini("Google Gemini"),
+    OnDevice("On-device model", usesNetwork = false),
 }

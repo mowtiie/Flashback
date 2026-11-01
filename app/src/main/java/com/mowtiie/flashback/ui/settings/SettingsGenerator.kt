@@ -37,12 +37,34 @@ internal fun GeneratorSection(state: SettingsUiState, actions: SettingsActions) 
             onSelect = actions.onGeneratorProvider,
         )
         RowDivider()
-        ActionRow(
-            title = stringResource(R.string.settings_generator_key_title, provider.displayName),
-            value = state.generatorKeyHint ?: stringResource(R.string.settings_generator_key_value_unset),
-            valueHighlighted = state.generatorKeyHint != null,
-            onClick = { editing = true },
-        )
+        if (provider.usesNetwork) {
+            ActionRow(
+                title = stringResource(R.string.settings_generator_key_title, provider.displayName),
+                value = state.generatorKeyHint ?: stringResource(R.string.settings_generator_key_value_unset),
+                valueHighlighted = state.generatorKeyHint != null,
+                onClick = { editing = true },
+            )
+        } else {
+            ActionRow(
+                title = stringResource(R.string.settings_generator_model_title),
+                value = when {
+                    state.localModelBusy -> stringResource(R.string.settings_generator_model_copying)
+                    else -> state.localModelName ?: stringResource(R.string.settings_generator_model_unset)
+                },
+                valueHighlighted = state.localModelName != null,
+                enabled = !state.localModelBusy,
+                onClick = actions.onChooseModel,
+            )
+            if (state.localModelName != null) {
+                RowDivider()
+                ActionRow(
+                    title = stringResource(R.string.settings_generator_model_remove),
+                    onClick = actions.onClearModel,
+                    enabled = !state.localModelBusy,
+                    destructive = true,
+                )
+            }
+        }
     }
     Footnote(stringResource(provider.noteRes()))
 
@@ -66,6 +88,7 @@ internal fun GeneratorSection(state: SettingsUiState, actions: SettingsActions) 
 private fun GeneratorProvider.noteRes(): Int = when (this) {
     GeneratorProvider.Anthropic -> R.string.settings_generator_note_anthropic
     GeneratorProvider.Gemini -> R.string.settings_generator_note_gemini
+    GeneratorProvider.OnDevice -> R.string.settings_generator_note_on_device
 }
 
 @Composable

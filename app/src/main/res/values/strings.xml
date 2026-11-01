@@ -278,6 +278,15 @@
     <string name="generator_save_failed">The deck could not be saved. Nothing was added.</string>
     <string name="generator_all_removed">Every card was removed. Start over to try again.</string>
     <string name="generator_no_key_body">Card generation uses your own API key from the provider you choose. Add it in Settings.</string>
+    <string name="settings_generator_model_title">Model file</string>
+    <string name="settings_generator_model_unset">Not chosen</string>
+    <string name="settings_generator_model_copying">Copying…</string>
+    <string name="settings_generator_model_remove">Remove model</string>
+    <string name="settings_generator_model_failed">The model file could not be copied. Check that there is enough free space and try again.</string>
+    <string name="settings_generator_note_on_device">Optional. Makes cards with a model file stored on this phone, so nothing you add is sent anywhere and no key is needed. Pick a Gemma model in the .litertlm format. Files are large (about 1 to 3 GB), and results are rougher than the online providers, so review the cards. Text only, no PDFs. Works best with short passages and a phone with plenty of memory.</string>
+    <string name="generator_privacy_on_device">Everything stays on this phone. Small models make mistakes and can be slow, so review the cards before saving.</string>
+    <string name="generator_no_model_title">Choose a model file first</string>
+    <string name="generator_no_model_body">The on-device model needs a model file from your phone. Pick one in Settings.</string>
     <string name="settings_generator_provider">Provider</string>
     <string name="settings_generator_key_title">%1$s API key</string>
     <string name="settings_generator_key_hint">API key</string>

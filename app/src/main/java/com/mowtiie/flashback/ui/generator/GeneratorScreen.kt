@@ -173,8 +173,8 @@ fun GeneratorScreen(
         Box(Modifier.padding(padding).fillMaxSize()) {
             when {
                 !state.hasApiKey -> EmptyState(
-                    title = stringResource(R.string.generator_no_key_title),
-                    body = stringResource(R.string.generator_no_key_body),
+                    title = stringResource(if (state.provider.usesNetwork) R.string.generator_no_key_title else R.string.generator_no_model_title),
+                    body = stringResource(if (state.provider.usesNetwork) R.string.generator_no_key_body else R.string.generator_no_model_body),
                     actionLabel = stringResource(R.string.generator_no_key_action),
                     onAction = actions.onOpenSettings,
                 )
@@ -409,6 +409,7 @@ private fun GeneratorNoKeyPreview() {
 private fun GeneratorProvider.privacyRes(): Int = when (this) {
     GeneratorProvider.Anthropic -> R.string.generator_privacy_anthropic
     GeneratorProvider.Gemini -> R.string.generator_privacy_gemini
+    GeneratorProvider.OnDevice -> R.string.generator_privacy_on_device
 }
 
 private fun grouped(count: Int): String = NumberFormat.getIntegerInstance().format(count)
