@@ -53,13 +53,13 @@ class GeneratorCoverageScreenTest {
         show(input)
         rule.onNodeWithText("Everything").assertIsDisplayed()
         rule.onNode(hasText("About 3 requests", substring = true)).assertExists()
-        rule.onNode(hasText("Most cards to make")).assertDoesNotExist()
+        rule.onNode(hasText("Card limit")).assertDoesNotExist()
     }
 
     @Test
     fun keyPointsShowsTheCardCountAndTheOldCounter() {
         show(input.copy(coverage = Coverage.KeyPoints))
-        rule.onNodeWithText("Most cards to make").assertExists()
+        rule.onNodeWithText("Card limit").assertExists()
         rule.onNode(hasText("20,000 / 30,000 characters")).assertExists()
     }
 

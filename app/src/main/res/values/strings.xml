@@ -7,7 +7,7 @@
     <string name="decks_empty_title">No decks yet</string>
     <string name="decks_empty_body">A deck holds the cards for one subject. Create one to start adding cards.</string>
     <string name="decks_empty_action">Create a deck</string>
-    <string name="decks_filtered_empty_title">No decks with this tag</string>
+    <string name="decks_filtered_empty_title">No matching decks</string>
     <string name="decks_filtered_empty_body">Nothing here yet. Pick a different tag, or tag a deck from its edit screen.</string>
     <string name="deck_add">New deck</string>
     <string name="deck_study_button">Study %1$d</string>
@@ -36,9 +36,9 @@
     <string name="deck_editor_edit_title">Edit deck</string>
     <string name="deck_name">Name</string>
     <string name="deck_description">Description</string>
-    <string name="deck_reverse_default">Add reverse cards by default</string>
+    <string name="deck_reverse_default">Two-way by default</string>
     <string name="deck_reverse_default_help">New cards in this deck are also asked back to front. You can change this per card.</string>
-    <string name="deck_new_per_day">New cards per day</string>
+    <string name="deck_new_per_day">New per day</string>
     <string name="deck_reviews_per_day">Reviews per day</string>
     <string name="deck_save">Save deck</string>
     <string name="deck_name_required">Enter a name for the deck</string>
@@ -51,7 +51,7 @@
 
     <string name="deck_delete">Delete deck</string>
     <string name="deck_deleted">Deck deleted</string>
-    <string name="deck_detail_empty_title">This deck is empty</string>
+    <string name="deck_detail_empty_title">Empty deck</string>
     <string name="deck_detail_empty_body">Add your first card to start studying.</string>
     <string name="deck_detail_empty_action">Add a card</string>
     <string name="note_add">Add card</string>
@@ -207,7 +207,7 @@
     <string name="note_editor_edit_title">Edit card</string>
     <string name="note_front">Front</string>
     <string name="note_back">Back</string>
-    <string name="note_reverse">Also ask back to front</string>
+    <string name="note_reverse">Two-way card</string>
     <string name="note_reverse_help">Schedules a second card that shows the back first. The two are scheduled independently.</string>
     <string name="note_save">Save</string>
     <string name="note_save_and_add">Save and add</string>
@@ -240,14 +240,14 @@
     <string name="study_suspend_card">Suspend card</string>
     <string name="study_card_suspended">Card suspended</string>
 
-    <string name="study_nothing_due_title">Nothing due right now</string>
+    <string name="study_nothing_due_title">Nothing due</string>
     <string name="study_nothing_due_body">This deck has no cards waiting. New cards are limited per day, so more may appear tomorrow.</string>
     <string name="study_finished_title">Deck finished</string>
     <plurals name="study_finished_body">
         <item quantity="one">You answered %1$d card. Come back when the next one is due.</item>
         <item quantity="other">You answered %1$d cards. Come back when the next one is due.</item>
     </plurals>
-    <string name="study_waiting_title">Caught up for now</string>
+    <string name="study_waiting_title">All caught up</string>
     <string name="study_waiting_body">The next card is ready in about %1$s. Learning cards come back quickly, so it is worth waiting.</string>
     <string name="study_back_to_deck">Back to deck</string>
 
@@ -269,7 +269,7 @@
     <string name="generator_source_too_long">Too long. Use at most %1$s characters at a time.</string>
     <string name="generator_action">Generate</string>
     <string name="generator_working">Making cards…</string>
-    <string name="generator_no_key_title">Add your API key first</string>
+    <string name="generator_no_key_title">API key needed</string>
     <string name="generator_no_key_action">Open settings</string>
     <string name="generator_deck_name">Deck name</string>
     <string name="generator_remove_card">Remove card %1$s</string>
@@ -285,7 +285,7 @@
     <string name="settings_generator_model_failed">The model file could not be copied. Check that there is enough free space and try again.</string>
     <string name="settings_generator_note_on_device">Optional. Makes cards with a model file stored on this phone, so nothing you add is sent anywhere and no key is needed. Pick a Gemma model in the .litertlm format. Files are large (about 1 to 3 GB), and results are rougher than the online providers, so review the cards. Text only, no PDFs. Works best with short passages and a phone with plenty of memory.</string>
     <string name="generator_privacy_on_device">Everything stays on this phone. Small models make mistakes and can be slow, so review the cards before saving.</string>
-    <string name="generator_no_model_title">Choose a model file first</string>
+    <string name="generator_no_model_title">Model needed</string>
     <string name="generator_no_model_body">The on-device model needs a model file from your phone. Pick one in Settings.</string>
     <string name="settings_generator_provider">Provider</string>
     <string name="settings_generator_key_title">%1$s API key</string>
@@ -296,26 +296,26 @@
     <string name="settings_generator_note_gemini">Optional. Text or PDFs you generate cards from are sent to Google using your own key. Google offers a free tier, but on it Google may use what you send to improve its products. Nothing else leaves the app. The key stays on this device and is left out of backups.</string>
     <string name="generator_pdf_choose">Use a PDF</string>
     <string name="generator_pdf_remove">Remove %1$s</string>
-    <string name="generator_count_title">Most cards to make</string>
+    <string name="generator_count_title">Card limit</string>
     <string name="generator_count_few">Few (%1$d)</string>
     <string name="generator_count_normal">Normal (%1$d)</string>
     <string name="generator_count_many">Many (%1$d)</string>
-    <string name="note_answer_type">How to study this card</string>
+    <string name="note_answer_type">Study style</string>
     <string name="note_answer_type_default">Default</string>
     <string name="note_answer_type_default_help">Follows the answer mode in Settings.</string>
     <string name="note_answer_type_flip_help">Flip the card and rate yourself.</string>
     <string name="note_answer_type_type_help">Type the answer. It is checked ignoring case, accents, and small typos.</string>
     <string name="note_answer_type_choice_help">Pick the answer from options. Leave the wrong answers blank to borrow answers from other cards in the deck.</string>
     <string name="note_wrong_option">Wrong answer %1$d</string>
-    <string name="generator_types_title">How should the cards be studied?</string>
+    <string name="generator_types_title">Study style</string>
     <string name="generator_types_required">Choose one to continue.</string>
-    <string name="generator_types_setting">Follow my study setting</string>
+    <string name="generator_types_setting">My study setting</string>
     <string name="generator_types_setting_help">Plain cards that use the answer mode in Settings.</string>
     <string name="generator_types_mixed">A mix</string>
     <string name="generator_types_mixed_help">The model picks flip, type, or multiple choice for each card.</string>
     <string name="generator_types_flip">Flip only</string>
     <string name="generator_types_flip_help">Every card is flipped and rated.</string>
-    <string name="generator_types_type">Type the answer only</string>
+    <string name="generator_types_type">Type only</string>
     <string name="generator_types_type_help">Every card has a short answer to type.</string>
     <string name="generator_types_choice">Multiple choice only</string>
     <string name="generator_types_choice_help">Every card comes with three wrong answers.</string>
@@ -326,12 +326,12 @@
     <string name="new_deck_manual_body">Start an empty deck and add your own cards.</string>
     <string name="new_deck_ai">Generate with AI</string>
     <string name="new_deck_ai_body">Paste notes or a PDF. Uses your own API key.</string>
-    <string name="new_deck_hybrid">Use an AI website</string>
+    <string name="new_deck_hybrid">AI website</string>
     <string name="new_deck_hybrid_body">Copy a prompt for ChatGPT, Claude or Gemini, then import the file it makes.</string>
 
-    <string name="prompt_title">Prompt for an AI website</string>
+    <string name="prompt_title">AI website prompt</string>
     <string name="prompt_intro">Copy the prompt, paste it into an AI website together with your notes or PDF, then download the JSON file it makes and import it here. No account or key is needed in this app.</string>
-    <string name="prompt_coverage_title">How much to cover</string>
+    <string name="prompt_coverage_title">How much</string>
     <string name="prompt_coverage_everything">Everything</string>
     <string name="prompt_coverage_key">Key points</string>
     <string name="prompt_coverage_hint_everything">A card for every fact, so nothing is missed.</string>

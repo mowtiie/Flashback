@@ -63,7 +63,7 @@ class NewDeckSheetTest {
         rule.onNodeWithTag(NEW_DECK_SHEET_TAG).assertExists()
         rule.onNode(inSheet("Make it myself")).assertExists()
         rule.onNode(inSheet("Generate with AI")).assertExists()
-        rule.onNode(inSheet("Use an AI website")).assertExists()
+        rule.onNode(inSheet("AI website")).assertExists()
         assertEquals(0, manual + generate + prompt)
     }
 
@@ -88,7 +88,7 @@ class NewDeckSheetTest {
         assertEquals(listOf(1, 1, 0), listOf(manual, generate, prompt))
 
         openSheet()
-        rule.onNode(inSheet("Use an AI website")).performClick()
+        rule.onNode(inSheet("AI website")).performClick()
         rule.waitForIdle()
         assertEquals(listOf(1, 1, 1), listOf(manual, generate, prompt))
     }

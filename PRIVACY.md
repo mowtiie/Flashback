@@ -32,7 +32,7 @@ Your API key is encrypted with a key held in the Android Keystore and stored onl
 
 ## The prompt builder
 
-"Use an AI website" only builds a block of text for you to copy or share. Flashback sends nothing. What you paste into ChatGPT, Claude, Gemini or any other site, and what that site does with it, is between you and that site.
+"AI website" only builds a block of text for you to copy or share. Flashback sends nothing. What you paste into ChatGPT, Claude, Gemini or any other site, and what that site does with it, is between you and that site.
 
 ## Permissions
 
