@@ -101,6 +101,31 @@ class PlainCardsTest {
     }
 
     @Test
+    fun keepsLaterQuestionsAboutATopicAfterItsDefinitionCard() {
+        val kept = PlainCards.withoutRepeats(
+            cards(
+                "What is the Golgi apparatus?" to "A stack of flattened membrane sacs.",
+                "Where does the Golgi apparatus receive materials from?" to "From the ER in transport vesicles on its cis face.",
+                "What does the Golgi apparatus do with received materials?" to "Modifies, sorts and packages them, and sends them out in vesicles.",
+                "Who described the Golgi apparatus in 1898?" to "Camillo Golgi",
+            ),
+        )
+
+        assertEquals(4, kept.size)
+    }
+
+    @Test
+    fun aDefinitionCardDoesNotStopTheRun() {
+        val text = "Q: What is the Golgi apparatus?\nA: A stack of flattened membrane sacs.\n\n" +
+            "Q: Where does the Golgi apparatus receive materials from?\nA: From the ER in vesicles.\n\n" +
+            "Q: What does the Golgi apparatus do with received materials?\nA: Modifies, sorts and packages them.\n\n" +
+            "Q: Who described the Golgi apparatus in 1898?\nA: Camillo Golgi\n\n" +
+            "Q: What are lysosomes?\nA: "
+
+        assertFalse(PlainCards.shouldStop(text, maxCards = 30))
+    }
+
+    @Test
     fun dropsTheSameAnswerToASimilarQuestion() {
         val kept = PlainCards.withoutRepeats(
             cards(

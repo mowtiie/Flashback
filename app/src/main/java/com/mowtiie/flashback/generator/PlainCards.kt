@@ -98,10 +98,21 @@ internal object PlainCards {
         val b = contentWords(earlierFront)
         val small = if (a.size <= b.size) a else b
         val large = if (a.size <= b.size) b else a
-        if (small.size >= 2 && large.containsAll(small)) return true
+        // A short "What is the Golgi apparatus?" sits inside every later Golgi question, so the answers must agree too.
+        if (small.size >= 2 && large.containsAll(small) && similarAnswers(back, earlierBack)) return true
         val sameBack = plainBack(back).let { it.length >= 6 && it == plainBack(earlierBack) }
         return sameBack && a.intersect(b).size >= 3
     }
+
+    /** At least half of the shorter answer's key words appear in the other. */
+    private fun similarAnswers(a: String, b: String): Boolean {
+        val x = contentWords(a)
+        val y = contentWords(b)
+        if (x.isEmpty() || y.isEmpty()) return false
+        return x.intersect(y).size.toDouble() / minOf(x.size, y.size) >= ANSWER_OVERLAP
+    }
+
+    private const val ANSWER_OVERLAP = 0.5
 
     internal fun withoutRepeats(cards: List<Card>): List<Card> {
         val kept = mutableListOf<Card>()
