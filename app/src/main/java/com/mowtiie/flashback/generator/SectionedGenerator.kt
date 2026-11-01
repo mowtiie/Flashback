@@ -29,11 +29,13 @@ class SectionedGenerator(
         indices: List<Int>,
         types: CardTypes,
         known: () -> List<String>,
+        coverage: Coverage = Coverage.Everything,
+        cardLimit: Int? = null,
         onOutcome: (SectionOutcome) -> Unit,
     ) {
         var failures = 0
         for ((position, index) in indices.withIndex()) {
-            val outcome = send(sections[index], index, types, known())
+            val outcome = send(sections[index], index, types, known(), coverage, cardLimit)
             onOutcome(outcome)
             if (outcome is SectionOutcome.Done) {
                 failures = 0
@@ -49,12 +51,20 @@ class SectionedGenerator(
         }
     }
 
-    private suspend fun send(text: String, index: Int, types: CardTypes, known: List<String>): SectionOutcome {
+    private suspend fun send(
+        text: String,
+        index: Int,
+        types: CardTypes,
+        known: List<String>,
+        coverage: Coverage,
+        cardLimit: Int?,
+    ): SectionOutcome {
         val request = GeneratorRequest(
             input = GeneratorInput.Text(text),
             cardTypes = types,
-            coverage = Coverage.Everything,
+            coverage = coverage,
             known = known,
+            cardLimit = cardLimit,
         )
         var waits = 0
         while (true) {

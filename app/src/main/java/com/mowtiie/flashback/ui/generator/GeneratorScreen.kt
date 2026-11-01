@@ -252,7 +252,7 @@ private fun InputPage(state: GeneratorUiState, actions: GeneratorActions) {
 private fun sourceSupport(state: GeneratorUiState): String = when {
     state.sourceTooLong ->
         stringResource(R.string.generator_source_too_long, grouped(GeneratorPlan.maxChars(state.coverage, state.provider)))
-    state.coverage == Coverage.Everything && state.source.isNotBlank() -> {
+    (state.coverage == Coverage.Everything || state.estimatedRequests > 1) && state.source.isNotBlank() -> {
         val size = stringResource(R.string.generator_size, grouped(state.source.length))
         val estimate = pluralStringResource(
             R.plurals.generator_estimate,

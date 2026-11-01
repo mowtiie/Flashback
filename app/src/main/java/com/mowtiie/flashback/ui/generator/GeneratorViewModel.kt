@@ -150,6 +150,8 @@ class GeneratorViewModel(
     private val failures = sortedMapOf<Int, String>()
     private val removed = mutableSetOf<String>()
     private var job: Job? = null
+    private var runCoverage = Coverage.Everything
+    private var runCardLimit: Int? = null
 
     fun generate() {
         val state = _uiState.value
@@ -159,12 +161,17 @@ class GeneratorViewModel(
         _uiState.update { it.copy(stage = GeneratorStage.Generating, error = null, sectionTotal = 0, sectionsFinished = 0) }
         job = viewModelScope.launch {
             val picked = pdf
-            if (picked != null || state.coverage == Coverage.KeyPoints) {
+            val splitKeyPoints = picked == null && state.coverage == Coverage.KeyPoints &&
+                GeneratorPlan.splitsKeyPoints(state.provider, state.source.trim().length)
+            if (picked != null || (state.coverage == Coverage.KeyPoints && !splitKeyPoints)) {
                 val input = picked ?: GeneratorInput.Text(state.source.trim())
                 single(GeneratorRequest(input, state.cardCount, types, state.coverage))
                 return@launch
             }
             sections = withContext(ioDispatcher) { MaterialSplitter.split(state.source, state.provider.sectionChars) }
+            runCoverage = if (splitKeyPoints) Coverage.KeyPoints else Coverage.Everything
+            // Each section gets an equal share of the card count, rounded up.
+            runCardLimit = if (splitKeyPoints) (state.cardCount.max + sections.size - 1) / sections.size else null
             if (provider().usesNetwork && GeneratorPlan.needsConfirmation(sections.size)) {
                 _uiState.update { it.copy(stage = GeneratorStage.Input, confirming = true, sectionTotal = sections.size) }
             } else {
@@ -219,7 +226,14 @@ class GeneratorViewModel(
 
     private suspend fun runSections(indices: List<Int>, types: CardTypes) {
         _uiState.update { it.copy(sectionTotal = sections.size) }
-        sectioned.run(sections, indices, types, known = { merged().notes.map { n -> n.front } }) { outcome ->
+        sectioned.run(
+            sections,
+            indices,
+            types,
+            known = { merged().notes.map { n -> n.front } },
+            coverage = runCoverage,
+            cardLimit = runCardLimit,
+        ) { outcome ->
             when (outcome) {
                 is SectionOutcome.Done -> {
                     results[outcome.index] = outcome.deck

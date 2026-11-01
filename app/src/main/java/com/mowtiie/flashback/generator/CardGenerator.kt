@@ -62,9 +62,13 @@ class GeneratorRequest(
     val coverage: Coverage = Coverage.KeyPoints,
     /** Fronts of cards already made from earlier sections, so they are not repeated. */
     val known: List<String> = emptyList(),
+    /** One section's share of the card count when Key points is split into sections. */
+    val cardLimit: Int? = null,
 ) {
-    /** Only a safety bound for Everything; the model is not asked to stop at it. */
-    val maxCards: Int get() = if (coverage == Coverage.Everything) GeneratorLimits.MAX_CARDS_PER_SECTION else cardCount.max
+    /** For Everything this is only a safety bound; the model is not asked to stop at it. */
+    val maxCards: Int
+        get() = cardLimit
+            ?: if (coverage == Coverage.Everything) GeneratorLimits.MAX_CARDS_PER_SECTION else cardCount.max
 }
 
 object GeneratorLimits {

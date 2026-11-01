@@ -9,10 +9,18 @@ object GeneratorPlan {
         isPdf: Boolean,
         provider: GeneratorProvider = GeneratorProvider.Anthropic,
     ): Int {
-        if (isPdf || coverage == Coverage.KeyPoints) return 1
+        if (isPdf) return 1
+        if (coverage == Coverage.KeyPoints && splitsKeyPoints(provider, chars).not()) return 1
         val size = provider.sectionChars
         return ((chars + size - 1) / size).coerceAtLeast(1)
     }
+
+    /**
+     * A small on-device model reads a long text from the start and runs out of cards before the end,
+     * so Key points is split into sections that each get a share of the card count.
+     */
+    fun splitsKeyPoints(provider: GeneratorProvider, chars: Int): Boolean =
+        !provider.usesNetwork && chars > provider.sectionChars
 
     fun needsConfirmation(requests: Int): Boolean = requests > GeneratorLimits.CONFIRM_ABOVE_SECTIONS
 
