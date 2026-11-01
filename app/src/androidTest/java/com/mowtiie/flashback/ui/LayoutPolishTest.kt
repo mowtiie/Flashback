@@ -163,9 +163,9 @@ class LayoutPolishTest {
         rule.onNodeWithText("Copy prompt").assertIsDisplayed()
     }
 
-    // 13. The AI ways to start a deck sit under their own title.
+    // 13. The AI ways to start a deck are plain rows after a divider, with no title of their own.
     @Test
-    fun theNewDeckSheetGroupsTheAiWaysUnderATitle() {
+    fun theNewDeckSheetListsTheAiWaysWithoutATitle() {
         rule.setContent {
             FlashbackTheme(dynamicColor = false) {
                 DeckListScreen(
@@ -177,7 +177,9 @@ class LayoutPolishTest {
         }
         rule.onNode(androidx.compose.ui.test.hasContentDescription("New deck") and hasClickAction())
             .performClick()
-        rule.onNode(hasText("With AI") and isHeading).assertExists()
+        rule.onNodeWithText("With AI").assertDoesNotExist()
+        rule.onNodeWithText("Generate with AI").assertExists()
+        rule.onNodeWithText("AI website").assertExists()
     }
 
 

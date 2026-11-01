@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
@@ -15,7 +16,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.mowtiie.flashback.R
-import com.mowtiie.flashback.ui.components.SectionTitle
 import com.mowtiie.flashback.ui.components.asHeading
 import com.mowtiie.flashback.ui.settings.ActionRow
 import kotlinx.coroutines.launch
@@ -58,9 +58,9 @@ internal fun NewDeckSheet(
             leadingIcon = R.drawable.ic_edit,
             onClick = { choose(onManual) },
         )
-        SectionTitle(
-            text = stringResource(R.string.new_deck_ai_section),
-            modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 4.dp),
+        HorizontalDivider(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            color = MaterialTheme.colorScheme.outlineVariant,
         )
         ActionRow(
             title = stringResource(R.string.new_deck_ai),
