@@ -26,7 +26,6 @@ import com.mowtiie.flashback.data.entity.Deck
 import com.mowtiie.flashback.data.entity.Tag
 import com.mowtiie.flashback.data.model.TagWithCount
 import com.mowtiie.flashback.theme.FlashbackTheme
-import com.mowtiie.flashback.ui.components.flashbackCardColors
 import com.mowtiie.flashback.ui.decks.DeckDetailScreen
 import com.mowtiie.flashback.ui.decks.DeckDetailUiState
 import com.mowtiie.flashback.ui.decks.DeckEditorScreen
@@ -162,21 +161,6 @@ class LayoutPolishTest {
             }
         }
         rule.onNodeWithText("Copy prompt").assertIsDisplayed()
-    }
-
-    // 12. Cards are a step lighter than the page in dark theme.
-    @Test
-    fun cardsAreDistinctFromThePageInDarkTheme() {
-        var container = androidx.compose.ui.graphics.Color.Unspecified
-        var page = androidx.compose.ui.graphics.Color.Unspecified
-        rule.setContent {
-            FlashbackTheme(darkTheme = true, dynamicColor = false) {
-                container = flashbackCardColors().containerColor
-                page = MaterialTheme.colorScheme.background
-            }
-        }
-        rule.waitForIdle()
-        assertNotEquals(page, container)
     }
 
     // 13. The AI ways to start a deck sit under their own title.

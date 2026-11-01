@@ -34,6 +34,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mowtiie.flashback.R
+import com.mowtiie.flashback.ui.components.rememberFabExpanded
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.foundation.layout.widthIn
 import com.mowtiie.flashback.ui.components.isShortWindow
@@ -80,6 +82,8 @@ fun DeckListScreen(
 ) {
     var choosing by rememberSaveable { mutableStateOf(false) }
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val listState = rememberLazyListState()
+    val fabExpanded = rememberFabExpanded(listState)
     val empty = state.loaded && state.items.isEmpty()
 
     Scaffold(
@@ -104,6 +108,7 @@ fun DeckListScreen(
                     label = stringResource(R.string.deck_add),
                     onClick = { choosing = true },
                     icon = { Icon(Icons.Default.Add, contentDescription = null) },
+                    expanded = fabExpanded,
                 )
             }
         },
@@ -116,6 +121,7 @@ fun DeckListScreen(
                 DeckListEmpty(state.isFiltered) { choosing = true }
             } else {
                 LazyColumn(
+                    state = listState,
                     contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 96.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {

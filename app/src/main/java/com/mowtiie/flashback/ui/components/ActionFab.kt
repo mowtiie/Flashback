@@ -17,11 +17,14 @@ fun ActionFab(
     onClick: () -> Unit,
     icon: @Composable () -> Unit,
     modifier: Modifier = Modifier,
+    /** False shows only the icon; the name stays for screen readers. */
+    expanded: Boolean = true,
 ) {
     ExtendedFloatingActionButton(
         onClick = onClick,
         icon = icon,
         text = { Text(label) },
+        expanded = expanded,
         modifier = modifier.semantics { contentDescription = label },
     )
 }

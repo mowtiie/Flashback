@@ -19,7 +19,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import com.mowtiie.flashback.ui.components.ActionFab
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.Card
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -36,7 +36,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mowtiie.flashback.R
-import com.mowtiie.flashback.ui.components.flashbackCardColors
+import com.mowtiie.flashback.ui.components.rememberFabExpanded
+import androidx.compose.foundation.lazy.rememberLazyListState
 import com.mowtiie.flashback.data.entity.Tag
 import com.mowtiie.flashback.data.model.TagWithCount
 import com.mowtiie.flashback.theme.FlashbackTheme
@@ -53,6 +54,8 @@ fun TagsRoute(viewModel: TagsViewModel, onOpenTag: (Long) -> Unit, onAddTag: () 
 @Composable
 fun TagsScreen(state: TagsUiState, onOpenTag: (Long) -> Unit, onAddTag: () -> Unit) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val listState = rememberLazyListState()
+    val fabExpanded = rememberFabExpanded(listState)
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -68,6 +71,7 @@ fun TagsScreen(state: TagsUiState, onOpenTag: (Long) -> Unit, onAddTag: () -> Un
                     label = stringResource(R.string.tag_add),
                     onClick = onAddTag,
                     icon = { Icon(Icons.Default.Add, contentDescription = null) },
+                    expanded = fabExpanded,
                 )
             }
         },
@@ -83,6 +87,7 @@ fun TagsScreen(state: TagsUiState, onOpenTag: (Long) -> Unit, onAddTag: () -> Un
             )
         } else {
             LazyColumn(
+                state = listState,
                 contentPadding = PaddingValues(
                     start = 16.dp,
                     end = 16.dp,
@@ -105,7 +110,7 @@ private fun TagCard(item: TagWithCount, onClick: () -> Unit) {
     val tag = item.tag
     val swatch = if (tag.color == 0) MaterialTheme.colorScheme.outline else Color(tag.color)
 
-    OutlinedCard(onClick = onClick, modifier = Modifier.fillMaxWidth(), colors = flashbackCardColors()) {
+    Card(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(16.dp),

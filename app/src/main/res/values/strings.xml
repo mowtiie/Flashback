@@ -24,7 +24,6 @@
 
     <string name="more_options">More options</string>
     <string name="action_cancel">Cancel</string>
-    <string name="action_delete">Delete</string>
     <string name="action_save">Save</string>
     <string name="study_undo">Undo</string>
 
@@ -51,8 +50,6 @@
     <string name="tag_add">New tag</string>
 
     <string name="deck_delete">Delete deck</string>
-    <string name="deck_delete_title">Delete this deck?</string>
-    <string name="deck_delete_body">Deleting %1$s removes its cards and their review history. You can undo it from the message that appears straight after.</string>
     <string name="deck_deleted">Deck deleted</string>
     <string name="deck_detail_empty_title">This deck is empty</string>
     <string name="deck_detail_empty_body">Add your first card to start studying.</string>
@@ -184,8 +181,6 @@
     <string name="tag_name_required">Enter a name for the tag</string>
     <string name="tag_name_taken">A tag with this name already exists</string>
     <string name="tag_delete">Delete tag</string>
-    <string name="tag_delete_title">Delete this tag?</string>
-    <string name="tag_delete_body">The tag is removed from every deck using it. The decks and their cards are untouched.</string>
     <string name="tag_deleted">Tag deleted</string>
     <string name="tag_unused">Not used yet</string>
     <plurals name="tag_deck_count">
@@ -220,8 +215,6 @@
     <string name="note_back_required">Enter the back of the card</string>
     <string name="note_saved">Card saved</string>
     <string name="note_delete">Delete card</string>
-    <string name="note_delete_title">Delete this card?</string>
-    <string name="note_delete_body">The card and its review history are removed. You can undo it from the message that appears straight after.</string>
     <string name="note_deleted">Card deleted</string>
     <string name="note_suspend">Suspend this card</string>
     <string name="note_suspend_help">A suspended card is skipped when studying until you turn this off.</string>
@@ -279,8 +272,6 @@
     <string name="generator_no_key_title">Add your API key first</string>
     <string name="generator_no_key_action">Open settings</string>
     <string name="generator_deck_name">Deck name</string>
-    <string name="generator_card_front">Front</string>
-    <string name="generator_card_back">Back</string>
     <string name="generator_remove_card">Remove card %1$s</string>
     <string name="generator_save">Save deck</string>
     <string name="generator_start_over">Start over</string>

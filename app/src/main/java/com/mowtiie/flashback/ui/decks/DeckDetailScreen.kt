@@ -22,7 +22,7 @@ import com.mowtiie.flashback.ui.components.ActionFab
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.Card
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -48,20 +48,22 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mowtiie.flashback.R
+import com.mowtiie.flashback.ui.settings.RowDivider
+import com.mowtiie.flashback.ui.settings.ActionRow
+import com.mowtiie.flashback.ui.components.rememberFabExpanded
+import androidx.compose.foundation.lazy.rememberLazyListState
 import com.mowtiie.flashback.ui.components.isShortWindow
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.material3.MediumTopAppBar
 import com.mowtiie.flashback.ui.components.TagChip
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import com.mowtiie.flashback.ui.components.flashbackCardColors
 import com.mowtiie.flashback.ui.study.AnswerMode
 import com.mowtiie.flashback.data.entity.Deck
 import com.mowtiie.flashback.data.io.deckExportFileName
 import com.mowtiie.flashback.data.model.NotePreview
 import com.mowtiie.flashback.repository.FlashbackRepository
 import com.mowtiie.flashback.theme.FlashbackTheme
-import com.mowtiie.flashback.ui.components.DeleteDialog
 import com.mowtiie.flashback.ui.components.EmptyState
 import com.mowtiie.flashback.ui.components.LightDarkPreviews
 import com.mowtiie.flashback.ui.export.rememberSaveDocumentLauncher
@@ -79,7 +81,6 @@ fun DeckDetailRoute(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val resources = LocalResources.current
-    var confirmDelete by rememberSaveable { mutableStateOf(false) }
 
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.refresh() }
 
@@ -107,24 +108,11 @@ fun DeckDetailRoute(
         onBack = onBack,
         onEditDeck = onEditDeck,
         onExportDeck = viewModel::exportDeck,
-        onDeleteDeck = { confirmDelete = true },
+        onDeleteDeck = viewModel::deleteDeck,
         onAddNote = onAddNote,
         onOpenNote = onOpenNote,
         onStudy = onStudy,
     )
-
-    val deckName = state.deck?.name
-    if (confirmDelete && deckName != null) {
-        DeleteDialog(
-            title = stringResource(R.string.deck_delete_title),
-            body = stringResource(R.string.deck_delete_body, deckName),
-            onDelete = {
-                confirmDelete = false
-                viewModel.deleteDeck()
-            },
-            onDismiss = { confirmDelete = false },
-        )
-    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -147,6 +135,9 @@ fun DeckDetailScreen(
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     }
 
+    val listState = rememberLazyListState()
+    val fabExpanded = rememberFabExpanded(listState)
+
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
@@ -167,7 +158,7 @@ fun DeckDetailScreen(
                 }
             }
             val actions: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit = {
-                DeckDetailActions(onAddNote, onEditDeck, onExportDeck, onDeleteDeck)
+                DeckDetailActions(onAddNote, onEditDeck)
             }
             if (shortWindow) {
                 TopAppBar(title = title, navigationIcon = navigationIcon, actions = actions, scrollBehavior = scrollBehavior)
@@ -181,20 +172,25 @@ fun DeckDetailScreen(
                     label = stringResource(R.string.deck_study_button, state.studyableCount),
                     onClick = onStudy,
                     icon = { Icon(painterResource(R.drawable.ic_school), contentDescription = null) },
+                    expanded = fabExpanded,
                 )
             }
         },
     ) { padding ->
         if (state.loaded && state.notes.isEmpty()) {
-            EmptyState(
-                title = stringResource(R.string.deck_detail_empty_title),
-                body = stringResource(R.string.deck_detail_empty_body),
-                actionLabel = stringResource(R.string.deck_detail_empty_action),
-                onAction = onAddNote,
-                modifier = Modifier.padding(padding),
-            )
+            Column(Modifier.padding(padding).padding(16.dp)) {
+                EmptyState(
+                    title = stringResource(R.string.deck_detail_empty_title),
+                    body = stringResource(R.string.deck_detail_empty_body),
+                    actionLabel = stringResource(R.string.deck_detail_empty_action),
+                    onAction = onAddNote,
+                    modifier = Modifier.weight(1f),
+                )
+                DeckManagement(onExportDeck, onDeleteDeck)
+            }
         } else {
             LazyColumn(
+                state = listState,
                 contentPadding = PaddingValues(
                     start = 16.dp,
                     end = 16.dp,
@@ -212,48 +208,40 @@ fun DeckDetailScreen(
                         onClick = { onOpenNote(note.id) },
                     )
                 }
+                item(key = "manage") { DeckManagement(onExportDeck, onDeleteDeck, Modifier.padding(top = 16.dp)) }
             }
         }
     }
 }
 
+/** Two actions at most in the bar; export and delete sit at the end of the page instead of an overflow menu. */
 @Composable
-private fun DeckDetailActions(
-    onAddNote: () -> Unit,
-    onEditDeck: () -> Unit,
-    onExportDeck: () -> Unit,
-    onDeleteDeck: () -> Unit,
-) {
-    var menuOpen by rememberSaveable { mutableStateOf(false) }
-
+private fun DeckDetailActions(onAddNote: () -> Unit, onEditDeck: () -> Unit) {
     IconButton(onClick = onAddNote) {
         Icon(Icons.Default.Add, contentDescription = stringResource(R.string.note_add))
     }
-    IconButton(onClick = { menuOpen = true }) {
-        Icon(Icons.Default.MoreVert, contentDescription = stringResource(R.string.more_options))
+    IconButton(onClick = onEditDeck) {
+        Icon(painterResource(R.drawable.ic_edit), contentDescription = stringResource(R.string.deck_editor_edit_title))
     }
-    DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
-        DropdownMenuItem(
-            text = { Text(stringResource(R.string.deck_editor_edit_title)) },
-            onClick = {
-                menuOpen = false
-                onEditDeck()
-            },
-        )
-        DropdownMenuItem(
-            text = { Text(stringResource(R.string.deck_export)) },
-            onClick = {
-                menuOpen = false
-                onExportDeck()
-            },
-        )
-        DropdownMenuItem(
-            text = { Text(stringResource(R.string.deck_delete)) },
-            onClick = {
-                menuOpen = false
-                onDeleteDeck()
-            },
-        )
+}
+
+@Composable
+private fun DeckManagement(onExport: () -> Unit, onDelete: () -> Unit, modifier: Modifier = Modifier) {
+    Card(modifier.fillMaxWidth()) {
+        Column(Modifier.padding(vertical = 8.dp)) {
+            ActionRow(
+                title = stringResource(R.string.deck_export),
+                onClick = onExport,
+                leadingIcon = R.drawable.ic_download,
+            )
+            RowDivider()
+            ActionRow(
+                title = stringResource(R.string.deck_delete),
+                onClick = onDelete,
+                leadingIcon = R.drawable.ic_delete,
+                destructive = true,
+            )
+        }
     }
 }
 
@@ -291,12 +279,11 @@ private fun DeckSummary(state: DeckDetailUiState) {
 
 @Composable
 private fun NoteCard(note: NotePreview, suspended: Boolean, onClick: () -> Unit) {
-    OutlinedCard(
+    Card(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
             .alpha(if (suspended) 0.6f else 1f),
-        colors = flashbackCardColors(),
     ) {
         Column(Modifier.padding(16.dp)) {
             Text(

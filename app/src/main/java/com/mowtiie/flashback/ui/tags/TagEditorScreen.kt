@@ -61,7 +61,6 @@ import com.mowtiie.flashback.ui.components.asHeading
 import com.mowtiie.flashback.data.entity.Tag
 import com.mowtiie.flashback.repository.FlashbackRepository
 import com.mowtiie.flashback.theme.FlashbackTheme
-import com.mowtiie.flashback.ui.components.DeleteDialog
 import com.mowtiie.flashback.ui.components.DiscardChangesDialog
 import com.mowtiie.flashback.ui.components.LightDarkPreviews
 import com.mowtiie.flashback.ui.components.TagChip
@@ -74,7 +73,6 @@ fun TagEditorRoute(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     var confirmDiscard by rememberSaveable { mutableStateOf(false) }
-    var confirmDelete by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(viewModel) {
         viewModel.eventFlow.collect { event ->
@@ -91,7 +89,7 @@ fun TagEditorRoute(
     TagEditorScreen(
         state = state,
         onBack = requestClose,
-        onDelete = { confirmDelete = true },
+        onDelete = viewModel::delete,
         onNameChange = viewModel::onNameChange,
         onDescriptionChange = viewModel::onDescriptionChange,
         onColorSelected = viewModel::onColorSelected,
@@ -105,17 +103,6 @@ fun TagEditorRoute(
                 onClose()
             },
             onKeepEditing = { confirmDiscard = false },
-        )
-    }
-    if (confirmDelete) {
-        DeleteDialog(
-            title = stringResource(R.string.tag_delete_title),
-            body = stringResource(R.string.tag_delete_body),
-            onDelete = {
-                confirmDelete = false
-                viewModel.delete()
-            },
-            onDismiss = { confirmDelete = false },
         )
     }
 }

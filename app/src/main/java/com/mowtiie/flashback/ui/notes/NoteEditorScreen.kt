@@ -53,7 +53,6 @@ import com.mowtiie.flashback.ui.settings.ChoiceRow
 import com.mowtiie.flashback.ui.study.AnswerMode
 import com.mowtiie.flashback.repository.FlashbackRepository
 import com.mowtiie.flashback.theme.FlashbackTheme
-import com.mowtiie.flashback.ui.components.DeleteDialog
 import com.mowtiie.flashback.ui.components.DiscardChangesDialog
 import com.mowtiie.flashback.ui.components.LightDarkPreviews
 
@@ -66,7 +65,6 @@ fun NoteEditorRoute(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     var confirmDiscard by rememberSaveable { mutableStateOf(false) }
-    var confirmDelete by rememberSaveable { mutableStateOf(false) }
     val frontFocus = remember { FocusRequester() }
 
     LaunchedEffect(viewModel) {
@@ -89,7 +87,7 @@ fun NoteEditorRoute(
         state = state,
         frontFocus = frontFocus,
         onBack = requestClose,
-        onDelete = { confirmDelete = true },
+        onDelete = viewModel::delete,
         onFrontChange = viewModel::onFrontChange,
         onBackChange = viewModel::onBackChange,
         onReverseChange = viewModel::onReverseChange,
@@ -107,17 +105,6 @@ fun NoteEditorRoute(
                 onClose()
             },
             onKeepEditing = { confirmDiscard = false },
-        )
-    }
-    if (confirmDelete) {
-        DeleteDialog(
-            title = stringResource(R.string.note_delete_title),
-            body = stringResource(R.string.note_delete_body),
-            onDelete = {
-                confirmDelete = false
-                viewModel.delete()
-            },
-            onDismiss = { confirmDelete = false },
         )
     }
 }

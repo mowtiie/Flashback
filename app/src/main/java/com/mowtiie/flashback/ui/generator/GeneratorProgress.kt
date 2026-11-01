@@ -9,7 +9,7 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -21,7 +21,6 @@ import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.mowtiie.flashback.R
-import com.mowtiie.flashback.ui.components.flashbackCardColors
 import com.mowtiie.flashback.ui.components.ConfirmDialog
 import com.mowtiie.flashback.ui.components.asHeading
 
@@ -99,7 +98,7 @@ internal fun SectionSummary(state: GeneratorUiState, enabled: Boolean, onRetry: 
             )
         }
         if (state.failedSections.isNotEmpty()) {
-            OutlinedCard(Modifier.fillMaxWidth().semantics { liveRegion = LiveRegionMode.Polite }, colors = flashbackCardColors()) {
+            Card(Modifier.fillMaxWidth().semantics { liveRegion = LiveRegionMode.Polite }) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(
                         text = pluralStringResource(

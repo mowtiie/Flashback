@@ -16,7 +16,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -34,7 +33,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mowtiie.flashback.R
-import com.mowtiie.flashback.ui.components.flashbackCardColors
 import com.mowtiie.flashback.ui.components.SectionTitle
 import com.mowtiie.flashback.ui.components.asHeading
 import com.mowtiie.flashback.data.model.CardStateBreakdown
@@ -118,7 +116,7 @@ private fun ColumnScope.StatisticsContent(data: StatisticsData) {
 
 @Composable
 private fun StatTile(value: String, label: String, modifier: Modifier = Modifier) {
-    OutlinedCard(modifier = modifier, colors = flashbackCardColors()) {
+    Card(modifier = modifier) {
         Column(Modifier.padding(16.dp)) {
             Text(
                 text = value,
@@ -147,7 +145,7 @@ private fun ActivityCard(days: List<DayBar>) {
         days.size,
         days.joinToString(", ") { it.count.toString() },
     )
-    OutlinedCard(Modifier.fillMaxWidth(), colors = flashbackCardColors()) {
+    Card(Modifier.fillMaxWidth()) {
         ActivityChart(days, description, Modifier.padding(16.dp))
     }
 }
@@ -165,7 +163,7 @@ private fun BreakdownCard(breakdown: CardStateBreakdown) {
     val legendText = entries.map { stringResource(R.string.stats_legend_entry, it.label, it.count) }
     val description = stringResource(R.string.stats_breakdown_desc, legendText.joinToString(", "))
 
-    OutlinedCard(Modifier.fillMaxWidth(), colors = flashbackCardColors()) {
+    Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp)) {
             SegmentBar(entries.map { it.count }, entries.map { it.color }, description)
             Text(

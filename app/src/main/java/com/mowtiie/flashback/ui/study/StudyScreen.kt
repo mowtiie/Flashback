@@ -46,6 +46,8 @@ import kotlinx.coroutines.flow.first
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -74,6 +76,9 @@ import kotlinx.coroutines.launch
 /** Width at which the card and the controls sit side by side. */
 private val TWO_PANE_MIN_WIDTH = 600.dp
 private const val FLIP_HALF_MS = 140
+
+/** Gap between the snackbar and the controls under it. */
+private val SNACKBAR_CLEARANCE = 8.dp
 
 @Immutable
 class StudyActions(
@@ -149,6 +154,7 @@ fun StudyScreen(
     val windowHeightDp = with(LocalDensity.current) { LocalWindowInfo.current.containerSize.height.toDp().value }
     // Typing on a short window: the top bar and counters give way so the question and the field both fit.
     val compact = isCompactForKeyboard(windowHeightDp, WindowInsets.isImeVisible)
+    var controlsHeight by remember { mutableIntStateOf(0) }
 
     Scaffold(
         topBar = { if (!compact) StudyTopBar(state, actions) },
@@ -163,11 +169,19 @@ fun StudyScreen(
                 val ending = state.ending
                 when {
                     ending != null -> StudyEndingContent(ending, actions.onBack)
-                    state.card != null -> StudyContent(state, state.card, actions, compact)
+                    state.card != null -> StudyContent(state, state.card, actions, compact) { controlsHeight = it }
                 }
             }
-            // At the top, so it never covers the answer and rating buttons.
-            SnackbarHost(snackbarHostState, Modifier.align(Alignment.TopCenter).padding(padding))
+            // At the bottom, above the controls, so it never covers the answer or rating buttons.
+            val lift = if (state.card != null) {
+                with(LocalDensity.current) { controlsHeight.toDp() } + SNACKBAR_CLEARANCE + if (compact) 8.dp else 16.dp
+            } else {
+                0.dp
+            }
+            SnackbarHost(
+                snackbarHostState,
+                Modifier.align(Alignment.BottomCenter).padding(padding).padding(bottom = lift),
+            )
         }
     }
 }
@@ -269,7 +283,13 @@ private fun Count(value: Int, labelRes: Int, color: androidx.compose.ui.graphics
 }
 
 @Composable
-private fun StudyContent(state: StudyUiState, card: StudyCardUi, actions: StudyActions, compact: Boolean) {
+private fun StudyContent(
+    state: StudyUiState,
+    card: StudyCardUi,
+    actions: StudyActions,
+    compact: Boolean,
+    onControlsHeight: (Int) -> Unit,
+) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val flip = remember { Animatable(0f) }
@@ -332,6 +352,8 @@ private fun StudyContent(state: StudyUiState, card: StudyCardUi, actions: StudyA
                         .fillMaxHeight()
                         .verticalScroll(paneScroll),
                 ) {
+                    // In two panes the controls are not at the bottom, so nothing needs to be cleared.
+                    LaunchedEffect(Unit) { onControlsHeight(0) }
                     StudyControls(state, actions, showAnswer)
                 }
             }
@@ -356,7 +378,7 @@ private fun StudyContent(state: StudyUiState, card: StudyCardUi, actions: StudyA
                     state = state,
                     actions = actions,
                     onShowAnswer = showAnswer,
-                    modifier = Modifier.padding(top = 16.dp),
+                    modifier = Modifier.padding(top = 16.dp).onSizeChanged { onControlsHeight(it.height) },
                 )
             }
         }

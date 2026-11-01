@@ -20,7 +20,7 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.Card
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -36,7 +36,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.mowtiie.flashback.ui.components.SectionTitle
-import com.mowtiie.flashback.ui.components.flashbackCardColors
 
 internal const val DISABLED_ALPHA = 0.5f
 
@@ -54,7 +53,7 @@ internal fun SectionHeader(@StringRes titleRes: Int) {
 
 @Composable
 internal fun SettingsCard(content: @Composable () -> Unit) {
-    OutlinedCard(Modifier.fillMaxWidth(), colors = flashbackCardColors()) {
+    Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(vertical = 8.dp)) { content() }
     }
 }
@@ -125,6 +124,8 @@ internal fun ActionRow(
     valueHighlighted: Boolean = true,
     @DrawableRes leadingIcon: Int? = null,
     enabled: Boolean = true,
+    /** For an action that removes something: error colour, and no chevron since nothing opens. */
+    destructive: Boolean = false,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -139,12 +140,16 @@ internal fun ActionRow(
             Icon(
                 painter = painterResource(leadingIcon),
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                tint = if (destructive) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(end = 16.dp).size(24.dp).testTag(ROW_ICON_TAG),
             )
         }
         Column(Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.bodyLarge)
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyLarge,
+                color = if (destructive) MaterialTheme.colorScheme.error else androidx.compose.ui.graphics.Color.Unspecified,
+            )
             if (body != null) {
                 Text(
                     text = body,
@@ -162,12 +167,14 @@ internal fun ActionRow(
             )
         }
         // The arrow tells a row that opens something from a line of text.
-        Icon(
-            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(start = 4.dp),
-        )
+        if (!destructive) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(start = 4.dp),
+            )
+        }
     }
 }
 

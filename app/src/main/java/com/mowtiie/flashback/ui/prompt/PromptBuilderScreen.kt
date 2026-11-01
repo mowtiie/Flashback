@@ -18,7 +18,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.Card
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -40,7 +40,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mowtiie.flashback.R
-import com.mowtiie.flashback.ui.components.flashbackCardColors
 import com.mowtiie.flashback.ui.components.SectionTitle
 import com.mowtiie.flashback.ui.components.asHeading
 import com.mowtiie.flashback.generator.CardTypes
@@ -105,6 +104,7 @@ fun PromptBuilderScreen(
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         // Copy and Share stay in reach however long the options above them get.
         bottomBar = {
             Surface(tonalElevation = 3.dp) {
@@ -164,7 +164,7 @@ fun PromptBuilderScreen(
                     modifier = Modifier.fillMaxWidth(),
                 )
                 SectionTitle(stringResource(R.string.prompt_preview_title))
-                OutlinedCard(Modifier.fillMaxWidth(), colors = flashbackCardColors()) {
+                Card(Modifier.fillMaxWidth()) {
                     Text(
                         text = state.prompt,
                         style = MaterialTheme.typography.bodySmall,
@@ -182,8 +182,6 @@ fun PromptBuilderScreen(
                     Text(stringResource(R.string.prompt_import))
                 }
             }
-            // At the top, so it never covers the import button.
-            SnackbarHost(snackbarHostState, Modifier.align(Alignment.TopCenter).padding(padding))
         }
     }
 }

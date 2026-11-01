@@ -31,7 +31,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.Card
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
@@ -55,7 +55,6 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mowtiie.flashback.R
 import com.mowtiie.flashback.ui.components.errorTrailingIcon
-import com.mowtiie.flashback.ui.components.flashbackCardColors
 import com.mowtiie.flashback.ui.components.asHeading
 import com.mowtiie.flashback.data.io.DeckArchive
 import com.mowtiie.flashback.generator.CardCount
@@ -327,7 +326,7 @@ private fun ReviewPage(state: GeneratorUiState, actions: GeneratorActions) {
 
 @Composable
 private fun DraftCard(note: DeckArchive.Note, enabled: Boolean, onRemove: () -> Unit) {
-    OutlinedCard(Modifier.fillMaxWidth(), colors = flashbackCardColors()) {
+    Card(Modifier.fillMaxWidth()) {
         Row(
             verticalAlignment = Alignment.Top,
             modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 8.dp),
@@ -416,7 +415,7 @@ private fun grouped(count: Int): String = NumberFormat.getIntegerInstance().form
 
 @Composable
 private fun PdfCard(state: GeneratorUiState, onRemove: () -> Unit) {
-    OutlinedCard(Modifier.fillMaxWidth(), colors = flashbackCardColors()) {
+    Card(Modifier.fillMaxWidth()) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 8.dp),

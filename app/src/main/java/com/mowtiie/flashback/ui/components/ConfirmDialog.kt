@@ -37,15 +37,3 @@ fun DiscardChangesDialog(onDiscard: () -> Unit, onKeepEditing: () -> Unit) {
         onDismiss = onKeepEditing,
     )
 }
-
-@Composable
-fun DeleteDialog(title: String, body: String, onDelete: () -> Unit, onDismiss: () -> Unit) {
-    ConfirmDialog(
-        title = title,
-        body = body,
-        confirmLabel = stringResource(R.string.action_delete),
-        dismissLabel = stringResource(R.string.action_cancel),
-        onConfirm = onDelete,
-        onDismiss = onDismiss,
-    )
-}

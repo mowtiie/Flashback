@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.TextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -83,7 +83,7 @@ private fun ApiKeyDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.settings_generator_key_title, provider.displayName)) },
         text = {
-            OutlinedTextField(
+            TextField(
                 value = key,
                 onValueChange = { key = it },
                 label = { Text(stringResource(R.string.settings_generator_key_hint)) },

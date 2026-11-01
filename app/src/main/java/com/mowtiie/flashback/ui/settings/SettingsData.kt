@@ -13,7 +13,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.testTag
 import kotlinx.coroutines.launch
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.TextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -159,7 +159,7 @@ private fun PasteDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.import_paste_title)) },
         text = {
-            OutlinedTextField(
+            TextField(
                 value = text,
                 onValueChange = onTextChange,
                 label = { Text(stringResource(R.string.import_paste_hint)) },
