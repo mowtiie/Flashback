@@ -48,8 +48,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mowtiie.flashback.R
-import com.mowtiie.flashback.ui.settings.RowDivider
-import com.mowtiie.flashback.ui.settings.ActionRow
 import com.mowtiie.flashback.ui.components.rememberFabExpanded
 import androidx.compose.foundation.lazy.rememberLazyListState
 import com.mowtiie.flashback.ui.components.isShortWindow
@@ -158,7 +156,7 @@ fun DeckDetailScreen(
                 }
             }
             val actions: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit = {
-                DeckDetailActions(onAddNote, onEditDeck)
+                DeckDetailActions(onAddNote, onEditDeck, onExportDeck, onDeleteDeck)
             }
             if (shortWindow) {
                 TopAppBar(title = title, navigationIcon = navigationIcon, actions = actions, scrollBehavior = scrollBehavior)
@@ -186,7 +184,6 @@ fun DeckDetailScreen(
                     onAction = onAddNote,
                     modifier = Modifier.weight(1f),
                 )
-                DeckManagement(onExportDeck, onDeleteDeck)
             }
         } else {
             LazyColumn(
@@ -208,40 +205,49 @@ fun DeckDetailScreen(
                         onClick = { onOpenNote(note.id) },
                     )
                 }
-                item(key = "manage") { DeckManagement(onExportDeck, onDeleteDeck, Modifier.padding(top = 16.dp)) }
             }
         }
     }
 }
 
-/** Two actions at most in the bar; export and delete sit at the end of the page instead of an overflow menu. */
+/** Add and edit are the main actions; export and delete are in the overflow menu, so they never need a scroll. */
 @Composable
-private fun DeckDetailActions(onAddNote: () -> Unit, onEditDeck: () -> Unit) {
+private fun DeckDetailActions(
+    onAddNote: () -> Unit,
+    onEditDeck: () -> Unit,
+    onExport: () -> Unit,
+    onDelete: () -> Unit,
+) {
+    var menuOpen by rememberSaveable { mutableStateOf(false) }
+
     IconButton(onClick = onAddNote) {
         Icon(Icons.Default.Add, contentDescription = stringResource(R.string.note_add))
     }
     IconButton(onClick = onEditDeck) {
         Icon(painterResource(R.drawable.ic_edit), contentDescription = stringResource(R.string.deck_editor_edit_title))
     }
-}
-
-@Composable
-private fun DeckManagement(onExport: () -> Unit, onDelete: () -> Unit, modifier: Modifier = Modifier) {
-    Card(modifier.fillMaxWidth()) {
-        Column(Modifier.padding(vertical = 8.dp)) {
-            ActionRow(
-                title = stringResource(R.string.deck_export),
-                onClick = onExport,
-                leadingIcon = R.drawable.ic_download,
-            )
-            RowDivider()
-            ActionRow(
-                title = stringResource(R.string.deck_delete),
-                onClick = onDelete,
-                leadingIcon = R.drawable.ic_delete,
-                destructive = true,
-            )
-        }
+    IconButton(onClick = { menuOpen = true }) {
+        Icon(Icons.Default.MoreVert, contentDescription = stringResource(R.string.more_options))
+    }
+    DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+        DropdownMenuItem(
+            text = { Text(stringResource(R.string.deck_export)) },
+            leadingIcon = { Icon(painterResource(R.drawable.ic_download), contentDescription = null) },
+            onClick = {
+                menuOpen = false
+                onExport()
+            },
+        )
+        DropdownMenuItem(
+            text = { Text(stringResource(R.string.deck_delete), color = MaterialTheme.colorScheme.error) },
+            leadingIcon = {
+                Icon(painterResource(R.drawable.ic_delete), contentDescription = null, tint = MaterialTheme.colorScheme.error)
+            },
+            onClick = {
+                menuOpen = false
+                onDelete()
+            },
+        )
     }
 }
 

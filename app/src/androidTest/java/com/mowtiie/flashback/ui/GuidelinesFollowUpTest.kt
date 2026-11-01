@@ -58,22 +58,25 @@ class GuidelinesFollowUpTest {
 
     private val oneNote = listOf(NotePreview(1, "hola", "hello", false))
 
-    // 2. Two actions in the bar and no overflow menu.
+    // 2. Add and edit in the bar; export and delete in the overflow menu, so a long deck needs no scrolling.
     @Test
-    fun theDeckPageBarHasTwoActionsAndNoOverflowMenu() {
+    fun theDeckPageBarHasAddEditAndAnOverflowMenu() {
         deckPage(oneNote)
-        rule.onAllNodes(hasContentDescription("More options")).assertCountEquals(0)
         rule.onNode(hasContentDescription("Add card")).assertExists()
         rule.onNode(hasContentDescription("Edit deck")).assertExists()
+        rule.onNode(hasContentDescription("More options")).assertExists()
+        rule.onNodeWithText("Delete deck").assertDoesNotExist()
     }
 
     @Test
-    fun exportAndDeleteSitAtTheEndOfTheDeckPage() {
+    fun exportAndDeleteAreInTheOverflowMenu() {
         var exported = 0
         var deleted = 0
         deckPage(oneNote, onDelete = { deleted++ }, onExport = { exported++ })
-        rule.onNodeWithText("Export deck").performScrollTo().performClick()
-        rule.onNodeWithText("Delete deck").performScrollTo().performClick()
+        rule.onNode(hasContentDescription("More options")).performClick()
+        rule.onNodeWithText("Export deck").performClick()
+        rule.onNode(hasContentDescription("More options")).performClick()
+        rule.onNodeWithText("Delete deck").performClick()
         assertEquals(1, exported)
         // 13. Deleting acts at once; the Undo message that follows is the safety net.
         assertEquals(1, deleted)
@@ -82,6 +85,7 @@ class GuidelinesFollowUpTest {
     @Test
     fun anEmptyDeckCanStillBeExportedAndDeleted() {
         deckPage(emptyList())
+        rule.onNode(hasContentDescription("More options")).performClick()
         rule.onNodeWithText("Export deck").assertExists()
         rule.onNodeWithText("Delete deck").assertExists()
     }
