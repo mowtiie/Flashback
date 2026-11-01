@@ -1,6 +1,7 @@
 package com.mowtiie.flashback.generator
 
 import com.mowtiie.flashback.FakePreferenceStore
+import com.mowtiie.flashback.ui.study.AnswerMode
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -15,20 +16,21 @@ class LocalCardGeneratorTest {
         var system = ""
         var user = ""
         var calls = 0
+        var stopAsked: Boolean? = null
 
-        override suspend fun complete(system: String, user: String): String {
+        override suspend fun complete(system: String, user: String, shouldStop: (String) -> Boolean): String {
             calls++
             this.system = system
             this.user = user
+            stopAsked = shouldStop(reply)
             return reply
         }
     }
 
-    private val goodReply =
-        """{"version":1,"decks":[{"name":"Cells","notes":[{"front":"Powerhouse?","back":"Mitochondria"}]}]}"""
+    private val goodReply = "Title: Cells\n\nQ: Powerhouse?\nA: Mitochondria\n"
 
     @Test
-    fun parsesTheModelReplyIntoADeck() = runTest {
+    fun buildsADeckFromTheModelLines() = runTest {
         val deck = LocalCardGenerator(FakeModel(goodReply)).generate(textRequest("Mitochondria make energy."))
 
         assertEquals("Cells", deck.name)
@@ -36,20 +38,37 @@ class LocalCardGeneratorTest {
     }
 
     @Test
-    fun acceptsAReplyInACodeFence() = runTest {
-        val deck = LocalCardGenerator(FakeModel("```json\n$goodReply\n```")).generate(textRequest("x"))
+    fun namesTheDeckFromTheMaterialWhenTheModelGivesNoTitle() = runTest {
+        val deck = LocalCardGenerator(FakeModel("Q: One?\nA: Yes\n")).generate(textRequest("Cell biology\nMitochondria make ATP."))
 
-        assertEquals(1, deck.notes.size)
+        assertEquals("Cell biology", deck.name)
     }
 
     @Test
-    fun asksForJsonAndWrapsTheMaterial() = runTest {
+    fun asksForPlainLinesAndWrapsTheMaterial() = runTest {
         val model = FakeModel(goodReply)
         LocalCardGenerator(model).generate(textRequest("Some notes"))
 
-        assertTrue(model.system.contains("Reply with JSON only"))
+        assertTrue(model.system.contains("\nQ: ") && model.system.contains("\nA: "))
+        assertFalse(model.system.contains("JSON"))
         assertTrue(model.user.contains("<material>"))
         assertTrue(model.user.contains("Some notes"))
+    }
+
+    @Test
+    fun tellsTheModelToStopWhenItLoops() = runTest {
+        val model = FakeModel("Q: One?\nA: Yes\n\nQ: One?\nA: Yes\n\nQ: Two?\nA: ")
+        LocalCardGenerator(model).generate(textRequest("x"))
+
+        assertEquals(true, model.stopAsked)
+    }
+
+    @Test
+    fun appliesTheChosenCardTypes() = runTest {
+        val request = GeneratorRequest(GeneratorInput.Text("x"), cardTypes = CardTypes.Type)
+        val deck = LocalCardGenerator(FakeModel(goodReply)).generate(request)
+
+        assertEquals(AnswerMode.Type.value, deck.notes.single().answerMode)
     }
 
     @Test
@@ -65,12 +84,12 @@ class LocalCardGeneratorTest {
     }
 
     @Test
-    fun reportsAReplyThatIsNotJson() = runTest {
+    fun reportsAReplyWithNoCards() = runTest {
         try {
             LocalCardGenerator(FakeModel("Sure! Here are some cards.")).generate(textRequest("x"))
             fail("expected a GeneratorException")
         } catch (e: GeneratorException) {
-            assertEquals(FailureKind.Other, e.kind)
+            assertTrue(e.message!!.contains("usable cards"))
         }
     }
 
