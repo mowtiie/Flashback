@@ -369,4 +369,7 @@
     <string name="deck_detail_counts">%1$d new · %2$d learning · %3$d due</string>
     <string name="new_deck_ai_section">With AI</string>
     <string name="field_error">Error</string>
+    <string name="settings_about_header">About</string>
+    <string name="settings_privacy_policy">Privacy policy</string>
+    <string name="settings_privacy_policy_body">What stays on your device and what the optional AI generator sends.</string>
 </resources>

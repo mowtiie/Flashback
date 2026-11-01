@@ -109,4 +109,12 @@ class SettingsScreenTest {
         show(SettingsUiState(reminderEnabled = true))
         rule.onNode(hasText("Reminder time") and hasClickAction()).performScrollTo().assertIsEnabled()
     }
+
+    @Test
+    fun thePrivacyPolicyIsLinkedFromSettings() {
+        var opened = 0
+        show(actions = SettingsActions(onOpenPrivacyPolicy = { opened++ }))
+        rule.onNodeWithText("Privacy policy").performScrollTo().performClick()
+        org.junit.Assert.assertEquals(1, opened)
+    }
 }

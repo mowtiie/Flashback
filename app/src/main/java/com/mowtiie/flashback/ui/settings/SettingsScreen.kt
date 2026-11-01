@@ -1,6 +1,9 @@
 package com.mowtiie.flashback.ui.settings
 
 import android.Manifest
+import android.net.Uri
+import android.content.Intent
+import android.content.ActivityNotFoundException
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
@@ -50,6 +53,7 @@ class SettingsActions(
     val onGeneratorProvider: (GeneratorProvider) -> Unit = {},
     val onGeneratorKey: (String) -> Unit = {},
     val onClearGeneratorKey: () -> Unit = {},
+    val onOpenPrivacyPolicy: () -> Unit = {},
 )
 
 @Composable
@@ -130,6 +134,13 @@ fun SettingsRoute(viewModel: SettingsViewModel, transferViewModel: DataTransferV
             onGeneratorProvider = viewModel::setGeneratorProvider,
             onGeneratorKey = viewModel::setGeneratorKey,
             onClearGeneratorKey = viewModel::clearGeneratorKey,
+            onOpenPrivacyPolicy = {
+                try {
+                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(AppLinks.PRIVACY_POLICY)))
+                } catch (_: ActivityNotFoundException) {
+                    // No browser installed: nothing to open.
+                }
+            },
         )
     }
 
@@ -179,7 +190,20 @@ fun SettingsScreen(
             RemindersSection(state, actions)
             GeneratorSection(state, actions)
             DataSection(transferState, transferActions)
+            AboutSection(actions)
         }
+    }
+}
+
+@Composable
+private fun AboutSection(actions: SettingsActions) {
+    SectionHeader(R.string.settings_about_header)
+    SettingsCard {
+        ActionRow(
+            title = stringResource(R.string.settings_privacy_policy),
+            body = stringResource(R.string.settings_privacy_policy_body),
+            onClick = actions.onOpenPrivacyPolicy,
+        )
     }
 }
 
