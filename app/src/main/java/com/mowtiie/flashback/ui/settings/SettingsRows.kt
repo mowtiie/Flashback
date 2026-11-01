@@ -35,6 +35,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import com.mowtiie.flashback.ui.components.SectionTitle
@@ -195,6 +196,7 @@ internal fun Footnote(text: String) {
     Text(
         text = text,
         style = MaterialTheme.typography.bodySmall,
+        fontStyle = FontStyle.Italic,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier.padding(horizontal = 16.dp),
     )
@@ -275,6 +277,7 @@ internal fun <T> ChoiceRow(
             Text(
                 text = hint,
                 style = MaterialTheme.typography.bodySmall,
+                fontStyle = FontStyle.Italic,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 8.dp),
             )
