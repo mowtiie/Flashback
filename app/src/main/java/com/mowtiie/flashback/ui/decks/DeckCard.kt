@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Card
 import androidx.compose.material3.Text
@@ -96,7 +96,8 @@ fun DeckCard(
 
             val studyable = summary.studyableCount()
             if (studyable > 0) {
-                FilledTonalButton(
+                // Not tonal: its container is almost the card's own colour in the default theme.
+                Button(
                     onClick = onStudy,
                     modifier = Modifier
                         .align(Alignment.End)
