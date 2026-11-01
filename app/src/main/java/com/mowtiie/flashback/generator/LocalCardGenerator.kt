@@ -15,7 +15,7 @@ class LocalCardGenerator(private val model: TextModel) : CardGenerator {
     override suspend fun generate(request: GeneratorRequest): DeckArchive.Deck {
         val text = (request.input as? GeneratorInput.Text)?.text
             ?: throw GeneratorException("The on-device model reads text only. Paste the text, or pick another provider for PDFs.")
-        val max = request.maxCards
+        val max = maxCards(request, text.length)
         val reply = model.complete(CardPrompt.plain(request), CardPrompt.material(text)) { PlainCards.shouldStop(it, max) }
         val parsed = PlainCards.parse(reply, complete = true)
         if (parsed.cards.isEmpty()) {
@@ -24,5 +24,18 @@ class LocalCardGenerator(private val model: TextModel) : CardGenerator {
             )
         }
         return deckFromModelText(PlainCards.toArchiveJson(parsed, PlainCards.titleFrom(text)), max, request.cardTypes)
+    }
+
+    companion object {
+        /** About this many characters of material per card at most, so a section cannot run on past its own text. */
+        const val CHARS_PER_CARD_CEILING = 60
+
+        /** For Everything the request has no real limit, so the length of the text sets one. */
+        fun maxCards(request: GeneratorRequest, chars: Int): Int =
+            if (request.coverage == Coverage.Everything) {
+                minOf(request.maxCards, chars / CHARS_PER_CARD_CEILING + 3)
+            } else {
+                request.maxCards
+            }
     }
 }

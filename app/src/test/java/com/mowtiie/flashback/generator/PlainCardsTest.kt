@@ -86,6 +86,77 @@ class PlainCardsTest {
         assertEquals(PlainCards.DEFAULT_TITLE, PlainCards.titleFrom("  \n "))
     }
 
+    private fun cards(vararg pairs: Pair<String, String>) = pairs.map { PlainCards.Card(it.first, it.second) }
+
+    @Test
+    fun dropsAQuestionThatContainsAnEarlierOne() {
+        val kept = PlainCards.withoutRepeats(
+            cards(
+                "What is the nickname for mitochondria because of their role in energy production?" to "The powerhouse of the cell",
+                "What is the nickname for mitochondria?" to "Powerhouses of the cell",
+            ),
+        )
+
+        assertEquals(1, kept.size)
+    }
+
+    @Test
+    fun dropsTheSameAnswerToASimilarQuestion() {
+        val kept = PlainCards.withoutRepeats(
+            cards(
+                "What do humans have in most body cells, arranged in 23 pairs?" to "46 chromosomes",
+                "How many chromosomes do humans have in most body cells?" to "46 chromosomes",
+            ),
+        )
+
+        assertEquals(1, kept.size)
+    }
+
+    @Test
+    fun keepsQuestionsThatDifferByOneImportantWord() {
+        val kept = PlainCards.withoutRepeats(
+            cards(
+                "What is the expected genotype ratio when crossing two heterozygous parents?" to "One AA to two Aa to one aa",
+                "What is the expected phenotype ratio when crossing two heterozygous parents?" to "Three dominant to one recessive",
+                "What is the S phase of interphase?" to "The DNA is copied.",
+                "What is the G2 phase of interphase?" to "The cell checks the copied DNA.",
+                "What is a homozygous organism?" to "An organism with two identical alleles",
+                "What is a heterozygous organism?" to "An organism with two different alleles",
+            ),
+        )
+
+        assertEquals(6, kept.size)
+    }
+
+    @Test
+    fun keepsShortSharedAnswers() {
+        val kept = PlainCards.withoutRepeats(
+            cards("Is the sky blue?" to "Yes", "Is grass green?" to "Yes", "Is ice cold?" to "Yes"),
+        )
+
+        assertEquals(3, kept.size)
+    }
+
+    @Test
+    fun stopsAfterTwoRewordedRepeats() {
+        val text = "Q: What is the nickname for mitochondria?\nA: Powerhouse of the cell\n\n" +
+            "Q: What is the nickname for mitochondria because of their energy role?\nA: Powerhouse\n\n" +
+            "Q: What do humans have in most body cells arranged in pairs?\nA: 46 chromosomes\n\n" +
+            "Q: How many chromosomes do humans have in most body cells?\nA: 46 chromosomes\n\n" +
+            "Q: Next?\nA: "
+
+        assertTrue(PlainCards.shouldStop(text, maxCards = 30))
+    }
+
+    @Test
+    fun doesNotStopAfterOneRewordedRepeat() {
+        val text = "Q: What is the nickname for mitochondria?\nA: Powerhouse of the cell\n\n" +
+            "Q: What is the nickname for mitochondria because of their energy role?\nA: Powerhouse\n\n" +
+            "Q: Next question here?\nA: "
+
+        assertFalse(PlainCards.shouldStop(text, maxCards = 30))
+    }
+
     @Test
     fun buildsArchiveJsonWithoutRepeats() {
         val parsed = PlainCards.parse("Title: T\nQ: One?\nA: Yes\nQ: ONE?\nA: Yes\nQ: Two?\nA: No\n", complete = true)

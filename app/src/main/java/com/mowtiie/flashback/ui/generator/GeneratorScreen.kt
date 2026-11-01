@@ -251,7 +251,7 @@ private fun InputPage(state: GeneratorUiState, actions: GeneratorActions) {
 @Composable
 private fun sourceSupport(state: GeneratorUiState): String = when {
     state.sourceTooLong ->
-        stringResource(R.string.generator_source_too_long, grouped(GeneratorPlan.maxChars(state.coverage)))
+        stringResource(R.string.generator_source_too_long, grouped(GeneratorPlan.maxChars(state.coverage, state.provider)))
     state.coverage == Coverage.Everything && state.source.isNotBlank() -> {
         val size = stringResource(R.string.generator_size, grouped(state.source.length))
         val estimate = pluralStringResource(
@@ -265,7 +265,7 @@ private fun sourceSupport(state: GeneratorUiState): String = when {
     else -> stringResource(
         R.string.generator_source_count,
         grouped(state.source.length),
-        grouped(GeneratorPlan.maxChars(state.coverage)),
+        grouped(GeneratorPlan.maxChars(state.coverage, state.provider)),
     )
 }
 

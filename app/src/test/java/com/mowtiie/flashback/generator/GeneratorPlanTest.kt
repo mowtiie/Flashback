@@ -41,3 +41,18 @@ class GeneratorPlanTest {
         assertEquals(GeneratorLimits.KEY_POINTS_MAX_CHARS, GeneratorPlan.maxChars(Coverage.KeyPoints))
     }
 }
+
+class GeneratorPlanProviderTest {
+    @org.junit.Test
+    fun onDeviceUsesShorterSectionsThanTheOnlineProviders() {
+        val chars = 22_000
+        org.junit.Assert.assertEquals(3, GeneratorPlan.requests(Coverage.Everything, chars, false, GeneratorProvider.Anthropic))
+        org.junit.Assert.assertEquals(8, GeneratorPlan.requests(Coverage.Everything, chars, false, GeneratorProvider.OnDevice))
+    }
+
+    @org.junit.Test
+    fun onDeviceKeyPointsTakesLessText() {
+        org.junit.Assert.assertEquals(6_000, GeneratorPlan.maxChars(Coverage.KeyPoints, GeneratorProvider.OnDevice))
+        org.junit.Assert.assertEquals(GeneratorLimits.KEY_POINTS_MAX_CHARS, GeneratorPlan.maxChars(Coverage.KeyPoints, GeneratorProvider.Gemini))
+    }
+}

@@ -104,6 +104,48 @@ class LocalCardGeneratorTest {
     }
 
     @Test
+    fun doesNotShowTheModelTheCardsAlreadyMade() = runTest {
+        val model = FakeModel(goodReply)
+        val request = GeneratorRequest(
+            GeneratorInput.Text("Some notes"),
+            coverage = Coverage.Everything,
+            known = listOf("What makes ATP?", "Where is DNA kept?"),
+        )
+        LocalCardGenerator(model).generate(request)
+
+        assertFalse(model.system.contains("What makes ATP?"))
+        assertFalse(model.system.contains("already_made"))
+    }
+
+    @Test
+    fun aSectionCannotAskForMoreCardsThanItsTextAllows() {
+        val everything = GeneratorRequest(GeneratorInput.Text("x"), coverage = Coverage.Everything)
+        assertEquals(53, LocalCardGenerator.maxCards(everything, 3_000))
+        assertEquals(3, LocalCardGenerator.maxCards(everything, 0))
+
+        val keyPoints = GeneratorRequest(GeneratorInput.Text("x"), CardCount.Few, coverage = Coverage.KeyPoints)
+        assertEquals(CardCount.Few.max, LocalCardGenerator.maxCards(keyPoints, 3_000))
+    }
+
+    @Test
+    fun mergingOnDeviceSectionsDropsRewordedRepeats() {
+        fun deck(vararg pairs: Pair<String, String>) = com.mowtiie.flashback.data.io.DeckArchive.Deck(
+            name = "d",
+            notes = pairs.map { com.mowtiie.flashback.data.io.DeckArchive.Note(front = it.first, back = it.second) },
+        )
+        val first = deck("What is the nickname for mitochondria?" to "Powerhouse of the cell")
+        val second = deck(
+            "What is the nickname for mitochondria because of their role in energy production?" to "The powerhouse",
+            "What is the endosymbiotic theory?" to "Mitochondria were once free-living bacteria",
+        )
+
+        assertEquals(3, CoverageMerger.merge(listOf(first, second)).notes.size)
+        val merged = CoverageMerger.merge(listOf(first, second), nearDuplicates = true)
+        assertEquals(2, merged.notes.size)
+        assertEquals(listOf(1, 1), merged.perSection)
+    }
+
+    @Test
     fun onDeviceNeedsAModelNotAKey() {
         val prefs = GeneratorPreferences(FakePreferenceStore())
         prefs.provider = GeneratorProvider.OnDevice

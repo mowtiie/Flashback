@@ -66,7 +66,47 @@ internal object PlainCards {
         val cards = parse(text, complete = false).cards
         if (cards.size >= maxCards) return true
         val fronts = cards.map { it.front.lowercase().trim() }
-        return fronts.size != fronts.distinct().size
+        if (fronts.size != fronts.distinct().size) return true
+        return cards.size - withoutRepeats(cards).size >= REPEATS_BEFORE_STOP
+    }
+
+    private const val REPEATS_BEFORE_STOP = 2
+
+    private val wordPattern = Regex("""[\p{L}\p{N}]+""")
+    private val stopWords = setOf(
+        "what", "is", "are", "the", "a", "an", "of", "in", "to", "and", "or", "for", "does", "do", "did",
+        "which", "who", "how", "by", "as", "on", "at", "with", "that", "this", "its", "it", "be", "can",
+        "when", "into", "from", "was", "were", "has", "have",
+    )
+
+    private fun contentWords(text: String): Set<String> =
+        wordPattern.findAll(text.lowercase()).map { it.value }.filter { it !in stopWords }.toSet()
+
+    private fun plainBack(text: String): String =
+        text.lowercase().replace(Regex("""\(.*?\)"""), "").filter { it.isLetterOrDigit() || it == ' ' }.trim()
+
+    /**
+     * A reworded question the model has already asked: its key words sit inside an earlier question,
+     * or the answer is the same and the questions share most of their key words.
+     * Questions that differ by a word, like "genotype" and "phenotype", are kept.
+     */
+    private fun repeats(card: Card, earlier: Card): Boolean =
+        isRepeat(card.front, card.back, earlier.front, earlier.back)
+
+    internal fun isRepeat(front: String, back: String, earlierFront: String, earlierBack: String): Boolean {
+        val a = contentWords(front)
+        val b = contentWords(earlierFront)
+        val small = if (a.size <= b.size) a else b
+        val large = if (a.size <= b.size) b else a
+        if (small.size >= 2 && large.containsAll(small)) return true
+        val sameBack = plainBack(back).let { it.length >= 6 && it == plainBack(earlierBack) }
+        return sameBack && a.intersect(b).size >= 3
+    }
+
+    internal fun withoutRepeats(cards: List<Card>): List<Card> {
+        val kept = mutableListOf<Card>()
+        for (card in cards) if (kept.none { repeats(card, it) }) kept += card
+        return kept
     }
 
     const val DEFAULT_TITLE = "Generated cards"
@@ -87,11 +127,8 @@ internal object PlainCards {
     /** The archive JSON for [deckFromModelText], so validation stays in one place. */
     fun toArchiveJson(parsed: Parsed, fallbackTitle: String = DEFAULT_TITLE): String {
         val notes = JSONArray()
-        val seen = HashSet<String>()
-        for (card in parsed.cards) {
-            if (seen.add(card.front.lowercase())) {
-                notes.put(JSONObject().put("front", card.front).put("back", card.back))
-            }
+        for (card in withoutRepeats(parsed.cards)) {
+            notes.put(JSONObject().put("front", card.front).put("back", card.back))
         }
         val deck = JSONObject().put("name", parsed.title ?: fallbackTitle).put("notes", notes)
         return JSONObject().put("version", 1).put("decks", JSONArray().put(deck)).toString()

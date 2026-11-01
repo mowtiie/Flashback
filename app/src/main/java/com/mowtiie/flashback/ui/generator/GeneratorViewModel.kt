@@ -64,12 +64,12 @@ data class GeneratorUiState(
     /** A run of many requests waits for a yes before anything is sent. */
     val confirming: Boolean = false,
 ) {
-    val sourceTooLong: Boolean get() = source.length > GeneratorPlan.maxChars(coverage)
+    val sourceTooLong: Boolean get() = source.length > GeneratorPlan.maxChars(coverage, provider)
 
     val hasPdf: Boolean get() = pdfName != null
 
     /** A rough count from the length, shown before the real split is known. */
-    val estimatedRequests: Int get() = GeneratorPlan.requests(coverage, source.trim().length, hasPdf)
+    val estimatedRequests: Int get() = GeneratorPlan.requests(coverage, source.trim().length, hasPdf, provider)
 
     val canGenerate: Boolean
         get() = hasApiKey && stage == GeneratorStage.Input && !confirming && cardTypes != null &&
@@ -164,7 +164,7 @@ class GeneratorViewModel(
                 single(GeneratorRequest(input, state.cardCount, types, state.coverage))
                 return@launch
             }
-            sections = withContext(ioDispatcher) { MaterialSplitter.split(state.source, GeneratorLimits.SECTION_CHARS) }
+            sections = withContext(ioDispatcher) { MaterialSplitter.split(state.source, state.provider.sectionChars) }
             if (provider().usesNetwork && GeneratorPlan.needsConfirmation(sections.size)) {
                 _uiState.update { it.copy(stage = GeneratorStage.Input, confirming = true, sectionTotal = sections.size) }
             } else {
@@ -232,7 +232,10 @@ class GeneratorViewModel(
         finish()
     }
 
-    private fun merged() = CoverageMerger.merge(sections.indices.map { results[it] })
+    private fun merged() = CoverageMerger.merge(
+        sections.indices.map { results[it] },
+        nearDuplicates = !provider().usesNetwork,
+    )
 
     private fun publish() {
         val merged = merged()

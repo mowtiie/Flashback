@@ -87,8 +87,17 @@ object GeneratorLimits {
 }
 
 /** Anthropic and Gemini need the user's own key. On-device needs a model file and sends nothing. */
-enum class GeneratorProvider(val displayName: String, val usesNetwork: Boolean = true) {
+enum class GeneratorProvider(
+    val displayName: String,
+    val usesNetwork: Boolean = true,
+    /** Characters per request when everything is covered. */
+    val sectionChars: Int = GeneratorLimits.SECTION_CHARS,
+    /** Most text for Key points, which is one request. */
+    val keyPointsChars: Int = GeneratorLimits.KEY_POINTS_MAX_CHARS,
+) {
     Anthropic("Anthropic"),
     Gemini("Google Gemini"),
-    OnDevice("On-device model", usesNetwork = false),
+
+    // A small model skips and repeats on long input, so it gets short sections.
+    OnDevice("On-device model", usesNetwork = false, sectionChars = 3_000, keyPointsChars = 6_000),
 }
