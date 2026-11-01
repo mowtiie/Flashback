@@ -33,7 +33,7 @@ internal fun GeneratorSection(state: SettingsUiState, actions: SettingsActions) 
             title = stringResource(R.string.settings_generator_provider),
             options = GeneratorProvider.entries,
             selected = provider,
-            label = { it.displayName },
+            label = { it.shortName },
             onSelect = actions.onGeneratorProvider,
         )
         RowDivider()

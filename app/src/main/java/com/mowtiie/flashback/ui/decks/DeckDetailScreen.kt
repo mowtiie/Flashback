@@ -140,10 +140,12 @@ fun DeckDetailScreen(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             val title: @Composable () -> Unit = {
+                // The expanded bar may wrap a long name; once it collapses the name stays on one line.
+                val collapsed = scrollBehavior.state.collapsedFraction > COLLAPSED_FRACTION
                 Text(
                     text = state.deck?.name.orEmpty(),
                     fontFamily = FontFamily.Serif,
-                    maxLines = if (shortWindow) 1 else 2,
+                    maxLines = if (shortWindow || collapsed) 1 else 2,
                     overflow = TextOverflow.Ellipsis,
                 )
             }
@@ -209,6 +211,9 @@ fun DeckDetailScreen(
         }
     }
 }
+
+/** The bar counts as collapsed once it has shrunk past this share of its travel. */
+private const val COLLAPSED_FRACTION = 0.5f
 
 /** Add and edit are the main actions; export and delete are in the overflow menu, so they never need a scroll. */
 @Composable

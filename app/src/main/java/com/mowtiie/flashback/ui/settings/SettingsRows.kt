@@ -3,6 +3,7 @@ package com.mowtiie.flashback.ui.settings
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -34,6 +35,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import com.mowtiie.flashback.ui.components.SectionTitle
 
@@ -41,6 +43,9 @@ internal const val DISABLED_ALPHA = 0.5f
 
 /** Above this font scale, choice rows stack vertically. */
 private const val STACK_FONT_SCALE = 1.3f
+
+/** Padding and the check mark a selected segment adds around its label. */
+private val SEGMENT_CHROME = 50.dp
 
 /** Test tags: the leading icon of an action row, and the import chooser. */
 internal const val ROW_ICON_TAG = "settings-row-icon"
@@ -220,38 +225,48 @@ internal fun <T> ChoiceRow(
             style = if (style == ChoiceRowStyle.Form) MaterialTheme.typography.titleSmall else MaterialTheme.typography.bodyLarge,
             modifier = Modifier.alpha(if (enabled) 1f else DISABLED_ALPHA),
         )
-        if (LocalDensity.current.fontScale > STACK_FONT_SCALE) {
-            // Segments get too narrow for large text and split words, so list the options instead.
-            Column(Modifier.fillMaxWidth().padding(top = 4.dp).selectableGroup()) {
-                options.forEach { option ->
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = 48.dp)
-                            .selectable(
-                                selected = option == selected,
-                                enabled = enabled,
-                                role = Role.RadioButton,
-                                onClick = { onSelect(option) },
-                            ),
-                    ) {
-                        RadioButton(selected = option == selected, onClick = null, enabled = enabled)
-                        Text(label(option), Modifier.padding(start = 16.dp))
+        BoxWithConstraints(Modifier.fillMaxWidth()) {
+            val labels = options.map { label(it) }
+            val measurer = rememberTextMeasurer()
+            val textStyle = MaterialTheme.typography.labelLarge
+            val density = LocalDensity.current
+            val widest = with(density) {
+                labels.maxOf { measurer.measure(it, textStyle, maxLines = 1).size.width }.toDp()
+            }
+            // A segment that cannot hold its label on one line wraps it and ends up taller than the others.
+            val fits = widest + SEGMENT_CHROME <= maxWidth / options.size
+            if (density.fontScale > STACK_FONT_SCALE || !fits) {
+                Column(Modifier.fillMaxWidth().padding(top = 4.dp).selectableGroup()) {
+                    options.forEachIndexed { index, option ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(min = 48.dp)
+                                .selectable(
+                                    selected = option == selected,
+                                    enabled = enabled,
+                                    role = Role.RadioButton,
+                                    onClick = { onSelect(option) },
+                                ),
+                        ) {
+                            RadioButton(selected = option == selected, onClick = null, enabled = enabled)
+                            Text(labels[index], Modifier.padding(start = 16.dp))
+                        }
                     }
                 }
-            }
-        } else {
-            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(top = 8.dp)) {
-                options.forEachIndexed { index, option ->
-                    SegmentedButton(
-                        selected = option == selected,
-                        onClick = { onSelect(option) },
-                        enabled = enabled,
-                        shape = SegmentedButtonDefaults.itemShape(index, options.size),
-                        modifier = Modifier.heightIn(min = 48.dp),
-                    ) {
-                        Text(label(option))
+            } else {
+                SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(top = 8.dp)) {
+                    options.forEachIndexed { index, option ->
+                        SegmentedButton(
+                            selected = option == selected,
+                            onClick = { onSelect(option) },
+                            enabled = enabled,
+                            shape = SegmentedButtonDefaults.itemShape(index, options.size),
+                            modifier = Modifier.heightIn(min = 48.dp),
+                        ) {
+                            Text(labels[index], maxLines = 1)
+                        }
                     }
                 }
             }

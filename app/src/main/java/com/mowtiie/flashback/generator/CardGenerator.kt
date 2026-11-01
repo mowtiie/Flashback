@@ -98,10 +98,18 @@ enum class GeneratorProvider(
     val sectionChars: Int = GeneratorLimits.SECTION_CHARS,
     /** Most text for Key points, which is one request. */
     val keyPointsChars: Int = GeneratorLimits.KEY_POINTS_MAX_CHARS,
+    /** For a narrow segmented selector. */
+    val shortName: String = displayName,
 ) {
     Anthropic("Anthropic"),
-    Gemini("Google Gemini"),
+    Gemini("Google Gemini", shortName = "Gemini"),
 
     // A small model skips and repeats on long input, so it gets short sections.
-    OnDevice("On-device model", usesNetwork = false, sectionChars = 3_000, keyPointsChars = 6_000),
+    OnDevice(
+        "On-device model",
+        usesNetwork = false,
+        sectionChars = 3_000,
+        keyPointsChars = 6_000,
+        shortName = "On-device",
+    ),
 }
