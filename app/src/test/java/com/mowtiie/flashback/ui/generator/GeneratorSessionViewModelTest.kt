@@ -28,6 +28,7 @@ class GeneratorSessionViewModelTest {
     private val session = GenerationSession()
     private var gate: Map<String, CompletableDeferred<Unit>> = emptyMap()
     private var failure: GeneratorException? = null
+    private var failKeys: Set<String> = emptySet()
 
     private fun key(text: String) = text.take(5)
 
@@ -35,6 +36,7 @@ class GeneratorSessionViewModelTest {
         val text = (request.input as GeneratorInput.Text).text
         gate[key(text)]?.await()
         failure?.let { throw it }
+        if (key(text) in failKeys) throw GeneratorException("That part failed.")
         DeckArchive.Deck(name = "Deck", notes = listOf(DeckArchive.Note("q-${key(text)}", "a")))
     }
 
@@ -119,6 +121,23 @@ class GeneratorSessionViewModelTest {
         assertNull(session.progress.value)
         assertEquals(GeneratorStage.Review, vm.uiState.value.stage)
         assertEquals(1, vm.uiState.value.cards.size)
+    }
+
+    @Test
+    fun aRetryStartsTheNotificationFromWhatIsAlreadyDone() {
+        failKeys = setOf("Para3")
+        val vm = viewModel(GeneratorProvider.OnDevice)
+        vm.setSource((1..3).joinToString("\n\n") { paragraph(it, 2_000) })
+        vm.generate()
+        assertNull(session.progress.value)
+
+        failKeys = emptySet()
+        gate = mapOf("Para3" to CompletableDeferred())
+        vm.retryFailed()
+
+        assertEquals(GenerationSession.Progress(finished = 2, total = 3, cards = 2), session.progress.value)
+        gate.getValue("Para3").complete(Unit)
+        assertNull(session.progress.value)
     }
 
     @Test

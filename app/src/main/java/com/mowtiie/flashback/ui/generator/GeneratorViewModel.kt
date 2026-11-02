@@ -240,7 +240,11 @@ class GeneratorViewModel(
 
     private suspend fun runSections(indices: List<Int>, types: CardTypes) {
         _uiState.update { it.copy(sectionTotal = sections.size) }
-        if (!provider().usesNetwork || sections.size > 1) session?.begin(sections.size, ::cancelGeneration)
+        if (!provider().usesNetwork || sections.size > 1) {
+            session?.begin(sections.size, ::cancelGeneration)
+            // A retry continues a run, so the notification starts from what is already done.
+            session?.update(results.size, merged().notes.size)
+        }
         sectioned.run(
             sections,
             indices,
