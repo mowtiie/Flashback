@@ -93,6 +93,7 @@ class GeneratorViewModel(
     private val provider: () -> GeneratorProvider,
     private val ioDispatcher: CoroutineDispatcher,
     pause: suspend (Long) -> Unit = { delay(it) },
+    private val onLeave: () -> Unit = {},
 ) : ViewModel() {
 
     private val sectioned = SectionedGenerator(generator, pause)
@@ -102,6 +103,10 @@ class GeneratorViewModel(
 
     private val events = Channel<GeneratorEvent>(Channel.BUFFERED)
     val eventFlow = events.receiveAsFlow()
+
+    override fun onCleared() {
+        onLeave()
+    }
 
     /** The provider and key are set in Settings, so the screen re-checks when it comes back. */
     fun refreshKey() {

@@ -1,12 +1,11 @@
 package com.mowtiie.flashback.generator
 
 import android.content.Context
-import android.content.pm.ApplicationInfo
 import android.util.Log
 import com.google.ai.edge.litertlm.Backend
+import com.google.ai.edge.litertlm.Contents
 import com.google.ai.edge.litertlm.Conversation
 import com.google.ai.edge.litertlm.ConversationConfig
-import com.google.ai.edge.litertlm.Contents
 import com.google.ai.edge.litertlm.Engine
 import com.google.ai.edge.litertlm.EngineConfig
 import com.google.ai.edge.litertlm.Message
@@ -15,7 +14,10 @@ import com.google.ai.edge.litertlm.SamplerConfig
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -29,7 +31,7 @@ class LiteRtTextModel(
     private val dispatcher: CoroutineDispatcher,
 ) : TextModel {
     private val lock = Mutex()
-    private val debuggable = (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
+    private val scope = CoroutineScope(SupervisorJob() + dispatcher)
     private var engine: Engine? = null
     private var loadedStamp: String? = null
 
@@ -40,6 +42,7 @@ class LiteRtTextModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Throwable) {
+                Log.w(TAG, "Model did not start", e)
                 release()
                 throw GeneratorException("The on-device model could not start. The file may not be a supported model, or the phone is low on memory.", e)
             }
@@ -53,6 +56,7 @@ class LiteRtTextModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Throwable) {
+                Log.w(TAG, "Model stopped", e)
                 release()
                 throw GeneratorException("The on-device model stopped before it finished. Try less text at a time.", e)
             }
@@ -66,8 +70,6 @@ class LiteRtTextModel(
     private suspend fun stream(conversation: Conversation, user: String, shouldStop: (String) -> Boolean): String {
         val out = StringBuilder()
         val finished = CompletableDeferred<Unit>()
-        val started = System.nanoTime()
-        var chunks = 0
         var stopped = false
 
         conversation.sendMessageAsync(
@@ -75,13 +77,7 @@ class LiteRtTextModel(
             object : MessageCallback {
                 override fun onMessage(message: Message) {
                     if (stopped) return
-                    val text = message.toString()
-                    chunks++
-                    out.append(text)
-                    if (debuggable && (chunks == 1 || chunks % 20 == 0)) {
-                        val ms = (System.nanoTime() - started) / 1_000_000
-                        Log.d(TAG, "chunk $chunks at $ms ms, ${out.length} chars, tail: ${out.takeLast(100).toString().replace("\n", " ")}")
-                    }
+                    out.append(message.toString())
                     if (shouldStop(out.toString())) {
                         stopped = true
                         runCatching { conversation.cancelProcess() }
@@ -105,7 +101,6 @@ class LiteRtTextModel(
             withContext(NonCancellable) { withTimeoutOrNull(CANCEL_WAIT_MS) { finished.await() } }
             throw e
         }
-        Log.d(TAG, "reply: ${out.length} chars, $chunks chunks, ${(System.nanoTime() - started) / 1_000_000} ms")
         // An early stop can leave a half-written line.
         return (if (stopped) out.toString().substringBeforeLast("\n", "") else out.toString()).trim()
     }
@@ -134,16 +129,20 @@ class LiteRtTextModel(
         }
     }
 
-    private companion object {
-        const val MAX_OUTPUT_TOKENS = 2048
-        const val TAG = "LiteRtTextModel"
-        const val CANCEL_WAIT_MS = 3_000L
+    /** Frees the model's memory once any run has ended. It loads again on the next request. */
+    fun releaseWhenIdle() {
+        scope.launch { lock.withLock { release() } }
     }
 
-    /** Frees the model's memory. It loads again on the next request. */
-    fun release() {
+    private fun release() {
         runCatching { engine?.close() }
         engine = null
         loadedStamp = null
+    }
+
+    private companion object {
+        const val MAX_OUTPUT_TOKENS = 2048
+        const val CANCEL_WAIT_MS = 3_000L
+        const val TAG = "LiteRtTextModel"
     }
 }

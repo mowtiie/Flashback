@@ -19,3 +19,7 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+# LiteRT-LM: the native library finds these classes and callback methods by name, so R8 must not rename them.
+-keep class com.google.ai.edge.litertlm.** { *; }
+-keep interface com.google.ai.edge.litertlm.** { *; }
+-dontwarn com.google.ai.edge.litertlm.**

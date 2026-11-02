@@ -48,8 +48,12 @@ class AppContainer(context: Context) {
 
     val localModelStore: LocalModelStore by lazy { LocalModelStore(appContext, dispatchers.io) }
 
-    private val localTextModel: LiteRtTextModel by lazy {
-        LiteRtTextModel(appContext, localModelStore, dispatchers.io)
+    private val localTextModelLazy = lazy { LiteRtTextModel(appContext, localModelStore, dispatchers.io) }
+    private val localTextModel: LiteRtTextModel by localTextModelLazy
+
+    /** The model takes about as much memory as its file, so it is let go when the generator is left. */
+    fun releaseLocalModel() {
+        if (localTextModelLazy.isInitialized()) localTextModel.releaseWhenIdle()
     }
 
     val cardGenerator: CardGenerator by lazy {
