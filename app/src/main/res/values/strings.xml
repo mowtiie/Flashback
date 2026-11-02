@@ -273,6 +273,10 @@
 
     <string name="generator_title">Generate cards</string>
     <string name="generator_source_label">Your notes</string>
+    <string name="generator_options">Options</string>
+    <string name="generator_options_summary">%1$s · %2$s</string>
+    <string name="generator_options_open">Shown</string>
+    <string name="generator_options_closed">Hidden</string>
     <string name="generator_source_hint">Paste your notes, a chapter or an exam reviewer here</string>
     <string name="generator_source_count">%1$s / %2$s characters</string>
     <string name="generator_source_too_long">Too long. Use at most %1$s characters at a time.</string>

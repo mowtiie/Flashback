@@ -14,6 +14,7 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.test.espresso.Espresso
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.mowtiie.flashback.data.io.DeckArchive
+import com.mowtiie.flashback.generator.Coverage
 import com.mowtiie.flashback.theme.FlashbackTheme
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -36,6 +37,8 @@ class GeneratorStudentFriendlyTest {
     private val review = GeneratorUiState(hasApiKey = true, stage = GeneratorStage.Review, deckName = "Biology", cards = cards)
     private val running = GeneratorUiState(hasApiKey = true, stage = GeneratorStage.Generating, sectionTotal = 3, sectionsFinished = 1)
 
+    private fun openOptions() { rule.onNodeWithText("Options").performClick() }
+
     private fun navigateUp() = rule.onNode(hasContentDescription("Navigate up")).performClick()
 
     @Test
@@ -55,14 +58,34 @@ class GeneratorStudentFriendlyTest {
         var generated = 0
         show(empty.copy(source = "The cell is the unit of life."), GeneratorActions(onGenerate = { generated++ }))
 
+        openOptions()
         rule.onNodeWithText("Match my settings").assertIsSelected()
         rule.onNodeWithText("Generate").performScrollTo().assertIsEnabled().performClick()
         assertEquals(1, generated)
     }
 
     @Test
+    fun theOptionsStartClosedWithASummary() {
+        show(empty)
+        rule.onNodeWithText("Options").assertExists()
+        rule.onNodeWithText("Every fact · Match my settings").assertExists()
+        rule.onNode(hasText("Big ideas")).assertDoesNotExist()
+        rule.onNode(hasText("Pick from choices")).assertDoesNotExist()
+    }
+
+    @Test
+    fun openingTheOptionsShowsThemAndTheChoiceIsKept() {
+        var coverage: Coverage? = null
+        show(empty, GeneratorActions(onCoverage = { coverage = it }))
+        openOptions()
+        rule.onNodeWithText("Big ideas").performScrollTo().performClick()
+        assertEquals(Coverage.KeyPoints, coverage)
+    }
+
+    @Test
     fun theOptionsUseStudentWords() {
         show(empty)
+        openOptions()
         listOf("What to include", "Every fact", "Big ideas", "Card style", "Match my settings", "A mix", "Flip the card", "Type the answer", "Pick from choices")
             .forEach { rule.onNodeWithText(it).performScrollTo().assertExists() }
         listOf("Study style", "Flip only", "Type only", "Multiple choice only", "Choose one to continue.")
