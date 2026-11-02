@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -244,15 +245,22 @@ private fun StudyTopBar(state: StudyUiState, actions: StudyActions) {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun CountsRow(counts: StudyCounts) {
     val colors = MaterialTheme.countColors
-    Row(
+    val left = counts.newCards + counts.learning + counts.due
+    FlowRow(
         horizontalArrangement = Arrangement.Center,
         modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 8.dp),
     ) {
+        Text(
+            text = pluralStringResource(R.plurals.study_left, left, left),
+            style = MaterialTheme.typography.titleSmall,
+            modifier = Modifier.padding(horizontal = 10.dp),
+        )
         Count(counts.newCards, R.string.count_new, colors.new)
         Count(counts.learning, R.string.count_learning, colors.learning)
         Count(counts.due, R.string.count_due, colors.due)

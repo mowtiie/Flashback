@@ -19,12 +19,22 @@
     </plurals>
 
     <string name="count_new">New</string>
-    <string name="count_learning">Learning</string>
-    <string name="count_due">Due</string>
+    <string name="count_learning">Practice</string>
+    <string name="count_due">Review</string>
 
     <string name="more_options">More options</string>
     <string name="action_cancel">Cancel</string>
     <string name="action_save">Save</string>
+    <string name="study_rate_hint">How well did you remember?</string>
+    <plurals name="study_left">
+        <item quantity="one">%1$d left</item>
+        <item quantity="other">%1$d left</item>
+    </plurals>
+    <plurals name="stats_streak_message">
+        <item quantity="one">%1$d day in a row. Keep it going!</item>
+        <item quantity="other">You have studied %1$d days in a row. Keep it going!</item>
+    </plurals>
+    <string name="tag_add_description">Add a description</string>
     <string name="study_undo">Undo</string>
 
     <string name="unsaved_title">Discard changes?</string>
@@ -56,7 +66,7 @@
     <string name="deck_detail_empty_action">Add a card</string>
     <string name="note_add">Add card</string>
     <string name="note_has_reverse">Two-way</string>
-    <string name="note_suspended_badge">Suspended</string>
+    <string name="note_suspended_badge">Hidden</string>
 
     <string name="nav_decks">Decks</string>
     <string name="nav_tags">Tags</string>
@@ -65,12 +75,12 @@
     <string name="stats_title">Statistics</string>
     <string name="stats_reviews_today">Reviews today</string>
     <string name="stats_streak">Day streak</string>
-    <string name="stats_retention">Retention (30d)</string>
+    <string name="stats_retention">Remembered (30 days)</string>
     <string name="stats_time_today">Time today</string>
     <string name="stats_activity_title">Activity</string>
     <string name="stats_breakdown_title">Card breakdown</string>
-    <string name="stats_young">Young</string>
-    <string name="stats_mature">Mature</string>
+    <string name="stats_young">Getting there</string>
+    <string name="stats_mature">Known</string>
     <string name="stats_no_value">—</string>
     <string name="stats_percent">%1$d%%</string>
     <string name="stats_minutes">%1$d min</string>
@@ -132,7 +142,7 @@
     <string name="settings_export_body">Save every deck to a JSON file you can back up or share.</string>
     <string name="settings_import_title">Import decks</string>
     <string name="settings_import_body">Add decks from a JSON file or pasted text.</string>
-    <string name="settings_format_note">Exports contain your decks, tags, and cards, but not review progress. Imported cards start fresh.</string>
+    <string name="settings_format_note">Your decks, tags and cards are saved, but not your study progress. If you import on a new phone, every card starts as new.</string>
     <string name="export_all_filename">flashback-decks.json</string>
     <string name="export_deck_filename_prefix">flashback-</string>
     <string name="import_source_title">Import decks</string>
@@ -225,8 +235,8 @@
     <string name="note_saved">Card saved</string>
     <string name="note_delete">Delete card</string>
     <string name="note_deleted">Card deleted</string>
-    <string name="note_suspend">Suspend this card</string>
-    <string name="note_suspend_help">A suspended card is skipped when studying until you turn this off.</string>
+    <string name="note_suspend">Hide this card for now</string>
+    <string name="note_suspend_help">A hidden card is skipped when studying until you turn this off.</string>
 
     <string name="study_title">Study</string>
     <string name="study_show_answer">Show answer</string>
@@ -246,12 +256,12 @@
     <string name="rating_easy">Easy</string>
     <string name="study_count_desc">%1$s: %2$d</string>
     <string name="study_edit_card">Edit card</string>
-    <string name="study_suspend_card">Suspend card</string>
-    <string name="study_card_suspended">Card suspended</string>
+    <string name="study_suspend_card">Hide for now</string>
+    <string name="study_card_suspended">Card hidden</string>
 
     <string name="study_nothing_due_title">Nothing due</string>
     <string name="study_nothing_due_body">This deck has no cards waiting. New cards are limited per day, so more may appear tomorrow.</string>
-    <string name="study_finished_title">Deck finished</string>
+    <string name="study_finished_title">Nice work!</string>
     <plurals name="study_finished_body">
         <item quantity="one">You answered %1$d card. Come back when the next one is due.</item>
         <item quantity="other">You answered %1$d cards. Come back when the next one is due.</item>
@@ -404,7 +414,7 @@
     <string name="generator_card_removed">Card removed</string>
     <string name="deck_section_study">Study</string>
     <string name="note_section_study">Study options</string>
-    <string name="deck_detail_counts">%1$d new · %2$d learning · %3$d due</string>
+    <string name="deck_detail_counts">%1$d new · %2$d practice · %3$d review</string>
     <string name="field_error">Error</string>
     <string name="settings_about_header">About</string>
     <string name="settings_privacy_policy">Privacy policy</string>

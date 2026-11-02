@@ -202,8 +202,8 @@ fun SettingsScreen(
             StudySection(state, actions)
             AppearanceSection(state, actions)
             RemindersSection(state, actions)
-            GeneratorSection(state, actions)
             DataSection(transferState, transferActions)
+            GeneratorSection(state, actions)
             AboutSection(actions)
         }
     }

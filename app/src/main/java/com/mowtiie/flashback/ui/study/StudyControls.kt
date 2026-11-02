@@ -74,7 +74,13 @@ internal fun StudyControls(
             }
         }
         if (state.revealed) {
-            RatingRow(state, actions.onRate, Modifier.padding(top = 8.dp))
+            Text(
+                text = stringResource(R.string.study_rate_hint),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 8.dp).align(Alignment.CenterHorizontally),
+            )
+            RatingRow(state, actions.onRate)
         }
     }
 }

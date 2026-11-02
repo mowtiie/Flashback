@@ -14,6 +14,7 @@ import androidx.compose.ui.platform.testTag
 import kotlinx.coroutines.launch
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -70,7 +71,18 @@ internal fun DataSection(state: DataTransferUiState, actions: DataTransferAction
             onClick = { chooseSource = true },
         )
     }
-    Footnote(stringResource(R.string.settings_format_note))
+    Surface(
+        color = MaterialTheme.colorScheme.secondaryContainer,
+        shape = MaterialTheme.shapes.medium,
+        modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+    ) {
+        Text(
+            text = stringResource(R.string.settings_format_note),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSecondaryContainer,
+            modifier = Modifier.padding(16.dp),
+        )
+    }
 
     if (chooseSource) {
         ImportSourceSheet(

@@ -80,6 +80,12 @@ fun StatisticsScreen(state: StatisticsUiState) {
 
 @Composable
 private fun ColumnScope.StatisticsContent(data: StatisticsData) {
+    if (data.streakDays >= 1) {
+        Text(
+            text = pluralStringResource(R.plurals.stats_streak_message, data.streakDays, data.streakDays),
+            style = MaterialTheme.typography.bodyLarge,
+        )
+    }
     Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
         StatTile(
             value = data.reviewsToday.toString(),

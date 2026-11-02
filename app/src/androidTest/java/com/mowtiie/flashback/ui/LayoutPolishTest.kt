@@ -119,7 +119,7 @@ class LayoutPolishTest {
         }
         rule.onNodeWithText("Core vocabulary").assertIsDisplayed()
         rule.onNodeWithText("Languages").assertIsDisplayed()
-        rule.onNodeWithText("3 new · 1 learning · 2 due").assertIsDisplayed()
+        rule.onNodeWithText("3 new · 1 practice · 2 review").assertIsDisplayed()
     }
 
     // 9. The study counters say what they count.
@@ -132,8 +132,8 @@ class LayoutPolishTest {
         )
         rule.setContent { FlashbackTheme(dynamicColor = false) { StudyScreen(state, StudyActions()) } }
         rule.onNodeWithText("New").assertIsDisplayed()
-        rule.onNodeWithText("Learning").assertIsDisplayed()
-        rule.onNodeWithText("Due").assertIsDisplayed()
+        rule.onNodeWithText("Practice").assertIsDisplayed()
+        rule.onNodeWithText("Review").assertIsDisplayed()
     }
 
     // 10. A tag's description reads before how many decks use it.

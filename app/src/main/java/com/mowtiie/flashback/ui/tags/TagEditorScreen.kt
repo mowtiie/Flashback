@@ -29,6 +29,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -187,8 +188,10 @@ fun TagEditorScreen(
                 modifier = Modifier.fillMaxWidth(),
             )
 
-            OutlinedTextField(
-                value = form.description,
+            var describing by rememberSaveable { mutableStateOf(form.description.isNotEmpty()) }
+            if (describing) {
+                OutlinedTextField(
+                    value = form.description,
                 onValueChange = onDescriptionChange,
                 label = { Text(stringResource(R.string.tag_description)) },
                 maxLines = 2,
@@ -200,7 +203,12 @@ fun TagEditorScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 16.dp),
-            )
+                )
+            } else {
+                TextButton(onClick = { describing = true }, modifier = Modifier.padding(top = 8.dp)) {
+                    Text(stringResource(R.string.tag_add_description))
+                }
+            }
 
             SectionTitle(stringResource(R.string.tag_colour), Modifier.padding(top = 24.dp))
             ColorSwatches(
