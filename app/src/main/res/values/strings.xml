@@ -283,7 +283,7 @@
     <string name="settings_generator_model_copying">Copying…</string>
     <string name="settings_generator_model_remove">Remove model</string>
     <string name="settings_generator_model_failed">The model file could not be copied. Check that there is enough free space and try again.</string>
-    <string name="settings_generator_note_on_device">Optional. Makes cards with a model file stored on this phone, so nothing you add is sent anywhere and no key is needed. Pick a Gemma model in the .litertlm format. Files are large (about 1 to 3 GB), and results are rougher than the online providers, so review the cards. Text only, no PDFs. Works best with short passages and a phone with plenty of memory.</string>
+    <string name="settings_generator_note_on_device">Optional. Makes cards on this phone with a Gemma model file you choose (its name ends in .litertlm), so nothing you add is sent anywhere and no key is needed. The file is large, about 1 to 3 GB, and the cards are rougher than the online ones, so check them. Text only, no PDFs. Works best with short passages and a phone with plenty of memory.</string>
     <string name="generator_privacy_on_device">Everything stays on this phone. Small models make mistakes and can be slow, so review the cards before saving.</string>
     <string name="generator_no_model_title">Model needed</string>
     <string name="generator_no_model_body">The on-device model needs a model file from your phone. Pick one in Settings.</string>
@@ -325,7 +325,7 @@
     <string name="new_deck_manual">Make it myself</string>
     <string name="new_deck_manual_body">Start an empty deck and add your own cards.</string>
     <string name="new_deck_ai">Generate with AI</string>
-    <string name="new_deck_ai_body">Paste notes or a PDF. Uses your own API key.</string>
+    <string name="new_deck_ai_body">Paste notes or a PDF. Needs your own API key, or a model on this phone.</string>
     <string name="new_deck_hybrid">AI website</string>
     <string name="new_deck_hybrid_body">Copy a prompt for ChatGPT, Claude or Gemini, then import the file it makes.</string>
 
@@ -351,6 +351,10 @@
     <plurals name="generator_estimate">
         <item quantity="one">About %1$d request, sent to %2$s on its own.</item>
         <item quantity="other">About %1$d requests, sent to %2$s one at a time.</item>
+    </plurals>
+    <plurals name="generator_estimate_local">
+        <item quantity="one">About %1$d part, made on this phone.</item>
+        <item quantity="other">About %1$d parts, made on this phone one at a time.</item>
     </plurals>
     <string name="generator_confirm_title">Send many requests?</string>
     <plurals name="generator_confirm_body">

@@ -204,8 +204,11 @@ private fun InputPage(state: GeneratorUiState, actions: GeneratorActions) {
                 maxLines = 16,
                 modifier = Modifier.fillMaxWidth(),
             )
-            OutlinedButton(onClick = actions.onChoosePdf, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.generator_pdf_choose))
+            // The on-device model reads text only.
+            if (state.provider.usesNetwork) {
+                OutlinedButton(onClick = actions.onChoosePdf, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.generator_pdf_choose))
+                }
             }
         }
         ChoiceRow(
@@ -254,12 +257,16 @@ private fun sourceSupport(state: GeneratorUiState): String = when {
         stringResource(R.string.generator_source_too_long, grouped(GeneratorPlan.maxChars(state.coverage, state.provider)))
     (state.coverage == Coverage.Everything || state.estimatedRequests > 1) && state.source.isNotBlank() -> {
         val size = stringResource(R.string.generator_size, grouped(state.source.length))
-        val estimate = pluralStringResource(
-            R.plurals.generator_estimate,
-            state.estimatedRequests,
-            state.estimatedRequests,
-            state.provider.displayName,
-        )
+        val estimate = if (state.provider.usesNetwork) {
+            pluralStringResource(
+                R.plurals.generator_estimate,
+                state.estimatedRequests,
+                state.estimatedRequests,
+                state.provider.displayName,
+            )
+        } else {
+            pluralStringResource(R.plurals.generator_estimate_local, state.estimatedRequests, state.estimatedRequests)
+        }
         "$size. $estimate"
     }
     else -> stringResource(
