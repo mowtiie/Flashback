@@ -111,7 +111,7 @@ class GenerationService : Service() {
         }
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_notification)
+            .setSmallIcon(R.drawable.ic_stat_flashback)
             .setContentTitle(getString(R.string.generation_notification_title))
             .setContentText(text)
             .setCategory(NotificationCompat.CATEGORY_PROGRESS)

@@ -40,7 +40,7 @@ object ReminderNotifier {
         )
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_notification)
+            .setSmallIcon(R.drawable.ic_stat_flashback)
             .setContentTitle(context.getString(R.string.reminder_title))
             .setContentText(context.resources.getQuantityString(R.plurals.reminder_body, dueCount, dueCount))
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
