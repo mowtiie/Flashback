@@ -253,17 +253,17 @@ class GeneratorViewModelTest {
     }
 
     @Test
-    fun cannotGenerateUntilTheUserHasChosenTheCardTypes() {
+    fun startsWithPlainCardsSoAStudentCanGenerateAtOnce() {
         val viewModel = rawViewModel()
         viewModel.setSource("notes")
-        assertNull(viewModel.uiState.value.cardTypes)
-        assertFalse(viewModel.uiState.value.canGenerate)
+        assertEquals(CardTypes.Setting, viewModel.uiState.value.cardTypes)
+        assertTrue(viewModel.uiState.value.canGenerate)
 
         viewModel.generate()
-        assertTrue(sources.isEmpty())
+        assertEquals(listOf("notes"), sources)
 
         viewModel.setCardTypes(CardTypes.Mixed)
-        assertTrue(viewModel.uiState.value.canGenerate)
+        assertEquals(CardTypes.Mixed, viewModel.uiState.value.cardTypes)
     }
 
     @Test

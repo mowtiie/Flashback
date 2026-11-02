@@ -96,6 +96,13 @@ internal fun SectionSummary(state: GeneratorUiState, enabled: Boolean, onRetry: 
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            if (state.nothingNew > 0) {
+                Text(
+                    text = pluralStringResource(R.plurals.generator_nothing_new, state.nothingNew, state.nothingNew),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
         if (state.failedSections.isNotEmpty()) {
             Card(Modifier.fillMaxWidth().semantics { liveRegion = LiveRegionMode.Polite }) {

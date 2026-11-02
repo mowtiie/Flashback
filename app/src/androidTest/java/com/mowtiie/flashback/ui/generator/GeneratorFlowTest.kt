@@ -56,7 +56,7 @@ class GeneratorFlowTest {
     }
 
     private fun waitForDialog() =
-        rule.waitUntil(5_000) { rule.onAllNodes(hasText("Send many requests?")).fetchSemanticsNodes().isNotEmpty() }
+        rule.waitUntil(5_000) { rule.onAllNodes(hasText("Send in several parts?")).fetchSemanticsNodes().isNotEmpty() }
 
     private fun paragraph(n: Int) = "Para$n " + "x".repeat(5000)
 
@@ -91,12 +91,12 @@ class GeneratorFlowTest {
         waitForDialog()
         rule.onNodeWithText("Send").performClick()
 
-        rule.waitUntil(5_000) { rule.onAllNodes(hasText("1 section made no cards")).fetchSemanticsNodes().isNotEmpty() }
+        rule.waitUntil(5_000) { rule.onAllNodes(hasText("1 part made no cards")).fetchSemanticsNodes().isNotEmpty() }
         assertEquals(listOf("Para1", "Para2", "Para3", "Para4"), sent)
 
         failSecond = false
         sent.clear()
-        rule.onNodeWithText("Retry 1 section").performClick()
+        rule.onNodeWithText("Retry 1 part").performClick()
         rule.waitUntil(5_000) { viewModel.uiState.value.failedSections.isEmpty() && viewModel.uiState.value.stage == GeneratorStage.Review }
         assertEquals(listOf("Para2"), sent)
 
@@ -113,10 +113,10 @@ class GeneratorFlowTest {
         waitForDialog()
         rule.onNodeWithText("Send").performClick()
 
-        rule.waitUntil(5_000) { rule.onAllNodes(hasText("Section 2 of 4")).fetchSemanticsNodes().isNotEmpty() }
+        rule.waitUntil(5_000) { rule.onAllNodes(hasText("Part 2 of 4")).fetchSemanticsNodes().isNotEmpty() }
         rule.onNodeWithText("Cancel").performClick()
 
-        rule.waitUntil(5_000) { rule.onAllNodes(hasText("3 sections made no cards")).fetchSemanticsNodes().isNotEmpty() }
+        rule.waitUntil(5_000) { rule.onAllNodes(hasText("3 parts made no cards")).fetchSemanticsNodes().isNotEmpty() }
         assertEquals(listOf("q-Para1"), viewModel.uiState.value.cards.map { it.front })
         assertTrue(sent.none { it == "Para3" || it == "Para4" })
     }

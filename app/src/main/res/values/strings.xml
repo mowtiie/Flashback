@@ -272,8 +272,8 @@
     <string name="settings_generator_key_remove">Remove key</string>
 
     <string name="generator_title">Generate cards</string>
-    <string name="generator_source_label">Study material</string>
-    <string name="generator_source_hint">Paste notes, a chapter, or an exam reviewer</string>
+    <string name="generator_source_label">Your notes</string>
+    <string name="generator_source_hint">Paste your notes, a chapter or an exam reviewer here</string>
     <string name="generator_source_count">%1$s / %2$s characters</string>
     <string name="generator_source_too_long">Too long. Use at most %1$s characters at a time.</string>
     <string name="generator_action">Generate</string>
@@ -305,9 +305,9 @@
     <string name="settings_generator_note_gemini">Optional. Text or PDFs you generate cards from are sent to Google using your own key. Google offers a free tier, but on it Google may use what you send to improve its products. Nothing else leaves the app. The key stays on this device and is left out of backups.</string>
     <string name="generator_pdf_choose">Use a PDF</string>
     <string name="generator_pdf_remove">Remove %1$s</string>
-    <string name="generator_count_title">Card limit</string>
+    <string name="generator_count_title">How many cards?</string>
     <string name="generator_count_few">Few (%1$d)</string>
-    <string name="generator_count_normal">Normal (%1$d)</string>
+    <string name="generator_count_normal">Some (%1$d)</string>
     <string name="generator_count_many">Many (%1$d)</string>
     <string name="note_answer_type">Study style</string>
     <string name="note_answer_type_default">Default</string>
@@ -316,18 +316,17 @@
     <string name="note_answer_type_type_help">Type the answer. It is checked ignoring case, accents, and small typos.</string>
     <string name="note_answer_type_choice_help">Pick the answer from options. Leave the wrong answers blank to borrow answers from other cards in the deck.</string>
     <string name="note_wrong_option">Wrong answer %1$d</string>
-    <string name="generator_types_title">Study style</string>
-    <string name="generator_types_required">Choose one to continue.</string>
-    <string name="generator_types_setting">My study setting</string>
-    <string name="generator_types_setting_help">Plain cards that use the answer mode in Settings.</string>
+    <string name="generator_types_title">Card style</string>
+    <string name="generator_types_setting">Match my settings</string>
+    <string name="generator_types_setting_help">Plain cards, studied the way you set in Settings.</string>
     <string name="generator_types_mixed">A mix</string>
-    <string name="generator_types_mixed_help">The model picks flip, type, or multiple choice for each card.</string>
-    <string name="generator_types_flip">Flip only</string>
-    <string name="generator_types_flip_help">Every card is flipped and rated.</string>
-    <string name="generator_types_type">Type only</string>
-    <string name="generator_types_type_help">Every card has a short answer to type.</string>
-    <string name="generator_types_choice">Multiple choice only</string>
-    <string name="generator_types_choice_help">Every card comes with three wrong answers.</string>
+    <string name="generator_types_mixed_help">Some flip, some typed, some multiple choice.</string>
+    <string name="generator_types_flip">Flip the card</string>
+    <string name="generator_types_flip_help">See the question, flip for the answer, then rate yourself.</string>
+    <string name="generator_types_type">Type the answer</string>
+    <string name="generator_types_type_help">Type a short answer and the app checks it.</string>
+    <string name="generator_types_choice">Pick from choices</string>
+    <string name="generator_types_choice_help">Pick the right answer from four choices.</string>
     <string name="generator_wrong_answers">Wrong answers: %1$s</string>
 
     <string name="new_deck_title">New deck</string>
@@ -340,9 +339,9 @@
 
     <string name="prompt_title">AI website prompt</string>
     <string name="prompt_intro">Copy the prompt, paste it into an AI website together with your notes or PDF, then download the JSON file it makes and import it here. No account or key is needed in this app.</string>
-    <string name="prompt_coverage_title">How much</string>
-    <string name="prompt_coverage_everything">Everything</string>
-    <string name="prompt_coverage_key">Key points</string>
+    <string name="prompt_coverage_title">What to include</string>
+    <string name="prompt_coverage_everything">Every fact</string>
+    <string name="prompt_coverage_key">Big ideas</string>
     <string name="prompt_coverage_hint_everything">A card for every fact, so nothing is missed.</string>
     <string name="prompt_coverage_hint_key">Only the main ideas, for a short deck.</string>
     <string name="prompt_language_label">Language (optional)</string>
@@ -356,40 +355,47 @@
     <string name="prompt_import">Import the file</string>
     <string name="prompt_import_hint">In Settings, choose Import decks, then From a file. If the website only shows the JSON, copy it and choose Paste text.</string>
 
-    <string name="generator_size">%1$s characters</string>
-    <plurals name="generator_estimate">
-        <item quantity="one">About %1$d request, sent to %2$s on its own.</item>
-        <item quantity="other">About %1$d requests, sent to %2$s one at a time.</item>
+    <plurals name="generator_parts">
+        <item quantity="one">About %1$d part, made one after another.</item>
+        <item quantity="other">About %1$d parts, made one after another.</item>
     </plurals>
-    <plurals name="generator_estimate_local">
-        <item quantity="one">About %1$d part, made on this phone.</item>
-        <item quantity="other">About %1$d parts, made on this phone one at a time.</item>
-    </plurals>
-    <string name="generator_confirm_title">Send many requests?</string>
+    <string name="generator_confirm_title">Send in several parts?</string>
     <plurals name="generator_confirm_body">
-        <item quantity="one">Your material makes %1$d request to %2$s. It is billed to your own key.</item>
-        <item quantity="other">Your material is split into %1$d parts. Each is sent to %2$s on its own, and each request is billed to your own key.</item>
+        <item quantity="one">Your material is sent to %2$s in %1$d part, using your own key. If your plan is paid, it is billed to you.</item>
+        <item quantity="other">Your material is split into %1$d parts. Each part is sent to %2$s on its own, using your own key. If your plan is paid, each part is billed to you.</item>
     </plurals>
-    <string name="generator_notify_title">Show progress?</string>
-    <string name="generator_notify_body">Making cards can take a few minutes. A notification shows how far it is and lets you cancel, even when the screen is off.</string>
-    <string name="generator_notify_allow">Allow</string>
-    <string name="generator_notify_skip">Not now</string>
     <string name="generator_confirm_send">Send</string>
-    <string name="generator_progress">Section %1$d of %2$d</string>
+    <string name="generator_progress">Part %1$d of %2$d</string>
     <plurals name="generator_cards_so_far">
         <item quantity="one">%d card so far</item>
         <item quantity="other">%d cards so far</item>
     </plurals>
-    <string name="generator_from_sections">From %1$d sections: %2$s</string>
+    <plurals name="generator_nothing_new">
+        <item quantity="one">Nothing new in %d part.</item>
+        <item quantity="other">Nothing new in %d parts.</item>
+    </plurals>
+    <string name="generator_from_sections">From %1$d parts: %2$s</string>
     <plurals name="generator_failed_title">
-        <item quantity="one">%d section made no cards</item>
-        <item quantity="other">%d sections made no cards</item>
+        <item quantity="one">%d part made no cards</item>
+        <item quantity="other">%d parts made no cards</item>
     </plurals>
-    <string name="generator_failed_row">Section %1$d: %2$s</string>
+    <string name="generator_failed_row">Part %1$d: %2$s</string>
     <plurals name="generator_retry">
-        <item quantity="one">Retry %d section</item>
-        <item quantity="other">Retry %d sections</item>
+        <item quantity="one">Retry %d part</item>
+        <item quantity="other">Retry %d parts</item>
     </plurals>
+    <string name="generator_leave_run_title">Stop making cards?</string>
+    <string name="generator_leave_run_body">The cards made so far will be lost.</string>
+    <string name="generator_leave_run_stop">Stop</string>
+    <string name="generator_leave_run_keep">Keep going</string>
+    <string name="generator_leave_review_title">Discard these cards?</string>
+    <plurals name="generator_leave_review_body">
+        <item quantity="one">This card has not been saved yet.</item>
+        <item quantity="other">These %d cards have not been saved yet.</item>
+    </plurals>
+    <string name="generator_leave_review_discard">Discard</string>
+    <string name="generator_leave_review_keep">Keep reviewing</string>
+    <string name="generator_card_removed">Card removed</string>
     <string name="deck_section_study">Study</string>
     <string name="note_section_study">Study options</string>
     <string name="deck_detail_counts">%1$d new · %2$d learning · %3$d due</string>

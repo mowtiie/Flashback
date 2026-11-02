@@ -17,6 +17,9 @@ enum class FailureKind {
 
     /** Worth waiting a little and trying again. */
     RateLimited,
+
+    /** The reply held no cards, which for a later part of a long text usually means nothing new. */
+    NoCards,
 }
 
 /** The message is written for the user and shown as is. */

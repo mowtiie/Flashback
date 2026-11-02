@@ -71,6 +71,11 @@ class SectionedGenerator(
             try {
                 return SectionOutcome.Done(index, generator.generate(request))
             } catch (e: GeneratorException) {
+                // After earlier cards, an empty reply means the part had nothing new. That is not a failure,
+                // so it does not count toward stopping the run.
+                if (e.kind == FailureKind.NoCards && known.isNotEmpty()) {
+                    return SectionOutcome.Done(index, DeckArchive.Deck(name = "", notes = emptyList()))
+                }
                 if (e.kind == FailureKind.RateLimited && waits < RATE_LIMIT_RETRIES) {
                     waits++
                     pause(RATE_LIMIT_WAIT_MS * waits)
@@ -85,7 +90,7 @@ class SectionedGenerator(
         const val RATE_LIMIT_RETRIES = 2
         const val MAX_CONSECUTIVE_FAILURES = 3
         const val RATE_LIMIT_WAIT_MS = 20_000L
-        const val NOT_SENT_KEY = "Not sent, because your API key was refused."
-        const val NOT_SENT_ERRORS = "Not sent, because the earlier sections kept failing."
+        const val NOT_SENT_KEY = "Not started, because your API key was refused."
+        const val NOT_SENT_ERRORS = "Not started, because the earlier parts kept failing."
     }
 }

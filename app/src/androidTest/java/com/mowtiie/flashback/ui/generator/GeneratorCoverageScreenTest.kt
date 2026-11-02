@@ -51,16 +51,28 @@ class GeneratorCoverageScreenTest {
     @Test
     fun everythingShowsTheSizeAndAnEstimateAndHidesTheCardCount() {
         show(input)
-        rule.onNodeWithText("Everything").assertIsDisplayed()
-        rule.onNode(hasText("About 3 requests", substring = true)).assertExists()
-        rule.onNode(hasText("Card limit")).assertDoesNotExist()
+        rule.onNodeWithText("Every fact").assertIsDisplayed()
+        rule.onNode(hasText("About 3 parts", substring = true)).assertExists()
+        rule.onNode(hasText("How many cards?")).assertDoesNotExist()
     }
 
     @Test
-    fun keyPointsShowsTheCardCountAndTheOldCounter() {
+    fun keyPointsShowsTheCardCount() {
         show(input.copy(coverage = Coverage.KeyPoints))
-        rule.onNodeWithText("Card limit").assertExists()
-        rule.onNode(hasText("20,000 / 30,000 characters")).assertExists()
+        rule.onNodeWithText("How many cards?").assertExists()
+    }
+
+    @Test
+    fun theCharacterCounterShowsOnlyNearTheLimit() {
+        show(input.copy(coverage = Coverage.KeyPoints))
+        rule.onNode(hasText("characters", substring = true)).assertDoesNotExist()
+
+    }
+
+    @Test
+    fun theCharacterCounterAppearsCloseToTheLimit() {
+        show(input.copy(coverage = Coverage.KeyPoints, source = "x".repeat(25_000)))
+        rule.onNode(hasText("25,000 / 30,000 characters")).assertExists()
     }
 
     @Test
@@ -70,7 +82,7 @@ class GeneratorCoverageScreenTest {
             input.copy(stage = GeneratorStage.Generating, sectionTotal = 6, sectionsFinished = 1),
             GeneratorActions(onCancel = { cancelled++ }),
         )
-        rule.onNodeWithText("Section 2 of 6").assertIsDisplayed()
+        rule.onNodeWithText("Part 2 of 6").assertIsDisplayed()
         rule.onAllNodes(liveRegion).assertCountEquals(1)
         rule.onNodeWithText("Cancel").performClick()
         assertEquals(1, cancelled)
@@ -101,9 +113,9 @@ class GeneratorCoverageScreenTest {
     fun failedSectionsAreListedWithOneRetry() {
         var retried = 0
         show(partial, GeneratorActions(onRetry = { retried++ }))
-        rule.onNodeWithText("2 sections made no cards").assertIsDisplayed()
-        rule.onNodeWithText("Section 2: It broke.").assertIsDisplayed()
-        rule.onNodeWithText("Retry 2 sections").performClick()
+        rule.onNodeWithText("2 parts made no cards").assertIsDisplayed()
+        rule.onNodeWithText("Part 2: It broke.").assertIsDisplayed()
+        rule.onNodeWithText("Retry 2 parts").performClick()
         assertEquals(1, retried)
     }
 
@@ -111,14 +123,14 @@ class GeneratorCoverageScreenTest {
     fun theFailedRowsAreAnnouncedAndTheCountsPerSectionAreShown() {
         show(partial)
         rule.onAllNodes(liveRegion).assertCountEquals(1)
-        rule.onNode(hasText("From 3 sections", substring = true)).assertExists()
+        rule.onNode(hasText("From 3 parts", substring = true)).assertExists()
     }
 
     @Test
     fun retryIsReachableAtLargeFontSize() {
         var retried = 0
         show(partial, GeneratorActions(onRetry = { retried++ }), fontScale = 2f)
-        rule.onNodeWithText("Retry 2 sections").performScrollTo().performClick()
+        rule.onNodeWithText("Retry 2 parts").performScrollTo().performClick()
         assertEquals(1, retried)
     }
 
@@ -130,7 +142,7 @@ class GeneratorCoverageScreenTest {
             input.copy(confirming = true, sectionTotal = 5),
             GeneratorActions(onConfirm = { confirmed++ }, onDismissConfirm = { dismissed++ }),
         )
-        rule.onNodeWithText("Send many requests?").assertIsDisplayed()
+        rule.onNodeWithText("Send in several parts?").assertIsDisplayed()
         rule.onNode(hasText("split into 5 parts", substring = true)).assertExists()
         rule.onNodeWithText("Send").performClick()
         assertEquals(1, confirmed)

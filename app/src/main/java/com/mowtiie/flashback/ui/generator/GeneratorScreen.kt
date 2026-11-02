@@ -1,5 +1,6 @@
 package com.mowtiie.flashback.ui.generator
 
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import android.Manifest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -38,10 +39,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -49,6 +49,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -71,6 +72,7 @@ import com.mowtiie.flashback.generator.GeneratorPlan
 import com.mowtiie.flashback.generator.GeneratorProvider
 import com.mowtiie.flashback.theme.FlashbackTheme
 import com.mowtiie.flashback.ui.components.CenteredScrollColumn
+import com.mowtiie.flashback.ui.components.ConfirmDialog
 import com.mowtiie.flashback.ui.components.EmptyState
 import com.mowtiie.flashback.ui.components.LightDarkPreviews
 import com.mowtiie.flashback.ui.components.showReplacing
@@ -78,6 +80,7 @@ import com.mowtiie.flashback.ui.settings.ChoiceRow
 import com.mowtiie.flashback.ui.settings.ChoiceRowStyle
 import android.text.format.Formatter
 import java.text.NumberFormat
+import kotlinx.coroutines.launch
 
 class GeneratorActions(
     val onBack: () -> Unit = {},
@@ -95,6 +98,7 @@ class GeneratorActions(
     val onDismissConfirm: () -> Unit = {},
     val onDeckNameChange: (String) -> Unit = {},
     val onRemoveCard: (Int) -> Unit = {},
+    val onRestoreCard: (String) -> Unit = {},
     val onStartOver: () -> Unit = {},
     val onSave: () -> Unit = {},
 )
@@ -112,9 +116,8 @@ fun GeneratorRoute(
     val resources = LocalResources.current
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
-    var askingForNotifications by rememberSaveable { mutableStateOf(false) }
 
-    // The run starts whatever the answer is; the notification only shows its progress.
+    // Asked straight away by Android; the run starts whatever the answer is, since the notification only shows progress.
     val notificationLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
         viewModel.generate()
     }
@@ -150,7 +153,8 @@ fun GeneratorRoute(
             onGenerate = {
                 // A long run shows its progress in a notification, which needs the permission on Android 13 and up.
                 if (viewModel.uiState.value.keepsRunning && !context.canPostNotifications() && !notificationAsked()) {
-                    askingForNotifications = true
+                    onNotificationAsked()
+                    notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                 } else {
                     viewModel.generate()
                 }
@@ -161,38 +165,13 @@ fun GeneratorRoute(
             onDismissConfirm = viewModel::dismissConfirm,
             onDeckNameChange = viewModel::setDeckName,
             onRemoveCard = viewModel::removeCard,
+            onRestoreCard = viewModel::restoreCard,
             onStartOver = viewModel::startOver,
             onSave = viewModel::save,
         )
     }
 
     GeneratorScreen(state, actions, snackbarHostState)
-
-    if (askingForNotifications) {
-        AlertDialog(
-            onDismissRequest = { askingForNotifications = false },
-            title = { Text(stringResource(R.string.generator_notify_title)) },
-            text = { Text(stringResource(R.string.generator_notify_body)) },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        askingForNotifications = false
-                        onNotificationAsked()
-                        notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                    },
-                ) { Text(stringResource(R.string.generator_notify_allow)) }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        askingForNotifications = false
-                        onNotificationAsked()
-                        viewModel.generate()
-                    },
-                ) { Text(stringResource(R.string.generator_notify_skip)) }
-            },
-        )
-    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -202,12 +181,34 @@ fun GeneratorScreen(
     actions: GeneratorActions,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
+    val scope = rememberCoroutineScope()
+    val resources = LocalResources.current
+    var confirmLeave by rememberSaveable { mutableStateOf(false) }
+
+    // Leaving while cards are being made, or before saving them, would throw the work away.
+    val leave = { if (state.hasWorkToLose) confirmLeave = true else actions.onBack() }
+    BackHandler(enabled = state.hasWorkToLose) { confirmLeave = true }
+
+    val removeCard = { index: Int, note: DeckArchive.Note ->
+        actions.onRemoveCard(index)
+        scope.launch {
+            snackbarHostState.currentSnackbarData?.dismiss()
+            val result = snackbarHostState.showSnackbar(
+                message = resources.getString(R.string.generator_card_removed),
+                actionLabel = resources.getString(R.string.study_undo),
+                duration = SnackbarDuration.Short,
+            )
+            if (result == SnackbarResult.ActionPerformed) actions.onRestoreCard(note.front)
+        }
+        Unit
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.generator_title)) },
                 navigationIcon = {
-                    IconButton(onClick = actions.onBack) {
+                    IconButton(onClick = leave) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.navigate_up),
@@ -215,6 +216,11 @@ fun GeneratorScreen(
                     }
                 },
             )
+        },
+        bottomBar = {
+            if (state.hasApiKey && (state.stage == GeneratorStage.Review || state.stage == GeneratorStage.Saving)) {
+                ReviewButtons(state, actions)
+            }
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
@@ -228,9 +234,28 @@ fun GeneratorScreen(
                 )
                 state.stage == GeneratorStage.Generating -> Working(state, actions.onCancel)
                 state.stage == GeneratorStage.Input -> InputPage(state, actions)
-                else -> ReviewPage(state, actions)
+                else -> ReviewPage(state, actions, removeCard)
             }
         }
+    }
+
+    if (confirmLeave && state.hasWorkToLose) {
+        val generating = state.stage == GeneratorStage.Generating
+        ConfirmDialog(
+            title = stringResource(if (generating) R.string.generator_leave_run_title else R.string.generator_leave_review_title),
+            body = if (generating) {
+                stringResource(R.string.generator_leave_run_body)
+            } else {
+                pluralStringResource(R.plurals.generator_leave_review_body, state.cards.size, state.cards.size)
+            },
+            confirmLabel = stringResource(if (generating) R.string.generator_leave_run_stop else R.string.generator_leave_review_discard),
+            dismissLabel = stringResource(if (generating) R.string.generator_leave_run_keep else R.string.generator_leave_review_keep),
+            onConfirm = {
+                confirmLeave = false
+                actions.onBack()
+            },
+            onDismiss = { confirmLeave = false },
+        )
     }
 }
 
@@ -244,10 +269,9 @@ private fun InputPage(state: GeneratorUiState, actions: GeneratorActions) {
                 value = state.source,
                 onValueChange = actions.onSourceChange,
                 label = { Text(stringResource(R.string.generator_source_label)) },
-                placeholder = { Text(stringResource(R.string.generator_source_hint)) },
                 isError = state.sourceTooLong,
                 trailingIcon = errorTrailingIcon(state.sourceTooLong),
-                supportingText = { Text(sourceSupport(state)) },
+                supportingText = sourceSupport(state)?.let { text -> { Text(text) } },
                 minLines = 8,
                 maxLines = 16,
                 modifier = Modifier.fillMaxWidth(),
@@ -299,82 +323,81 @@ private fun InputPage(state: GeneratorUiState, actions: GeneratorActions) {
     if (state.confirming) ConfirmRunDialog(state, actions.onConfirm, actions.onDismissConfirm)
 }
 
+/** The hint while the box is empty, then only what a student needs: a problem, or how many parts it will take. */
 @Composable
-private fun sourceSupport(state: GeneratorUiState): String = when {
-    state.sourceTooLong ->
-        stringResource(R.string.generator_source_too_long, grouped(GeneratorPlan.maxChars(state.coverage, state.provider)))
-    (state.coverage == Coverage.Everything || state.estimatedRequests > 1) && state.source.isNotBlank() -> {
-        val size = stringResource(R.string.generator_size, grouped(state.source.length))
-        val estimate = if (state.provider.usesNetwork) {
-            pluralStringResource(
-                R.plurals.generator_estimate,
-                state.estimatedRequests,
-                state.estimatedRequests,
-                state.provider.displayName,
-            )
-        } else {
-            pluralStringResource(R.plurals.generator_estimate_local, state.estimatedRequests, state.estimatedRequests)
-        }
-        "$size. $estimate"
+private fun sourceSupport(state: GeneratorUiState): String? {
+    val limit = GeneratorPlan.maxChars(state.coverage, state.provider)
+    return when {
+        state.sourceTooLong -> stringResource(R.string.generator_source_too_long, grouped(limit))
+        state.source.isBlank() -> stringResource(R.string.generator_source_hint)
+        state.estimatedRequests > 1 ->
+            pluralStringResource(R.plurals.generator_parts, state.estimatedRequests, state.estimatedRequests)
+        state.source.length > limit * NEAR_LIMIT -> stringResource(R.string.generator_source_count, grouped(state.source.length), grouped(limit))
+        else -> null
     }
-    else -> stringResource(
-        R.string.generator_source_count,
-        grouped(state.source.length),
-        grouped(GeneratorPlan.maxChars(state.coverage, state.provider)),
-    )
 }
 
+private const val NEAR_LIMIT = 0.8
+
 @Composable
-private fun ReviewPage(state: GeneratorUiState, actions: GeneratorActions) {
+private fun ReviewPage(
+    state: GeneratorUiState,
+    actions: GeneratorActions,
+    onRemoveCard: (Int, DeckArchive.Note) -> Unit,
+) {
     val saving = state.stage == GeneratorStage.Saving
-    Column(Modifier.fillMaxSize()) {
-        LazyColumn(
-            modifier = Modifier.weight(1f),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            item(key = "name") {
-                OutlinedTextField(
-                    value = state.deckName,
-                    onValueChange = actions.onDeckNameChange,
-                    label = { Text(stringResource(R.string.generator_deck_name)) },
-                    singleLine = true,
-                    enabled = !saving,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
-            item(key = "count") {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        item(key = "name") {
+            OutlinedTextField(
+                value = state.deckName,
+                onValueChange = actions.onDeckNameChange,
+                label = { Text(stringResource(R.string.generator_deck_name)) },
+                singleLine = true,
+                enabled = !saving,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+        item(key = "count") {
+            Text(
+                text = pluralStringResource(R.plurals.generator_review_count, state.cards.size, state.cards.size),
+                style = MaterialTheme.typography.titleSmall,
+            )
+        }
+        if (state.sectionCounts.size > 1 || state.failedSections.isNotEmpty()) {
+            item(key = "sections") { SectionSummary(state, enabled = !saving, onRetry = actions.onRetry) }
+        }
+        if (state.cards.isEmpty()) {
+            item(key = "empty") {
                 Text(
-                    text = pluralStringResource(R.plurals.generator_review_count, state.cards.size, state.cards.size),
-                    style = MaterialTheme.typography.titleSmall,
+                    text = stringResource(R.string.generator_all_removed),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-            }
-            if (state.sectionCounts.size > 1 || state.failedSections.isNotEmpty()) {
-                item(key = "sections") { SectionSummary(state, enabled = !saving, onRetry = actions.onRetry) }
-            }
-            if (state.cards.isEmpty()) {
-                item(key = "empty") {
-                    Text(
-                        text = stringResource(R.string.generator_all_removed),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-            itemsIndexed(state.cards, key = { index, note -> "$index:${note.front}" }) { index, note ->
-                DraftCard(note, enabled = !saving, onRemove = { actions.onRemoveCard(index) })
             }
         }
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
-        ) {
-            OutlinedButton(onClick = actions.onStartOver, enabled = !saving, modifier = Modifier.weight(1f)) {
-                Text(stringResource(R.string.generator_start_over))
-            }
-            Button(onClick = actions.onSave, enabled = state.canSave, modifier = Modifier.weight(1f)) {
-                Text(stringResource(R.string.generator_save))
-            }
+        itemsIndexed(state.cards, key = { index, note -> "$index:${note.front}" }) { index, note ->
+            DraftCard(note, enabled = !saving, onRemove = { onRemoveCard(index, note) })
+        }
+    }
+}
+
+/** In the bottom bar, so the Undo message for a removed card appears above it and not over it. */
+@Composable
+private fun ReviewButtons(state: GeneratorUiState, actions: GeneratorActions) {
+    val saving = state.stage == GeneratorStage.Saving
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.fillMaxWidth().padding(16.dp),
+    ) {
+        OutlinedButton(onClick = actions.onStartOver, enabled = !saving, modifier = Modifier.weight(1f)) {
+            Text(stringResource(R.string.generator_start_over))
+        }
+        Button(onClick = actions.onSave, enabled = state.canSave, modifier = Modifier.weight(1f)) {
+            Text(stringResource(R.string.generator_save))
         }
     }
 }
@@ -519,13 +542,6 @@ internal fun CardTypesChoice(selected: CardTypes?, onSelect: (CardTypes) -> Unit
             style = MaterialTheme.typography.titleSmall,
             modifier = Modifier.padding(top = 8.dp, bottom = 4.dp).asHeading(),
         )
-        if (selected == null) {
-            Text(
-                text = stringResource(R.string.generator_types_required),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
         CardTypes.entries.forEach { types ->
             Row(
                 verticalAlignment = Alignment.CenterVertically,

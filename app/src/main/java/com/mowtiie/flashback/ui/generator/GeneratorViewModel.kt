@@ -17,6 +17,7 @@ import com.mowtiie.flashback.generator.GenerationSession
 import com.mowtiie.flashback.generator.GeneratorProvider
 import com.mowtiie.flashback.generator.GeneratorRequest
 import com.mowtiie.flashback.generator.MaterialSplitter
+import com.mowtiie.flashback.generator.NO_CARDS_MESSAGE
 import com.mowtiie.flashback.generator.SectionOutcome
 import com.mowtiie.flashback.generator.SectionedGenerator
 import com.mowtiie.flashback.repository.ArchiveDataSource
@@ -50,8 +51,8 @@ data class GeneratorUiState(
     val coverage: Coverage = Coverage.Everything,
     /** Only used by key points. */
     val cardCount: CardCount = CardCount.Normal,
-    /** Null until the user picks; the screen has no default so the choice is deliberate. */
-    val cardTypes: CardTypes? = null,
+    /** Plain cards that follow the study setting, so a student can start without choosing. */
+    val cardTypes: CardTypes? = CardTypes.Setting,
     /** Shown on the input page after a failed attempt. */
     val error: String? = null,
     val deckName: String = "",
@@ -61,6 +62,8 @@ data class GeneratorUiState(
     val sectionsFinished: Int = 0,
     /** Cards made from each section, in order. */
     val sectionCounts: List<Int> = emptyList(),
+    /** Parts that finished but added no card, because the text held nothing new. */
+    val nothingNew: Int = 0,
     val failedSections: List<FailedSection> = emptyList(),
     /** A run of many requests waits for a yes before anything is sent. */
     val confirming: Boolean = false,
@@ -78,6 +81,11 @@ data class GeneratorUiState(
     val canGenerate: Boolean
         get() = hasApiKey && stage == GeneratorStage.Input && !confirming && cardTypes != null &&
             (hasPdf || (source.isNotBlank() && !sourceTooLong))
+
+    /** Leaving now would throw away a run in progress, or cards that were made but not saved. */
+    val hasWorkToLose: Boolean
+        get() = stage == GeneratorStage.Generating ||
+            ((stage == GeneratorStage.Review || stage == GeneratorStage.Saving) && cards.isNotEmpty())
 
     val canSave: Boolean
         get() = stage == GeneratorStage.Review && deckName.isNotBlank() && cards.isNotEmpty()
@@ -279,6 +287,7 @@ class GeneratorViewModel(
                 cards = notes,
                 deckName = it.deckName.ifBlank { merged.name },
                 sectionCounts = merged.perSection,
+                nothingNew = merged.perSection.withIndex().count { (index, count) -> count == 0 && results[index] != null },
                 sectionsFinished = results.size + failures.size,
                 failedSections = failures.map { (index, message) -> FailedSection(index + 1, message) },
             )
@@ -288,14 +297,17 @@ class GeneratorViewModel(
     /** With nothing made, go back to the input page with the first reason; otherwise review what exists. */
     private fun finish() {
         session?.end()
-        if (results.isEmpty()) {
+        if (merged().notes.isEmpty()) {
+            // Every part can finish with nothing new, so no cards at all is a result too.
             val reason = failures.values.firstOrNull()?.takeUnless { it == STOPPED }
+                ?: NO_CARDS_MESSAGE.takeIf { results.isNotEmpty() && failures.isEmpty() }
             _uiState.update {
                 it.copy(
                     stage = GeneratorStage.Input,
                     error = reason,
                     cards = emptyList(),
                     failedSections = emptyList(),
+                    nothingNew = 0,
                     deckName = "",
                 )
             }
@@ -321,6 +333,12 @@ class GeneratorViewModel(
         publish()
     }
 
+    /** Puts back a card removed from the review, for Undo. */
+    fun restoreCard(front: String) {
+        removed -= front.trim().lowercase()
+        publish()
+    }
+
     /** Back to the input page with the text kept, to adjust it and generate again. */
     fun startOver() {
         if (_uiState.value.stage != GeneratorStage.Review) return
@@ -332,6 +350,7 @@ class GeneratorViewModel(
                 deckName = "",
                 failedSections = emptyList(),
                 sectionCounts = emptyList(),
+                nothingNew = 0,
                 sectionTotal = 0,
                 sectionsFinished = 0,
             )
@@ -357,6 +376,6 @@ class GeneratorViewModel(
 
     private companion object {
         const val MAX_DECK_NAME = 200
-        const val STOPPED = "Stopped before this section was sent."
+        const val STOPPED = "Stopped before this part was started."
     }
 }

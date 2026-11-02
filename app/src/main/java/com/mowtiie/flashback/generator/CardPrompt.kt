@@ -118,6 +118,8 @@ internal object CardPrompt {
     fun base64(bytes: ByteArray): String = Base64.getEncoder().encodeToString(bytes)
 }
 
+internal const val NO_CARDS_MESSAGE = "No cards could be made from this text."
+
 /** Validates the model's text with [ArchiveParser], like any import, then trims it to the limits. */
 @Throws(GeneratorException::class)
 internal fun deckFromModelText(
@@ -137,7 +139,7 @@ internal fun deckFromModelText(
         .distinctBy { it.front.lowercase() }
         .take(maxCards)
         .map { applyTypes(it, types) }
-    if (notes.isEmpty()) throw GeneratorException("No cards could be made from this text.")
+    if (notes.isEmpty()) throw GeneratorException(NO_CARDS_MESSAGE, kind = FailureKind.NoCards)
 
     return DeckArchive.Deck(name = deck.name.stripInvisible().trim(), notes = notes)
 }

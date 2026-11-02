@@ -25,7 +25,7 @@ object CoverageMerger {
             }
             added
         }
-        val name = sections.firstOrNull { it != null }?.name.orEmpty()
+        val name = sections.firstNotNullOfOrNull { deck -> deck?.name?.takeIf { it.isNotBlank() } }.orEmpty()
         return Merged(name, notes, counts)
     }
 }
