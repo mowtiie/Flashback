@@ -3,6 +3,7 @@ package com.mowtiie.flashback.ui.prompt
 import android.content.ClipData
 import android.content.Intent
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Surface
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -28,6 +29,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -36,11 +40,9 @@ import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.ClipEntry
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mowtiie.flashback.R
-import com.mowtiie.flashback.ui.components.SectionTitle
 import com.mowtiie.flashback.ui.components.asHeading
 import com.mowtiie.flashback.generator.CardTypes
 import com.mowtiie.flashback.generator.PromptCoverage
@@ -48,6 +50,8 @@ import com.mowtiie.flashback.theme.FlashbackTheme
 import com.mowtiie.flashback.ui.components.CenteredScrollColumn
 import com.mowtiie.flashback.ui.components.LightDarkPreviews
 import com.mowtiie.flashback.ui.generator.CardTypesChoice
+import com.mowtiie.flashback.ui.generator.OptionsToggle
+import com.mowtiie.flashback.ui.generator.labelRes
 import com.mowtiie.flashback.ui.settings.ChoiceRow
 import com.mowtiie.flashback.ui.settings.ChoiceRowStyle
 import kotlinx.coroutines.launch
@@ -137,56 +141,68 @@ fun PromptBuilderScreen(
     ) { padding ->
         Box(Modifier.fillMaxSize()) {
             CenteredScrollColumn(Modifier.padding(padding)) {
-                Text(stringResource(R.string.prompt_intro), style = MaterialTheme.typography.bodyMedium)
-                ChoiceRow(
-                    style = ChoiceRowStyle.Form,
-                    title = stringResource(R.string.prompt_coverage_title),
-                    options = PromptCoverage.entries,
-                    selected = state.options.coverage,
-                    label = { stringResource(it.labelRes()) },
-                    onSelect = actions.onCoverage,
-                    hint = stringResource(state.options.coverage.hintRes()),
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(stringResource(R.string.prompt_step_1), style = MaterialTheme.typography.bodyLarge)
+                    Text(stringResource(R.string.prompt_step_2), style = MaterialTheme.typography.bodyLarge)
+                    Text(stringResource(R.string.prompt_step_3), style = MaterialTheme.typography.bodyLarge)
+                }
+                var optionsOpen by rememberSaveable { mutableStateOf(false) }
+                OptionsToggle(
+                    open = optionsOpen,
+                    summary = stringResource(
+                        R.string.generator_options_summary,
+                        stringResource(state.options.coverage.labelRes()),
+                        stringResource(state.options.cardTypes.labelRes()),
+                    ),
+                    onToggle = { optionsOpen = !optionsOpen },
                 )
-                CardTypesChoice(state.options.cardTypes, actions.onCardTypes)
-                OutlinedTextField(
-                    value = state.options.language,
-                    onValueChange = actions.onLanguage,
-                    label = { Text(stringResource(R.string.prompt_language_label)) },
-                    supportingText = { Text(stringResource(R.string.prompt_language_hint)) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                OutlinedTextField(
-                    value = state.options.deckName,
-                    onValueChange = actions.onDeckName,
-                    label = { Text(stringResource(R.string.prompt_name_label)) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                SectionTitle(stringResource(R.string.prompt_preview_title))
-                Card(Modifier.fillMaxWidth()) {
-                    Text(
-                        text = state.prompt,
-                        style = MaterialTheme.typography.bodySmall,
-                        maxLines = PREVIEW_LINES,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.padding(12.dp),
+                if (optionsOpen) {
+                    ChoiceRow(
+                        style = ChoiceRowStyle.Form,
+                        title = stringResource(R.string.prompt_coverage_title),
+                        options = PromptCoverage.entries,
+                        selected = state.options.coverage,
+                        label = { stringResource(it.labelRes()) },
+                        onSelect = actions.onCoverage,
+                        hint = stringResource(state.options.coverage.hintRes()),
+                    )
+                    CardTypesChoice(state.options.cardTypes, actions.onCardTypes)
+                    OutlinedTextField(
+                        value = state.options.language,
+                        onValueChange = actions.onLanguage,
+                        label = { Text(stringResource(R.string.prompt_language_label)) },
+                        supportingText = { Text(stringResource(R.string.prompt_language_hint)) },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    OutlinedTextField(
+                        value = state.options.deckName,
+                        onValueChange = actions.onDeckName,
+                        label = { Text(stringResource(R.string.prompt_name_label)) },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
                     )
                 }
-                Text(
-                    text = stringResource(R.string.prompt_import_hint),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                TextButton(onClick = actions.onImport, modifier = Modifier.fillMaxWidth()) {
+                var promptOpen by rememberSaveable { mutableStateOf(false) }
+                TextButton(onClick = { promptOpen = !promptOpen }, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(if (promptOpen) R.string.prompt_hide else R.string.prompt_show))
+                }
+                if (promptOpen) {
+                    Card(Modifier.fillMaxWidth()) {
+                        Text(
+                            text = state.prompt,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(12.dp),
+                        )
+                    }
+                }
+                OutlinedButton(onClick = actions.onImport, modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(R.string.prompt_import))
                 }
             }
         }
     }
 }
-
-private const val PREVIEW_LINES = 8
 
 private fun PromptCoverage.labelRes(): Int = when (this) {
     PromptCoverage.Everything -> R.string.prompt_coverage_everything

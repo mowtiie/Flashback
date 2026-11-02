@@ -341,7 +341,7 @@ private fun InputPage(state: GeneratorUiState, actions: GeneratorActions) {
 
 /** Closed by default, so a student sees notes and one button; the summary shows what will be used. */
 @Composable
-private fun OptionsToggle(open: Boolean, summary: String, onToggle: () -> Unit) {
+internal fun OptionsToggle(open: Boolean, summary: String, onToggle: () -> Unit) {
     val title = stringResource(R.string.generator_options)
     val shown = stringResource(if (open) R.string.generator_options_open else R.string.generator_options_closed)
     Row(
@@ -603,7 +603,7 @@ internal fun CardTypesChoice(selected: CardTypes?, onSelect: (CardTypes) -> Unit
     }
 }
 
-private fun CardTypes.labelRes(): Int = when (this) {
+internal fun CardTypes.labelRes(): Int = when (this) {
     CardTypes.Setting -> R.string.generator_types_setting
     CardTypes.Mixed -> R.string.generator_types_mixed
     CardTypes.Flip -> R.string.generator_types_flip

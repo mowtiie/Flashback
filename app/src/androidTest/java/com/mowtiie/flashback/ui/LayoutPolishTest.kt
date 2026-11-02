@@ -160,7 +160,7 @@ class LayoutPolishTest {
                 }
             }
         }
-        rule.onNodeWithText("Copy prompt").assertIsDisplayed()
+        rule.onNodeWithText("Copy instructions").assertIsDisplayed()
     }
 
     // 13. The AI ways to start a deck are plain rows after a divider, with no title of their own.

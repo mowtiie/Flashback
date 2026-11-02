@@ -123,7 +123,7 @@ class GuidelinesFollowUpTest {
         }
         rule.waitForIdle()
         val snackbar = rule.onNodeWithText("Prompt copied").getBoundsInRoot()
-        val copy = rule.onNodeWithText("Copy prompt").getBoundsInRoot()
+        val copy = rule.onNodeWithText("Copy instructions").getBoundsInRoot()
         val height = rule.onRoot().getBoundsInRoot().bottom
         assertTrue("snackbar should be in the lower half", snackbar.top > height / 2)
         assertTrue("snackbar ${snackbar.bottom} should end above Copy at ${copy.top}", snackbar.bottom <= copy.top)
