@@ -163,6 +163,16 @@ class LocalCardGeneratorTest {
     }
 
     @Test
+    fun theProgressNotificationIsAskedAboutOnlyOnce() {
+        val store = FakePreferenceStore()
+        assertFalse(GeneratorPreferences(store).progressNotificationAsked)
+
+        GeneratorPreferences(store).progressNotificationAsked = true
+
+        assertTrue(GeneratorPreferences(store).progressNotificationAsked)
+    }
+
+    @Test
     fun onDeviceDoesNotAffectTheOnlineKeys() {
         val prefs = GeneratorPreferences(FakePreferenceStore())
         prefs.setApiKey(GeneratorProvider.Anthropic, "anthropic-key")

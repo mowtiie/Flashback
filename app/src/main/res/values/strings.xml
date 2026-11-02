@@ -370,6 +370,10 @@
         <item quantity="one">Your material makes %1$d request to %2$s. It is billed to your own key.</item>
         <item quantity="other">Your material is split into %1$d parts. Each is sent to %2$s on its own, and each request is billed to your own key.</item>
     </plurals>
+    <string name="generator_notify_title">Show progress?</string>
+    <string name="generator_notify_body">Making cards can take a few minutes. A notification shows how far it is and lets you cancel, even when the screen is off.</string>
+    <string name="generator_notify_allow">Allow</string>
+    <string name="generator_notify_skip">Not now</string>
     <string name="generator_confirm_send">Send</string>
     <string name="generator_progress">Section %1$d of %2$d</string>
     <plurals name="generator_cards_so_far">

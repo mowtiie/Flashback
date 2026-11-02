@@ -16,6 +16,7 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -82,6 +83,22 @@ class GeneratorOnDeviceViewModelTest {
 
         assertEquals(1, requests.size)
         assertNull(requests.single().cardLimit)
+    }
+
+    @Test
+    fun onlyLongRunsNeedTheProgressNotification() {
+        val onDevice = viewModel(GeneratorProvider.OnDevice)
+        onDevice.setSource(paragraph(1, 500))
+        assertTrue(onDevice.uiState.value.keepsRunning)
+
+        val quickOnline = viewModel(GeneratorProvider.Anthropic)
+        quickOnline.setSource(paragraph(1, 500))
+        assertFalse(quickOnline.uiState.value.keepsRunning)
+
+        val longOnline = viewModel(GeneratorProvider.Anthropic)
+        longOnline.setCoverage(Coverage.Everything)
+        longOnline.setSource(paragraph(1, 5_000) + "\n\n" + paragraph(2, 5_000))
+        assertTrue(longOnline.uiState.value.keepsRunning)
     }
 
     @Test

@@ -1,6 +1,7 @@
 package com.mowtiie.flashback.ui.generator
 
 import androidx.activity.compose.rememberLauncherForActivityResult
+import android.Manifest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.selection.selectable
@@ -39,9 +40,14 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,6 +60,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mowtiie.flashback.R
+import com.mowtiie.flashback.notifications.canPostNotifications
 import com.mowtiie.flashback.ui.components.errorTrailingIcon
 import com.mowtiie.flashback.ui.components.asHeading
 import com.mowtiie.flashback.data.io.DeckArchive
@@ -98,11 +105,19 @@ fun GeneratorRoute(
     onBack: () -> Unit,
     onOpenSettings: () -> Unit,
     onSaved: () -> Unit,
+    notificationAsked: () -> Boolean = { true },
+    onNotificationAsked: () -> Unit = {},
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val resources = LocalResources.current
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
+    var askingForNotifications by rememberSaveable { mutableStateOf(false) }
+
+    // The run starts whatever the answer is; the notification only shows its progress.
+    val notificationLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+        viewModel.generate()
+    }
 
     val pdfLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri != null) viewModel.attachPdf { PdfFiles.read(context.contentResolver, uri) }
@@ -132,7 +147,14 @@ fun GeneratorRoute(
             onCoverage = viewModel::setCoverage,
             onCardCount = viewModel::setCardCount,
             onCardTypes = viewModel::setCardTypes,
-            onGenerate = viewModel::generate,
+            onGenerate = {
+                // A long run shows its progress in a notification, which needs the permission on Android 13 and up.
+                if (viewModel.uiState.value.keepsRunning && !context.canPostNotifications() && !notificationAsked()) {
+                    askingForNotifications = true
+                } else {
+                    viewModel.generate()
+                }
+            },
             onCancel = viewModel::cancelGeneration,
             onRetry = viewModel::retryFailed,
             onConfirm = viewModel::confirmGenerate,
@@ -145,6 +167,32 @@ fun GeneratorRoute(
     }
 
     GeneratorScreen(state, actions, snackbarHostState)
+
+    if (askingForNotifications) {
+        AlertDialog(
+            onDismissRequest = { askingForNotifications = false },
+            title = { Text(stringResource(R.string.generator_notify_title)) },
+            text = { Text(stringResource(R.string.generator_notify_body)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        askingForNotifications = false
+                        onNotificationAsked()
+                        notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    },
+                ) { Text(stringResource(R.string.generator_notify_allow)) }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        askingForNotifications = false
+                        onNotificationAsked()
+                        viewModel.generate()
+                    },
+                ) { Text(stringResource(R.string.generator_notify_skip)) }
+            },
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

@@ -72,6 +72,9 @@ data class GeneratorUiState(
     /** A rough count from the length, shown before the real split is known. */
     val estimatedRequests: Int get() = GeneratorPlan.requests(coverage, source.trim().length, hasPdf, provider)
 
+    /** A run long enough to be kept alive, with a progress notification, while the screen is off. */
+    val keepsRunning: Boolean get() = !provider.usesNetwork || estimatedRequests > 1
+
     val canGenerate: Boolean
         get() = hasApiKey && stage == GeneratorStage.Input && !confirming && cardTypes != null &&
             (hasPdf || (source.isNotBlank() && !sourceTooLong))

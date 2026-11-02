@@ -230,6 +230,8 @@ private fun NavGraphBuilder.generatorDestination(container: AppContainer, navCon
                     session = container.generationSession,
                 )
             },
+            notificationAsked = { container.generatorPreferences.progressNotificationAsked },
+            onNotificationAsked = { container.generatorPreferences.progressNotificationAsked = true },
             onBack = { navController.popBackStack() },
             onOpenSettings = { navController.navigateTopLevel(Routes.SETTINGS) },
             onSaved = {

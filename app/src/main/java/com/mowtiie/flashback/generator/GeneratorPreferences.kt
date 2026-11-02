@@ -21,6 +21,11 @@ class GeneratorPreferences(
     val hasApiKey: Boolean
         get() = if (provider == GeneratorProvider.OnDevice) localModelName != null else apiKey != null
 
+    /** Set once the student has been asked to allow the progress notification, so it is not asked again. */
+    var progressNotificationAsked: Boolean
+        get() = store.getBoolean(KEY_NOTIFICATION_ASKED, false)
+        set(value) = store.putBoolean(KEY_NOTIFICATION_ASKED, value)
+
     /** The display name of the model file the student picked, or null when none is installed. */
     var localModelName: String?
         get() = store.getString(KEY_LOCAL_MODEL)?.takeIf { it.isNotEmpty() }
@@ -50,6 +55,7 @@ class GeneratorPreferences(
 
     private companion object {
         const val KEY_LOCAL_MODEL = "generator_local_model"
+        const val KEY_NOTIFICATION_ASKED = "generator_notification_asked"
         const val KEY_PROVIDER = "generator_provider"
         const val PREFIX = "enc1:"
     }
