@@ -227,6 +227,7 @@ private fun NavGraphBuilder.generatorDestination(container: AppContainer, navCon
                     provider = { container.generatorPreferences.provider },
                     ioDispatcher = container.dispatchers.io,
                     onLeave = container::releaseLocalModel,
+                    session = container.generationSession,
                 )
             },
             onBack = { navController.popBackStack() },

@@ -13,6 +13,7 @@ import com.mowtiie.flashback.generator.GeneratorException
 import com.mowtiie.flashback.generator.GeneratorInput
 import com.mowtiie.flashback.generator.GeneratorLimits
 import com.mowtiie.flashback.generator.GeneratorPlan
+import com.mowtiie.flashback.generator.GenerationSession
 import com.mowtiie.flashback.generator.GeneratorProvider
 import com.mowtiie.flashback.generator.GeneratorRequest
 import com.mowtiie.flashback.generator.MaterialSplitter
@@ -94,6 +95,7 @@ class GeneratorViewModel(
     private val ioDispatcher: CoroutineDispatcher,
     pause: suspend (Long) -> Unit = { delay(it) },
     private val onLeave: () -> Unit = {},
+    private val session: GenerationSession? = null,
 ) : ViewModel() {
 
     private val sectioned = SectionedGenerator(generator, pause)
@@ -105,6 +107,7 @@ class GeneratorViewModel(
     val eventFlow = events.receiveAsFlow()
 
     override fun onCleared() {
+        session?.end()
         onLeave()
     }
 
@@ -220,17 +223,21 @@ class GeneratorViewModel(
     private suspend fun single(request: GeneratorRequest) {
         sections = listOf("")
         _uiState.update { it.copy(sectionTotal = 1) }
+        // A phone model can take minutes, so it is kept alive with the screen off; a quick online request is not.
+        if (!provider().usesNetwork) session?.begin(1, ::cancelGeneration)
         try {
             results[0] = generator.generate(request)
             publish()
             finish()
         } catch (e: GeneratorException) {
+            session?.end()
             _uiState.update { it.copy(stage = GeneratorStage.Input, error = e.message) }
         }
     }
 
     private suspend fun runSections(indices: List<Int>, types: CardTypes) {
         _uiState.update { it.copy(sectionTotal = sections.size) }
+        if (!provider().usesNetwork || sections.size > 1) session?.begin(sections.size, ::cancelGeneration)
         sectioned.run(
             sections,
             indices,
@@ -259,6 +266,7 @@ class GeneratorViewModel(
     private fun publish() {
         val merged = merged()
         val notes = merged.notes.filter { it.front.trim().lowercase() !in removed }
+        session?.update(results.size + failures.size, notes.size)
         _uiState.update {
             it.copy(
                 cards = notes,
@@ -272,6 +280,7 @@ class GeneratorViewModel(
 
     /** With nothing made, go back to the input page with the first reason; otherwise review what exists. */
     private fun finish() {
+        session?.end()
         if (results.isEmpty()) {
             val reason = failures.values.firstOrNull()?.takeUnless { it == STOPPED }
             _uiState.update {

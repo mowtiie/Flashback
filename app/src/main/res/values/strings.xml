@@ -108,6 +108,15 @@
     <string name="reminder_permission_denied">Notifications are turned off for Flashback. Enable them in system settings to get reminders.</string>
     <string name="reminder_channel_name">Study reminders</string>
     <string name="reminder_channel_body">The daily nudge to review your due cards.</string>
+    <string name="generation_channel_name">Card generation</string>
+    <string name="generation_channel_body">Shows progress while cards are being made.</string>
+    <string name="generation_notification_title">Making your cards</string>
+    <string name="generation_notification_single">This can take a minute or two.</string>
+    <string name="generation_notification_parts">Part %1$d of %2$d, %3$s so far</string>
+    <plurals name="generation_notification_cards">
+        <item quantity="one">%d card</item>
+        <item quantity="other">%d cards</item>
+    </plurals>
     <string name="reminder_title">Time to study</string>
     <plurals name="reminder_body">
         <item quantity="one">%1$d card is waiting for review.</item>

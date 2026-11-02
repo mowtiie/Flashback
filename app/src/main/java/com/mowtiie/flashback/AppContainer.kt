@@ -5,6 +5,7 @@ import com.mowtiie.flashback.data.FlashbackDatabase
 import com.mowtiie.flashback.generator.AnthropicCardGenerator
 import com.mowtiie.flashback.generator.CardGenerator
 import com.mowtiie.flashback.generator.GeminiCardGenerator
+import com.mowtiie.flashback.generator.GenerationSession
 import com.mowtiie.flashback.generator.GeneratorPreferences
 import com.mowtiie.flashback.generator.GeneratorProvider
 import com.mowtiie.flashback.generator.KeystoreSecretCipher
@@ -45,6 +46,8 @@ class AppContainer(context: Context) {
             KeystoreSecretCipher(),
         )
     }
+
+    val generationSession = GenerationSession()
 
     val localModelStore: LocalModelStore by lazy { LocalModelStore(appContext, dispatchers.io) }
 

@@ -36,7 +36,8 @@ Your API key is encrypted with a key held in the Android Keystore and stored onl
 
 ## Permissions
 
-- **Notifications:** for the optional daily study reminder. You can turn it off in Settings.
+- **Notifications:** for the optional daily study reminder, and for the progress of a long card generation. You can turn the reminder off in Settings.
+- **Foreground service:** while cards are being made, so a long run keeps going when the screen is off or you switch apps. It shows a notification with the progress and a Cancel button and stops when the run ends. It sends nothing anywhere.
 - **Internet:** only for the optional generator described above.
 
 ## Backups
