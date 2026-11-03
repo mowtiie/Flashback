@@ -3,7 +3,6 @@ package com.mowtiie.flashback
 import android.app.Application
 import android.content.Intent
 import androidx.core.content.ContextCompat
-import androidx.work.Configuration
 import com.mowtiie.flashback.generator.GenerationService
 import com.mowtiie.flashback.notifications.ReminderNotifier
 import kotlinx.coroutines.CoroutineScope
@@ -13,7 +12,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
-class FlashbackApp : Application(), Configuration.Provider {
+class FlashbackApp : Application() {
 
     lateinit var container: AppContainer
         private set
@@ -22,7 +21,7 @@ class FlashbackApp : Application(), Configuration.Provider {
         super.onCreate()
         container = AppContainer(this)
 
-        // Off the main thread: reading prefs and touching WorkManager must not delay launch.
+        // Off the main thread: reading prefs must not delay launch.
         CoroutineScope(SupervisorJob() + container.dispatchers.io).launch {
             ReminderNotifier.ensureChannel(this@FlashbackApp)
             container.reminderScheduler.ensureScheduled()
@@ -50,8 +49,4 @@ class FlashbackApp : Application(), Configuration.Provider {
                 }
         }
     }
-
-    /** On-demand WorkManager init; the start-up provider is removed in the manifest. */
-    override val workManagerConfiguration: Configuration
-        get() = Configuration.Builder().build()
 }

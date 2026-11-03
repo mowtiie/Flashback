@@ -1,21 +1,20 @@
 package com.mowtiie.flashback.notifications
 
+import android.app.AlarmManager
+import android.app.PendingIntent
 import android.content.Context
-import androidx.work.ExistingWorkPolicy
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
+import android.content.Intent
 import java.util.TimeZone
-import java.util.concurrent.TimeUnit
 
 /** What the settings screen needs from scheduling, so it can be faked in tests. */
 fun interface ReminderScheduling {
-    /** Enqueues or cancels the reminder to match the saved preferences, replacing any pending run. */
+    /** Sets or cancels the reminder alarm to match the saved preferences, replacing any pending one. */
     fun reschedule()
 }
 
 /**
- * Runs the daily reminder as a self-rescheduling one-time worker, so it fires at the
- * exact clock time instead of drifting like periodic work.
+ * Sets one inexact alarm for the next reminder time. It needs no permission and may fire a few
+ * minutes late in battery saving. The receiver sets the next one, so the chain continues daily.
  */
 class ReminderScheduler(
     context: Context,
@@ -24,31 +23,30 @@ class ReminderScheduler(
 ) : ReminderScheduling {
     private val appContext = context.applicationContext
 
-    override fun reschedule() = schedule(ExistingWorkPolicy.REPLACE)
+    override fun reschedule() = schedule()
 
-    /**
-     * For app start-up: leaves a pending run alone. WorkManager can start the process to run
-     * the reminder, and replacing the work then would cancel the run that started it.
-     */
-    fun ensureScheduled() = schedule(ExistingWorkPolicy.KEEP)
+    /** For app start-up and after a reboot or update, which clear alarms; setting the same alarm twice is harmless. */
+    fun ensureScheduled() = schedule()
 
-    private fun schedule(policy: ExistingWorkPolicy) {
-        val workManager = WorkManager.getInstance(appContext)
+    private fun schedule() {
+        val alarms = appContext.getSystemService(AlarmManager::class.java) ?: return
+        val pending = pendingIntent()
         if (!prefs.enabled) {
-            workManager.cancelUniqueWork(WORK_NAME)
+            alarms.cancel(pending)
             return
         }
-
-        val delay = ReminderTime.millisUntilNext(clock(), prefs.hour, prefs.minute, TimeZone.getDefault())
-        val request = OneTimeWorkRequestBuilder<ReminderWorker>()
-            .setInitialDelay(delay, TimeUnit.MILLISECONDS)
-            .addTag(WORK_NAME)
-            .build()
-
-        workManager.enqueueUniqueWork(WORK_NAME, policy, request)
+        val now = clock()
+        val delay = ReminderTime.millisUntilNext(now, prefs.hour, prefs.minute, TimeZone.getDefault())
+        alarms.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, now + delay, pending)
     }
 
-    private companion object {
-        const val WORK_NAME = "flashback_daily_reminder"
+    private fun pendingIntent(): PendingIntent {
+        val intent = Intent(appContext, ReminderReceiver::class.java).setAction(ReminderReceiver.ACTION_REMIND)
+        return PendingIntent.getBroadcast(
+            appContext,
+            0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
     }
 }
