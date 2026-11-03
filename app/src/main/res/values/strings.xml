@@ -347,7 +347,7 @@
     <string name="new_deck_hybrid">AI website</string>
     <string name="new_deck_hybrid_body">Copy a prompt for ChatGPT, Claude or Gemini, then import the file it makes.</string>
 
-    <string name="prompt_title">Use a chat website</string>
+    <string name="prompt_title">Use a website</string>
     <string name="prompt_step_1">1. Copy the instructions below.</string>
     <string name="prompt_step_2">2. Paste them into ChatGPT, Claude or Gemini, together with your notes or PDF.</string>
     <string name="prompt_step_3">3. Import the file it makes, or copy its reply and paste it in.</string>
@@ -425,5 +425,5 @@
     <string name="settings_author">Author</string>
     <string name="settings_author_body">mowtiie</string>
     <string name="settings_version">Version</string>
-    <string name="settings_easter_egg">You found the easter egg! Now go review your cards.</string>
+    <string name="settings_easter_egg">Mann!</string>
 </resources>
