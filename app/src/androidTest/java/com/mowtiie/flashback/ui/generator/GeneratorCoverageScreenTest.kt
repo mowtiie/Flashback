@@ -51,7 +51,6 @@ class GeneratorCoverageScreenTest {
     @Test
     fun everythingShowsTheSizeAndAnEstimateAndHidesTheCardCount() {
         show(input)
-        rule.onNodeWithText("Options").performClick()
         rule.onNodeWithText("Every fact").assertIsDisplayed()
         rule.onNode(hasText("About 3 parts", substring = true)).assertExists()
         rule.onNode(hasText("How many cards?")).assertDoesNotExist()
@@ -60,7 +59,6 @@ class GeneratorCoverageScreenTest {
     @Test
     fun keyPointsShowsTheCardCount() {
         show(input.copy(coverage = Coverage.KeyPoints))
-        rule.onNodeWithText("Options").performClick()
         rule.onNodeWithText("How many cards?").assertExists()
     }
 

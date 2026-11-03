@@ -132,6 +132,8 @@ internal fun ActionRow(
     enabled: Boolean = true,
     /** For an action that removes something: error colour, and no chevron since nothing opens. */
     destructive: Boolean = false,
+    /** False for a row that only shows information. */
+    showArrow: Boolean = true,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -173,7 +175,7 @@ internal fun ActionRow(
             )
         }
         // The arrow tells a row that opens something from a line of text.
-        if (!destructive) {
+        if (!destructive && showArrow) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = null,

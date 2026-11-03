@@ -15,6 +15,20 @@ class ChatPromptTest {
         deckName: String = "",
     ) = ChatPrompt.build(ChatPromptOptions(coverage, types, language, deckName))
 
+    @Test
+    fun bigIdeasAsksForAtMostTheChosenNumberOfCards() {
+        val few = ChatPrompt.build(ChatPromptOptions(PromptCoverage.KeyPoints, cardCount = CardCount.Few))
+        val many = ChatPrompt.build(ChatPromptOptions(PromptCoverage.KeyPoints, cardCount = CardCount.Many))
+
+        assertTrue(few.contains("at most 15 cards"))
+        assertTrue(many.contains("at most 60 cards"))
+    }
+
+    @Test
+    fun everyFactSetsNoLimit() {
+        assertFalse(prompt(PromptCoverage.Everything).contains("at most"))
+    }
+
     /** The first JSON object in the prompt is the example the model is asked to copy. */
     private fun example(text: String): String {
         val start = text.indexOf("{\"version\"")

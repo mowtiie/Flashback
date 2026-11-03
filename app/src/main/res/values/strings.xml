@@ -34,7 +34,7 @@
         <item quantity="one">%1$d day in a row. Keep it going!</item>
         <item quantity="other">You have studied %1$d days in a row. Keep it going!</item>
     </plurals>
-    <string name="tag_add_description">Add a description</string>
+    <string name="field_optional">Optional</string>
     <string name="study_undo">Undo</string>
 
     <string name="unsaved_title">Discard changes?</string>
@@ -283,10 +283,6 @@
 
     <string name="generator_title">Generate cards</string>
     <string name="generator_source_label">Your notes</string>
-    <string name="generator_options">Options</string>
-    <string name="generator_options_summary">%1$s · %2$s</string>
-    <string name="generator_options_open">Shown</string>
-    <string name="generator_options_closed">Hidden</string>
     <string name="generator_source_hint">Paste your notes, a chapter or an exam reviewer here</string>
     <string name="generator_source_count">%1$s / %2$s characters</string>
     <string name="generator_source_too_long">Too long. Use at most %1$s characters at a time.</string>
@@ -355,21 +351,21 @@
     <string name="prompt_step_1">1. Copy the instructions below.</string>
     <string name="prompt_step_2">2. Paste them into ChatGPT, Claude or Gemini, together with your notes or PDF.</string>
     <string name="prompt_step_3">3. Import the file it makes, or copy its reply and paste it in.</string>
+    <string name="prompt_instructions_title">The instructions</string>
     <string name="prompt_show">See the instructions</string>
-    <string name="prompt_hide">Hide the instructions</string>
     <string name="prompt_coverage_title">What to include</string>
     <string name="prompt_coverage_everything">Every fact</string>
     <string name="prompt_coverage_key">Big ideas</string>
     <string name="prompt_coverage_hint_everything">A card for every fact, so nothing is missed.</string>
     <string name="prompt_coverage_hint_key">Only the main ideas, for a short deck.</string>
-    <string name="prompt_language_label">Language (optional)</string>
-    <string name="prompt_language_hint">Leave empty to use the language of your material.</string>
-    <string name="prompt_name_label">Deck name (optional)</string>
+    <string name="prompt_language_label">Language</string>
+    <string name="prompt_language_hint">Optional. Leave empty to use the language of your material.</string>
+    <string name="prompt_name_label">Deck name</string>
     <string name="prompt_copy">Copy instructions</string>
     <string name="prompt_copied">Instructions copied</string>
     <string name="prompt_share">Share instructions</string>
     <string name="prompt_share_chooser">Share instructions</string>
-    <string name="prompt_import">Import the file</string>
+    <string name="prompt_import">Import the cards</string>
 
     <plurals name="generator_parts">
         <item quantity="one">About %1$d part, made one after another.</item>
@@ -419,4 +415,15 @@
     <string name="settings_about_header">About</string>
     <string name="settings_privacy_policy">Privacy policy</string>
     <string name="settings_privacy_policy_body">What stays on your device and what the optional AI generator sends.</string>
+    <string name="settings_license">License</string>
+    <string name="settings_license_body">GNU General Public License v3.0</string>
+    <string name="settings_license_close">Close</string>
+    <string name="settings_source_code">Source code</string>
+    <string name="settings_source_code_body">View the project on GitHub</string>
+    <string name="settings_support">Support</string>
+    <string name="settings_support_body">If you enjoy using Flashback, you can support its development</string>
+    <string name="settings_author">Author</string>
+    <string name="settings_author_body">mowtiie</string>
+    <string name="settings_version">Version</string>
+    <string name="settings_easter_egg">You found the easter egg! Now go review your cards.</string>
 </resources>

@@ -7,9 +7,11 @@ import kotlinx.coroutines.flow.receiveAsFlow
 
 /** [onAction] runs when the user taps the action, e.g. an undo. */
 class AppMessage(
-    @param:StringRes val text: Int,
+    @param:StringRes val text: Int = 0,
     @param:StringRes val actionLabel: Int? = null,
     val onAction: (suspend () -> Unit)? = null,
+    /** Text that is already built, such as an import summary; used instead of [text]. */
+    val literal: String? = null,
 )
 
 /** Snackbar messages that outlive the screen that raised them, e.g. after a delete pops it. */
@@ -20,6 +22,10 @@ class AppMessenger {
 
     fun show(@StringRes text: Int) {
         channel.trySend(AppMessage(text))
+    }
+
+    fun show(text: String) {
+        channel.trySend(AppMessage(literal = text))
     }
 
     fun showWithAction(@StringRes text: Int, @StringRes actionLabel: Int, onAction: suspend () -> Unit) {

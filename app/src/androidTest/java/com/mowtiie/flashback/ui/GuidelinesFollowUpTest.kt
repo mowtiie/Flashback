@@ -118,7 +118,7 @@ class GuidelinesFollowUpTest {
         rule.setContent {
             LaunchedEffect(Unit) { host.showSnackbar("Prompt copied") }
             FlashbackTheme(dynamicColor = false) {
-                PromptBuilderScreen(PromptBuilderUiState(), PromptBuilderActions(), host)
+                PromptBuilderScreen(PromptBuilderUiState(), PromptBuilderActions(), snackbarHostState = host)
             }
         }
         rule.waitForIdle()

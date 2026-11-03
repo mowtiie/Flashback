@@ -111,10 +111,42 @@ class SettingsScreenTest {
     }
 
     @Test
-    fun thePrivacyPolicyIsLinkedFromSettings() {
-        var opened = 0
-        show(actions = SettingsActions(onOpenPrivacyPolicy = { opened++ }))
+    fun thePrivacyPolicyOpensInADialog() {
+        val opened = mutableListOf<String>()
+        show(actions = SettingsActions(onOpenLink = { opened += it }))
         rule.onNodeWithText("Privacy policy").performScrollTo().performClick()
-        org.junit.Assert.assertEquals(1, opened)
+        rule.onNode(hasText("Flashback privacy policy")).assertExists()
+        rule.onNode(hasText("What stays on your device")).assertExists()
+        rule.onNode(hasText("2022")).assertDoesNotExist()
+        assertEquals(emptyList<String>(), opened)
+        rule.onNodeWithText("Close").performClick()
+        rule.onNode(hasText("What stays on your device")).assertDoesNotExist()
+    }
+
+    @Test
+    fun theAboutLinksOpenTheirPages() {
+        val opened = mutableListOf<String>()
+        show(actions = SettingsActions(onOpenLink = { opened += it }))
+        rule.onNodeWithText("Source code").performScrollTo().performClick()
+        rule.onNodeWithText("Support").performScrollTo().performClick()
+        rule.onNodeWithText("Author").performScrollTo().performClick()
+        assertEquals(listOf(AppLinks.SOURCE_CODE, AppLinks.SUPPORT, AppLinks.AUTHOR), opened)
+    }
+
+    @Test
+    fun theLicenseOpensInADialogTitledLicense() {
+        show()
+        rule.onNodeWithText("License").performScrollTo().performClick()
+        rule.onNode(hasText("GNU GENERAL PUBLIC LICENSE", substring = true)).assertExists()
+        rule.onNodeWithText("Close").performClick()
+        rule.onNode(hasText("GNU GENERAL PUBLIC LICENSE", substring = true)).assertDoesNotExist()
+    }
+
+    @Test
+    fun theVersionRowShowsTheVersionAndOpensNothing() {
+        val opened = mutableListOf<String>()
+        show(actions = SettingsActions(onOpenLink = { opened += it }))
+        rule.onNodeWithText("Version").performScrollTo().performClick()
+        assertEquals(emptyList<String>(), opened)
     }
 }

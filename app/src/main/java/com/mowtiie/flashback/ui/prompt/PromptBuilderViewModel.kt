@@ -1,6 +1,7 @@
 package com.mowtiie.flashback.ui.prompt
 
 import androidx.lifecycle.ViewModel
+import com.mowtiie.flashback.generator.CardCount
 import com.mowtiie.flashback.generator.CardTypes
 import com.mowtiie.flashback.generator.ChatPrompt
 import com.mowtiie.flashback.generator.ChatPromptOptions
@@ -21,6 +22,8 @@ class PromptBuilderViewModel : ViewModel() {
     val uiState: StateFlow<PromptBuilderUiState> = _uiState.asStateFlow()
 
     fun setCoverage(coverage: PromptCoverage) = change { it.copy(coverage = coverage) }
+
+    fun setCardCount(count: CardCount) = change { it.copy(cardCount = count) }
 
     fun setCardTypes(types: CardTypes) = change { it.copy(cardTypes = types) }
 

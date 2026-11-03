@@ -213,7 +213,13 @@ private fun NavGraphBuilder.generatorDestination(container: AppContainer, navCon
         PromptBuilderRoute(
             viewModel = destinationViewModel { PromptBuilderViewModel() },
             onBack = { navController.popBackStack() },
-            onImport = { navController.navigateTopLevel(Routes.SETTINGS) },
+            transferViewModel = destinationViewModel {
+                DataTransferViewModel(archive = container.repository, ioDispatcher = container.dispatchers.io)
+            },
+            onImported = { summary ->
+                navController.popBackStack()
+                container.messenger.show(summary)
+            },
         )
     }
 

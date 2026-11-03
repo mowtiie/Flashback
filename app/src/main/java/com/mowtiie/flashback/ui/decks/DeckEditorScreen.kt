@@ -184,6 +184,7 @@ fun DeckEditorScreen(
                 value = form.description,
                 onValueChange = onDescriptionChange,
                 label = { Text(stringResource(R.string.deck_description)) },
+                supportingText = { Text(stringResource(R.string.field_optional)) },
                 maxLines = 3,
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
                 modifier = Modifier

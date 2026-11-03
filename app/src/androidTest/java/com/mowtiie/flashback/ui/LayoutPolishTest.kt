@@ -101,6 +101,21 @@ class LayoutPolishTest {
         rule.onNode(hasText("Study") and isHeading).assertExists()
     }
 
+    @Test
+    fun theDeckDescriptionSaysItIsOptional() {
+        rule.setContent {
+            FlashbackTheme(dynamicColor = false) {
+                DeckEditorScreen(
+                    state = DeckEditorUiState(ready = true),
+                    onBack = {}, onNameChange = {}, onDescriptionChange = {}, onReverseChange = {},
+                    onNewPerDayChange = {}, onReviewsPerDayChange = {}, onTagToggle = { _, _ -> },
+                    onNewTag = {}, onSave = {},
+                )
+            }
+        }
+        rule.onNodeWithText("Optional").assertExists()
+    }
+
     // 8. The deck page opens with a summary.
     @Test
     fun theDeckPageShowsADescriptionTagsAndCounts() {

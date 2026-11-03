@@ -5,6 +5,7 @@ import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithContentDescription
@@ -14,6 +15,7 @@ import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.mowtiie.flashback.theme.FlashbackTheme
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -53,6 +55,15 @@ class NewDeckSheetTest {
     fun theAppBarNoLongerHasAGenerateButton() {
         show()
         rule.onAllNodesWithContentDescription("Generate cards with AI").assertCountEquals(0)
+    }
+
+    @Test
+    fun theChatWebsiteIsTheSecondWay() {
+        show()
+        openSheet()
+        val top = { text: String -> rule.onNode(inSheet(text)).getBoundsInRoot().top }
+        assertTrue(top("Make it myself") < top("AI website"))
+        assertTrue(top("AI website") < top("Generate with AI"))
     }
 
     @Test

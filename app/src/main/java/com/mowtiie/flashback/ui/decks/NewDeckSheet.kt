@@ -58,16 +58,16 @@ internal fun NewDeckSheet(
             onClick = { choose(onManual) },
         )
         ActionRow(
-            title = stringResource(R.string.new_deck_ai),
-            body = stringResource(R.string.new_deck_ai_body),
-            leadingIcon = R.drawable.ic_generate,
-            onClick = { choose(onGenerate) },
-        )
-        ActionRow(
             title = stringResource(R.string.new_deck_hybrid),
             body = stringResource(R.string.new_deck_hybrid_body),
             leadingIcon = R.drawable.ic_paste,
             onClick = { choose(onPromptHelper) },
+        )
+        ActionRow(
+            title = stringResource(R.string.new_deck_ai),
+            body = stringResource(R.string.new_deck_ai_body),
+            leadingIcon = R.drawable.ic_generate,
+            onClick = { choose(onGenerate) },
         )
         Spacer(Modifier.height(16.dp))
     }

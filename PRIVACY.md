@@ -1,6 +1,6 @@
 # Flashback privacy policy
 
-Last updated: 1 November 2026
+Last updated: 3 November 2026
 
 Flashback is a free, open-source (GPL v3) flashcard app. It has no accounts, no ads, no trackers and no analytics. The developer does not run a server for it and cannot see your decks, your study history or anything else you do in the app.
 
@@ -37,6 +37,7 @@ Your API key is encrypted with a key held in the Android Keystore and stored onl
 ## Permissions
 
 - **Notifications:** for the optional daily study reminder, and for the progress of a long card generation. You can turn the reminder off in Settings.
+- **Run at startup:** only to set the daily study reminder again after the phone restarts. It does nothing else.
 - **Foreground service:** while cards are being made, so a long run keeps going when the screen is off or you switch apps. It shows a notification with the progress and a Cancel button and stops when the run ends. It sends nothing anywhere.
 - **Internet:** only for the optional generator described above.
 

@@ -46,12 +46,6 @@ class DataTransferActions(
 @Composable
 internal fun DataSection(state: DataTransferUiState, actions: DataTransferActions) {
     var chooseSource by rememberSaveable { mutableStateOf(false) }
-    var pasting by rememberSaveable { mutableStateOf(false) }
-
-    // A parsed paste moves on to the preview, so the paste dialog gets out of the way.
-    LaunchedEffect(state.pendingImport) {
-        if (state.pendingImport != null) pasting = false
-    }
 
     SectionHeader(R.string.settings_data_header)
     SettingsCard {
@@ -84,17 +78,35 @@ internal fun DataSection(state: DataTransferUiState, actions: DataTransferAction
         )
     }
 
+    ImportDialogs(state, actions, chooseSource, onDismissSource = { chooseSource = false })
+}
+
+/** The steps of an import: pick a source, paste if needed, then confirm what was found. */
+@Composable
+internal fun ImportDialogs(
+    state: DataTransferUiState,
+    actions: DataTransferActions,
+    chooseSource: Boolean,
+    onDismissSource: () -> Unit,
+) {
+    var pasting by rememberSaveable { mutableStateOf(false) }
+
+    // A parsed paste moves on to the preview, so the paste dialog gets out of the way.
+    LaunchedEffect(state.pendingImport) {
+        if (state.pendingImport != null) pasting = false
+    }
+
     if (chooseSource) {
         ImportSourceSheet(
             onFile = {
-                chooseSource = false
+                onDismissSource()
                 actions.onImportFile()
             },
             onPaste = {
-                chooseSource = false
+                onDismissSource()
                 pasting = true
             },
-            onDismiss = { chooseSource = false },
+            onDismiss = onDismissSource,
         )
     }
 

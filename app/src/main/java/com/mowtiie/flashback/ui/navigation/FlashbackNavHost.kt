@@ -143,7 +143,7 @@ private fun MessageEffect(messenger: AppMessenger, hostState: SnackbarHostState)
     LaunchedEffect(messenger, resources) {
         messenger.messages.collect { message ->
             val result = hostState.showSnackbar(
-                message = resources.getString(message.text),
+                message = message.literal ?: resources.getString(message.text),
                 actionLabel = message.actionLabel?.let(resources::getString),
                 duration = if (message.onAction == null) {
                     SnackbarDuration.Short

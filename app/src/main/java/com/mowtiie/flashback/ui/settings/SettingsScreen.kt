@@ -55,7 +55,7 @@ class SettingsActions(
     val onClearGeneratorKey: () -> Unit = {},
     val onChooseModel: () -> Unit = {},
     val onClearModel: () -> Unit = {},
-    val onOpenPrivacyPolicy: () -> Unit = {},
+    val onOpenLink: (String) -> Unit = {},
 )
 
 @Composable
@@ -148,9 +148,9 @@ fun SettingsRoute(viewModel: SettingsViewModel, transferViewModel: DataTransferV
             onClearGeneratorKey = viewModel::clearGeneratorKey,
             onChooseModel = { modelLauncher.launch(arrayOf("*/*")) },
             onClearModel = viewModel::clearLocalModel,
-            onOpenPrivacyPolicy = {
+            onOpenLink = { url ->
                 try {
-                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(AppLinks.PRIVACY_POLICY)))
+                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
                 } catch (_: ActivityNotFoundException) {
                     // No browser installed: nothing to open.
                 }
@@ -204,20 +204,8 @@ fun SettingsScreen(
             RemindersSection(state, actions)
             DataSection(transferState, transferActions)
             GeneratorSection(state, actions)
-            AboutSection(actions)
+            AboutSection(actions.onOpenLink)
         }
-    }
-}
-
-@Composable
-private fun AboutSection(actions: SettingsActions) {
-    SectionHeader(R.string.settings_about_header)
-    SettingsCard {
-        ActionRow(
-            title = stringResource(R.string.settings_privacy_policy),
-            body = stringResource(R.string.settings_privacy_policy_body),
-            onClick = actions.onOpenPrivacyPolicy,
-        )
     }
 }
 

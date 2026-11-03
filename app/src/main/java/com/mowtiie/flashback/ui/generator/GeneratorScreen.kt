@@ -4,7 +4,6 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import android.Manifest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
@@ -14,7 +13,6 @@ import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.stateDescription
 import com.mowtiie.flashback.ui.study.AnswerMode
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,8 +26,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -287,38 +283,26 @@ private fun InputPage(state: GeneratorUiState, actions: GeneratorActions) {
                 }
             }
         }
-        var optionsOpen by rememberSaveable { mutableStateOf(false) }
-        OptionsToggle(
-            open = optionsOpen,
-            summary = stringResource(
-                R.string.generator_options_summary,
-                stringResource(state.coverage.labelRes()),
-                state.cardTypes?.let { stringResource(it.labelRes()) }.orEmpty(),
-            ),
-            onToggle = { optionsOpen = !optionsOpen },
+        ChoiceRow(
+            style = ChoiceRowStyle.Form,
+            title = stringResource(R.string.prompt_coverage_title),
+            options = Coverage.entries,
+            selected = state.coverage,
+            label = { stringResource(it.labelRes()) },
+            onSelect = actions.onCoverage,
+            hint = stringResource(state.coverage.hintRes()),
         )
-        if (optionsOpen) {
+        if (state.coverage == Coverage.KeyPoints) {
             ChoiceRow(
                 style = ChoiceRowStyle.Form,
-                title = stringResource(R.string.prompt_coverage_title),
-                options = Coverage.entries,
-                selected = state.coverage,
-                label = { stringResource(it.labelRes()) },
-                onSelect = actions.onCoverage,
-                hint = stringResource(state.coverage.hintRes()),
+                title = stringResource(R.string.generator_count_title),
+                options = CardCount.entries,
+                selected = state.cardCount,
+                label = { stringResource(it.labelRes(), it.max) },
+                onSelect = actions.onCardCount,
             )
-            if (state.coverage == Coverage.KeyPoints) {
-                ChoiceRow(
-                    style = ChoiceRowStyle.Form,
-                    title = stringResource(R.string.generator_count_title),
-                    options = CardCount.entries,
-                    selected = state.cardCount,
-                    label = { stringResource(it.labelRes(), it.max) },
-                    onSelect = actions.onCardCount,
-                )
-            }
-            CardTypesChoice(state.cardTypes, actions.onCardTypes)
         }
+        CardTypesChoice(state.cardTypes, actions.onCardTypes)
         state.error?.let {
             Text(
                 it,
@@ -337,29 +321,6 @@ private fun InputPage(state: GeneratorUiState, actions: GeneratorActions) {
         }
     }
     if (state.confirming) ConfirmRunDialog(state, actions.onConfirm, actions.onDismissConfirm)
-}
-
-/** Closed by default, so a student sees notes and one button; the summary shows what will be used. */
-@Composable
-internal fun OptionsToggle(open: Boolean, summary: String, onToggle: () -> Unit) {
-    val title = stringResource(R.string.generator_options)
-    val shown = stringResource(if (open) R.string.generator_options_open else R.string.generator_options_closed)
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(min = 56.dp)
-            .clickable(role = Role.Button, onClick = onToggle)
-            .semantics(mergeDescendants = true) { stateDescription = shown },
-    ) {
-        Column(Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.titleSmall)
-            if (!open) {
-                Text(summary, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-        }
-        Icon(if (open) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown, contentDescription = null)
-    }
 }
 
 /** The hint while the box is empty, then only what a student needs: a problem, or how many parts it will take. */
@@ -566,7 +527,7 @@ private fun Coverage.hintRes(): Int = when (this) {
     Coverage.KeyPoints -> R.string.prompt_coverage_hint_key
 }
 
-private fun CardCount.labelRes(): Int = when (this) {
+internal fun CardCount.labelRes(): Int = when (this) {
     CardCount.Few -> R.string.generator_count_few
     CardCount.Normal -> R.string.generator_count_normal
     CardCount.Many -> R.string.generator_count_many
