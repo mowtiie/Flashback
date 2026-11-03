@@ -386,7 +386,7 @@
         <item quantity="one">Nothing new in %d part.</item>
         <item quantity="other">Nothing new in %d parts.</item>
     </plurals>
-    <string name="generator_from_sections">From %1$d parts: %2$s</string>
+    <string name="generator_from_sections" tools:ignore="PluralsCandidate">From %1$d parts: %2$s</string>
     <plurals name="generator_failed_title">
         <item quantity="one">%d part made no cards</item>
         <item quantity="other">%d parts made no cards</item>
@@ -410,7 +410,7 @@
     <string name="generator_card_removed">Card removed</string>
     <string name="deck_section_study">Study</string>
     <string name="note_section_study">Study options</string>
-    <string name="deck_detail_counts">%1$d new · %2$d practice · %3$d review</string>
+    <string name="deck_detail_counts" tools:ignore="PluralsCandidate">%1$d new · %2$d practice · %3$d review</string>
     <string name="field_error">Error</string>
     <string name="settings_about_header">About</string>
     <string name="settings_privacy_policy">Privacy policy</string>

@@ -1,7 +1,7 @@
 package com.mowtiie.flashback.ui.settings
 
 import android.Manifest
-import android.net.Uri
+import androidx.core.net.toUri
 import android.content.Intent
 import android.content.ActivityNotFoundException
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -150,7 +150,7 @@ fun SettingsRoute(viewModel: SettingsViewModel, transferViewModel: DataTransferV
             onClearModel = viewModel::clearLocalModel,
             onOpenLink = { url ->
                 try {
-                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                    context.startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
                 } catch (_: ActivityNotFoundException) {
                     // No browser installed: nothing to open.
                 }
